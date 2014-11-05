@@ -1,0 +1,458 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\Src\Engine\Engine.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.cpp">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.cpp">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.cpp">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.cpp">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderParameters.cpp">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\GraphicSystem.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\GraphicWindow.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\RenderTarget.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\Shader.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\ShaderParameterBlock.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\ShaderProgram.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\Texture.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\VertexData.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Graphics\VertexStream.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Input\Input.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\BoundingBox.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Frustum.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Matrix3x3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Matrix4x4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Plane.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Quaternion.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Rect.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Sphere.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Vector2.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Vector3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Math\Vector4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Util\Timer.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\Camera.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\Light.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\Mesh.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\SceneImporter.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\SceneItem.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\SceneItemFactory.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\SkyBox.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\SpatialSceneItem.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\DeferredStage.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\Geometry.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\LightingStage.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\LightTileGrid.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\Material.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\PostProcessStage.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\RenderStage.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\ShadowProjector.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\ShadowStage.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\TextureLoader.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Src\Engine\App.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Engine\Engine.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.h">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.h">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.h">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLHeaders.h">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.h">
+      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\AttributeBuffer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicDataContainer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicObject.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicSystem.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicSystemBackEnd.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicWindow.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicWindowImpl.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\IndexBuffer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\Rasterization.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\RenderTarget.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\Shader.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameterBlock.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameters.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\ShaderProgram.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\Texture.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\VertexData.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\VertexStream.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Input\Input.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Input\InputEvents.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\BoundingBox.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Frustum.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\MathFunctions.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Matrix3x3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Matrix4x4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Plane.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Quaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Rect.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Sphere.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Vector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Math\Vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\ThirdParty\Stb_image\stb_image.h">
+      <Filter>ThirdParty\Stb_Image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\FixedArray.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\MemoryBuffer.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\Timer.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\Vector.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\WorkQueue.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\Camera.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\Light.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\Mesh.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SceneCuller.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SceneImporter.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SceneItem.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SceneItemFactory.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SkyBox.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\SpatialSceneItem.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\DeferredStage.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\GBuffer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\Geometry.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\LightingStage.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\LightTileGrid.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\Material.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\PostProcessStage.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\RenderItem.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\RenderPasses.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\ShadowProjector.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\ShadowStage.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\TextureLoader.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\GraphicDefs.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\RendererDefs.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\RenderStage.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{ff6edfff-bf08-42aa-89fa-621339079817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{7038f548-d21f-4e48-a718-5921e3b0c947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{753accf9-4a99-49df-b20e-ceebdce366eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{49557cdf-a0d7-4039-8ac7-178789cd39f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{e5861c72-90a1-493d-bd54-5efa5e2b4b58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{aec66dc2-7b40-46a3-9ced-5c378749fc28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{b559880c-4d68-425c-b592-04468dfff86b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{1f3f51ff-2a98-4142-b4cc-3b5b603ef07b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\OGLGraphicsBackEnd">
+      <UniqueIdentifier>{7e02b040-822b-4eb2-84e8-ee5eefbecabe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Stb_Image">
+      <UniqueIdentifier>{c81caf5e-7a65-41a9-8156-5a7916dd0a6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{5898ba0e-e07e-4682-98b2-3e22cf73a510}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Data\Shaders\Attributes.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Brdf.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Filter.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\FullScreenQuad.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\FXAA.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Gbuffer.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Gbuffer.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\PostProcess.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Samplers.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\ShadowDepth.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\ShadowDepth.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\ShadowOcclusion.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\TiledDeferredShading.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\TiledShading.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\ToneMap.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Uniforms.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Uniforms.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\SAO.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Environment.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\Environment.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,72 @@
+//
+// Copyright (c) 2013-2014 Antti Karhu.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#ifndef Engine_H
+#define Engine_H
+
+#include "Util/Vector.h"
+#include "Util/Timer.h"
+
+namespace Huurre3D
+{
+
+class Scene;
+class Renderer;
+class SceneImporter;
+class Input;
+class App;
+
+class Engine
+{
+public:
+    Engine();
+    ~Engine();
+	
+    void run();
+    void setApp(App* app);
+    void removeApp(App* app);
+    Scene* createScene();
+    void setAssetPath(const std::string& path);
+    void setShaderPath(const std::string& path);
+    Scene* getScene(unsigned int id = 0) const {return scenes[id];}
+    SceneImporter* getSceneImporter() const {return sceneImporter;}
+    Renderer* getRenderer() const {return renderer;}
+    Input* getInput() const {return input;}
+    static std::string& getAssetPath() {return assetPath;}
+    static std::string& getShaderPath() {return shaderPath;}
+
+private:
+    void init();
+    void deInit();
+    void update();
+    Renderer* renderer = nullptr;
+    Vector<Scene*> scenes;
+    Vector<App*> apps;
+    SceneImporter* sceneImporter = nullptr;
+    Input* input = nullptr;
+    Timer timer;
+    float lastFrame = 0.0f;
+    static std::string shaderPath;
+    static std::string assetPath;
+};
+
+}
+#endif

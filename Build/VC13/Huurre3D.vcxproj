@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1E408AE-6CC8-42D4-8B14-529169F81F73}</ProjectGuid>
+    <RootNamespace>AAVA3D</RootNamespace>
+    <ProjectName>Huurre3D</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\Lib\Windows\Debug\</OutDir>
+    <TargetExt>.lib</TargetExt>
+    <TargetName>$(ProjectName)-debug</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\Lib\Windows\Release\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\External\Assimp\include\;..\..\External\glew-1.9.0\include;..\..\External\glfw-3.0.1.bin.WIN32\include\;..\..\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STB_IMAGE_IMPLEMENTATION;USE_OGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\External\Assimp\lib\x86\;..\..\External\glew-1.9.0\lib\;..\..\External\glfw-3.0.1.bin.WIN32\lib-msvc100\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\External\Assimp\include\;..\..\External\glew-1.9.0\include\;..\..\External\glfw-3.0.1.bin.WIN32\include\;..\..\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STB_IMAGE_IMPLEMENTATION;USE_OGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Src\Engine\Engine.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\GraphicSystem.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\GraphicWindow.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderParameters.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\RenderTarget.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\Shader.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\ShaderParameterBlock.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\ShaderProgram.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\Texture.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\VertexData.cpp" />
+    <ClCompile Include="..\..\Src\Graphics\VertexStream.cpp" />
+    <ClCompile Include="..\..\Src\Input\Input.cpp" />
+    <ClCompile Include="..\..\Src\Math\BoundingBox.cpp" />
+    <ClCompile Include="..\..\Src\Math\Frustum.cpp" />
+    <ClCompile Include="..\..\Src\Math\Matrix3x3.cpp" />
+    <ClCompile Include="..\..\Src\Math\Matrix4x4.cpp" />
+    <ClCompile Include="..\..\Src\Math\Plane.cpp" />
+    <ClCompile Include="..\..\Src\Math\Quaternion.cpp" />
+    <ClCompile Include="..\..\Src\Math\Rect.cpp" />
+    <ClCompile Include="..\..\Src\Math\Sphere.cpp" />
+    <ClCompile Include="..\..\Src\Math\Vector2.cpp" />
+    <ClCompile Include="..\..\Src\Math\Vector3.cpp" />
+    <ClCompile Include="..\..\Src\Math\Vector4.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\DeferredStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\Geometry.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\LightingStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\LightTileGrid.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\Material.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\PostProcessStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\Renderer.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\RenderStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\ShadowProjector.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\ShadowStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\TextureLoader.cpp" />
+    <ClCompile Include="..\..\Src\Scene\Camera.cpp" />
+    <ClCompile Include="..\..\Src\Scene\Light.cpp" />
+    <ClCompile Include="..\..\Src\Scene\Mesh.cpp" />
+    <ClCompile Include="..\..\Src\Scene\Scene.cpp" />
+    <ClCompile Include="..\..\Src\Scene\SceneImporter.cpp" />
+    <ClCompile Include="..\..\Src\Scene\SceneItem.cpp" />
+    <ClCompile Include="..\..\Src\Scene\SceneItemFactory.cpp" />
+    <ClCompile Include="..\..\Src\Scene\SkyBox.cpp" />
+    <ClCompile Include="..\..\Src\Scene\SpatialSceneItem.cpp" />
+    <ClCompile Include="..\..\Src\Util\Timer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Src\Engine\App.h" />
+    <ClInclude Include="..\..\Src\Engine\Engine.h" />
+    <ClInclude Include="..\..\Src\Graphics\AttributeBuffer.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicDataContainer.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicDefs.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicObject.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicSystem.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicSystemBackEnd.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicWindow.h" />
+    <ClInclude Include="..\..\Src\Graphics\GraphicWindowImpl.h" />
+    <ClInclude Include="..\..\Src\Graphics\IndexBuffer.h" />
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.h" />
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.h" />
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.h" />
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLHeaders.h" />
+    <ClInclude Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.h" />
+    <ClInclude Include="..\..\Src\Graphics\Rasterization.h" />
+    <ClInclude Include="..\..\Src\Graphics\RenderTarget.h" />
+    <ClInclude Include="..\..\Src\Graphics\Shader.h" />
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameterBlock.h" />
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameters.h" />
+    <ClInclude Include="..\..\Src\Graphics\ShaderProgram.h" />
+    <ClInclude Include="..\..\Src\Graphics\Texture.h" />
+    <ClInclude Include="..\..\Src\Graphics\VertexData.h" />
+    <ClInclude Include="..\..\Src\Graphics\VertexStream.h" />
+    <ClInclude Include="..\..\Src\Input\Input.h" />
+    <ClInclude Include="..\..\Src\Input\InputEvents.h" />
+    <ClInclude Include="..\..\Src\Math\BoundingBox.h" />
+    <ClInclude Include="..\..\Src\Math\Frustum.h" />
+    <ClInclude Include="..\..\Src\Math\MathFunctions.h" />
+    <ClInclude Include="..\..\Src\Math\Matrix3x3.h" />
+    <ClInclude Include="..\..\Src\Math\Matrix4x4.h" />
+    <ClInclude Include="..\..\Src\Math\Plane.h" />
+    <ClInclude Include="..\..\Src\Math\Quaternion.h" />
+    <ClInclude Include="..\..\Src\Math\Rect.h" />
+    <ClInclude Include="..\..\Src\Math\Sphere.h" />
+    <ClInclude Include="..\..\Src\Math\Vector2.h" />
+    <ClInclude Include="..\..\Src\Math\Vector3.h" />
+    <ClInclude Include="..\..\Src\Math\Vector4.h" />
+    <ClInclude Include="..\..\Src\Renderer\DeferredStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\GBuffer.h" />
+    <ClInclude Include="..\..\Src\Renderer\Geometry.h" />
+    <ClInclude Include="..\..\Src\Renderer\LightingStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\LightTileGrid.h" />
+    <ClInclude Include="..\..\Src\Renderer\Material.h" />
+    <ClInclude Include="..\..\Src\Renderer\PostProcessStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\Renderer.h" />
+    <ClInclude Include="..\..\Src\Renderer\RendererDefs.h" />
+    <ClInclude Include="..\..\Src\Renderer\RenderItem.h" />
+    <ClInclude Include="..\..\Src\Renderer\RenderPasses.h" />
+    <ClInclude Include="..\..\Src\Renderer\RenderStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\ShadowProjector.h" />
+    <ClInclude Include="..\..\Src\Renderer\ShadowStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\TextureLoader.h" />
+    <ClInclude Include="..\..\Src\Scene\Camera.h" />
+    <ClInclude Include="..\..\Src\Scene\Light.h" />
+    <ClInclude Include="..\..\Src\Scene\Mesh.h" />
+    <ClInclude Include="..\..\Src\Scene\Scene.h" />
+    <ClInclude Include="..\..\Src\Scene\SceneCuller.h" />
+    <ClInclude Include="..\..\Src\Scene\SceneImporter.h" />
+    <ClInclude Include="..\..\Src\Scene\SceneItem.h" />
+    <ClInclude Include="..\..\Src\Scene\SceneItemFactory.h" />
+    <ClInclude Include="..\..\Src\Scene\SkyBox.h" />
+    <ClInclude Include="..\..\Src\Scene\SpatialSceneItem.h" />
+    <ClInclude Include="..\..\Src\ThirdParty\Stb_image\stb_image.h" />
+    <ClInclude Include="..\..\Src\Util\FixedArray.h" />
+    <ClInclude Include="..\..\Src\Util\MemoryBuffer.h" />
+    <ClInclude Include="..\..\Src\Util\Timer.h" />
+    <ClInclude Include="..\..\Src\Util\Vector.h" />
+    <ClInclude Include="..\..\Src\Util\WorkQueue.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Data\Shaders\Attributes.vert" />
+    <None Include="..\..\Data\Shaders\Brdf.frag" />
+    <None Include="..\..\Data\Shaders\Environment.frag" />
+    <None Include="..\..\Data\Shaders\Filter.frag" />
+    <None Include="..\..\Data\Shaders\FullScreenQuad.vert" />
+    <None Include="..\..\Data\Shaders\FXAA.frag" />
+    <None Include="..\..\Data\Shaders\Gbuffer.frag" />
+    <None Include="..\..\Data\Shaders\Gbuffer.vert" />
+    <None Include="..\..\Data\Shaders\PostProcess.frag" />
+    <None Include="..\..\Data\Shaders\Samplers.frag" />
+    <None Include="..\..\Data\Shaders\SAO.frag" />
+    <None Include="..\..\Data\Shaders\ShadowDepth.frag" />
+    <None Include="..\..\Data\Shaders\ShadowDepth.vert" />
+    <None Include="..\..\Data\Shaders\ShadowOcclusion.frag" />
+    <None Include="..\..\Data\Shaders\TiledDeferredShading.frag" />
+    <None Include="..\..\Data\Shaders\TiledShading.frag" />
+    <None Include="..\..\Data\Shaders\ToneMap.frag" />
+    <None Include="..\..\Data\Shaders\Uniforms.frag" />
+    <None Include="..\..\Data\Shaders\Uniforms.vert" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
