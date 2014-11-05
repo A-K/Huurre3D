@@ -63,7 +63,7 @@ void Engine::run()
             renderer->resizeRenderWindow(windowWidth, windowHeight);
 
             for(unsigned int i = 0; i < scenes.size(); ++i)
-                scenes[i], scenes[i]->getMainCamera()->setAspectRatio((float)windowWidth / (float)windowHeight);
+                scenes[i]->getMainCamera()->setAspectRatio((float)windowWidth / (float)windowHeight);
         }
 
         update();
