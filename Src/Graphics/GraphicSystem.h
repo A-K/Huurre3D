@@ -36,6 +36,10 @@
 #define GraphicSystemBackEnd OGLGraphicSystemBackEnd
 #endif
 
+#ifdef USE_NULL
+#include "Graphics/GraphicSystemBackEnd.h"
+#endif
+
 namespace Huurre3D
 {
 
@@ -118,6 +122,10 @@ private:
 
 #ifdef USE_OGL
     GraphicSystemBackEnd* CreateGraphicSystemBackEnd() const {return new OGLGraphicSystemBackEnd();}
+#endif
+
+#ifdef USE_NULL
+    GraphicSystemBackEnd* CreateGraphicSystemBackEnd() const { return new GraphicSystemBackEnd(); }
 #endif
 
 };

@@ -43,11 +43,11 @@ public:
 	
     void setViewPort(const ViewPort& viewPort) {}
     void clear(unsigned int flags, const Vector4& color) {}
-    unsigned int createBuffer() {return 0;} 
-    unsigned int createVertexData() {return 0;}
-    unsigned int createTexture() {return 0;}
-    unsigned int createShaderProgram() {return 0;}
-    unsigned int createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers) {return 0;}
+    unsigned int createBuffer() {return graphicResourceId++;}
+    unsigned int createVertexData() { return graphicResourceId++; }
+    unsigned int createTexture() { return graphicResourceId++; }
+    unsigned int createShaderProgram() { return graphicResourceId++; }
+    unsigned int createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers) { return graphicResourceId++; }
     void removeBuffer(unsigned int bufferId) {}
     void removeVertexData(unsigned int vertexDataId) {}
     void removeTexture(unsigned int textureId) {}
@@ -66,6 +66,9 @@ public:
     void draw(int numVertices, int vertexOffset) {} 
     void drawIndexed(int numIndices, int indexOffset) {}
     void drawInstanced(int numIndices, int indexOffset, int instancesCount) {}
+
+private:
+    unsigned int graphicResourceId = 0;
 };
 
 }

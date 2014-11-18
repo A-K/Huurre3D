@@ -27,6 +27,10 @@
 #define GraphicWindowImpl GLFWGraphicWindowImpl
 #endif
 
+#ifdef USE_NULL
+#include "Graphics/GraphicWindowImpl.h"
+#endif
+
 namespace Huurre3D
 {
 
@@ -55,6 +59,11 @@ protected:
 #ifdef USE_OGL
     GraphicWindowImpl* CreateGraphicWindowImpl() const {return new GLFWGraphicWindowImpl();}
 #endif
+
+#ifdef USE_NULL
+    GraphicWindowImpl* CreateGraphicWindowImpl() const { return new GraphicWindowImpl(); }
+#endif
+
 };
 
 }

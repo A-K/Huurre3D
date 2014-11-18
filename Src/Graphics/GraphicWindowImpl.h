@@ -35,7 +35,7 @@ public:
     GraphicWindowImpl() {}
     virtual ~GraphicWindowImpl() {}
 
-    bool create(int width, int height, const std::string& windowTitle, bool fullScreen, bool vsync) {return false;}
+    bool create(int width, int height, const std::string& windowTitle, bool fullScreen, bool vsync) {return true;}
     void setWindowTitle(const std::string& windowTitle) {}
     void destroy() const {}
     void swapBuffers() const {}
