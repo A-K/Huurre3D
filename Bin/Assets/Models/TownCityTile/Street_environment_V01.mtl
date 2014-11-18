@@ -92,8 +92,8 @@ newmtl orig_orig_orig_17___Default
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Ka Textures/TownCityTile/building 01_c.tga
-	map_Kd Textures/TownCityTile/building 01_c.tga
+	map_Ka Textures/TownCityTile/building01_c.tga
+	map_Kd Textures/TownCityTile/building01_c.tga
 
 newmtl 3db___building_06
 	Ns 44.0000
@@ -106,8 +106,8 @@ newmtl 3db___building_06
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.3240 0.3240 0.3240
 	Ke 0.0000 0.0000 0.0000
-	map_Ka Textures/TownCityTile/building 06_ c.tga
-	map_Kd Textures/TownCityTile/building 06_ c.tga
+	map_Ka Textures/TownCityTile/building06_c.tga
+	map_Kd Textures/TownCityTile/building06_c.tga
 
 newmtl 09___Default
 	Ns 10.0000
@@ -120,8 +120,8 @@ newmtl 09___Default
 	Kd 0.5882 0.5882 0.5882
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Ka Textures/TownCityTile/building05 _c.tga
-	map_Kd Textures/TownCityTile/building05 _c.tga
+	map_Ka Textures/TownCityTile/building05_c.tga
+	map_Kd Textures/TownCityTile/building05_c.tga
 
 newmtl Material__0
 	Ns 10.0000
