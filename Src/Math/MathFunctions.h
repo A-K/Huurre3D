@@ -65,7 +65,17 @@ inline float min(float x, float y)
     return x < y ? x : y;
 }
 
+inline int min(int x, int y)
+{
+    return x < y ? x : y;
+}
+
 inline float max(float x, float y)
+{
+    return x > y ? x : y;
+}
+
+inline int max(int x, int y)
 {
     return x > y ? x : y;
 }
