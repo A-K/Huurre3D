@@ -194,17 +194,20 @@ enum class TexturePixelFormat
     Red16I,
     Red32I,
     Depth,
-    Depth24
+    Depth24,
+    DXT1,
+    DXT3,
+    DXT5,
 };
 
 const int pixelFormatNumComponents[] =
 {
-    3, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1
+    3, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4
 };
 
-const int pixelFormaSizeInBytes[] =
+const int pixelFormatSizeInBytes[] =
 {
-    3, 4, 16, 8, 16, 2, 4, 2, 4, 1, 3
+    3, 4, 16, 8, 16, 2, 4, 2, 4, 1, 3, 8, 16, 16
 };
 
 enum class TextureTargetMode

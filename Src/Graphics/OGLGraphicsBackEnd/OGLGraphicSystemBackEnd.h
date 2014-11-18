@@ -104,6 +104,7 @@ private:
     void updateTextureParameters(Texture *texture);
     //Loads the the pixel data to texture object.
     void updateTextureData(Texture* texture);
+    void updateCompressedTextureData(Texture* texture);
 
     int currentlyActiveTextureSlot = 0;
     Texture* texturesInUse[static_cast<int>(TextureSlotIndex::NumSlots)];

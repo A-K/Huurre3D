@@ -261,7 +261,7 @@ void OGLGraphicSystemBackEnd::updateTexture(Texture* texture)
         updateTextureParameters(texture);
 
     if(texture->isDataDirty())
-        updateTextureData(texture);
+        texture->isCompressed() ? updateCompressedTextureData(texture) : updateTextureData(texture);
 }
 
 void OGLGraphicSystemBackEnd::updateTextureParameters(Texture* texture)
@@ -278,8 +278,9 @@ void OGLGraphicSystemBackEnd::updateTextureParameters(Texture* texture)
 
     //Filtering.
     int filter = static_cast<int>(texture->getFilterMode());
+    int numMipMaps = texture->getNumMipMaps();
 
-    if(texture->getMipMapLevel() < 2)
+    if(numMipMaps < 2)
     {
         glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glMinFilter[filter]);
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, glMaxFilter[filter]);
@@ -290,10 +291,12 @@ void OGLGraphicSystemBackEnd::updateTextureParameters(Texture* texture)
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, glMaxFilter[filter]);
     }
 
-    int mipMapLevel = texture->getMipMapLevel();
-    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+    if(!texture->isCompressed())
+    {
+        glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 
-    mipMapLevel == 0 ? glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0) : glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, texture->getMipMapLevel() - 1);
+        numMipMaps == 0 ? glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0) : glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, numMipMaps - 1);
+    }
     texture->unDirtyParams();
 }
 
@@ -327,6 +330,34 @@ void OGLGraphicSystemBackEnd::updateTextureData(Texture* texture)
     }
 
     glGenerateMipmap(target);
+    texture->unDirtyData();
+
+    texture->discardDataWhenCommittedToGPU() ? texture->discardData() : texture->setDataSizeInGPUIsDataSizeInCPU();
+}
+void OGLGraphicSystemBackEnd::updateCompressedTextureData(Texture* texture)
+{
+    GLenum target = glTextureTarget[static_cast<int>(texture->getTargetMode())];
+    int pixelFormat = static_cast<int>(texture->getPixelFormat());
+    GLenum internalFormat = glPixelInternalFormat[pixelFormat];
+    GLsizei width = texture->getWidth();
+    GLsizei height = texture->getHeight();
+    unsigned char* data = texture->getData();
+    GLsizei offset = 0;
+
+    switch(target) 
+    {
+        case GL_TEXTURE_2D:
+            for(unsigned int i = 0; i < texture->getNumMipMaps(); ++i)
+            {
+                GLsizei size = ((width + 3) / 4) * ((height + 3) / 4) * pixelFormatSizeInBytes[static_cast<int>(pixelFormat)];
+                glCompressedTexImage2D(target, i, internalFormat, width, height, 0, size, data + offset);
+                offset += size;
+                width = max(1, width / 2);
+                height = max(1, height / 2);
+            }
+            break;
+    }
+
     texture->unDirtyData();
 
     texture->discardDataWhenCommittedToGPU() ? texture->discardData() : texture->setDataSizeInGPUIsDataSizeInCPU();

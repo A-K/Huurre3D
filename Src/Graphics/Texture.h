@@ -40,7 +40,7 @@ public:
     void setWidth(int width);
     void setHeight(int height);
     void setDepth(int depth);
-    void setMipMapLevel(int mipMapLevel);
+    void setNumMipMaps(int numMipMaps);
     void setSlotIndex(TextureSlotIndex slotIndex) {this->slotIndex = slotIndex;}
     void setData(const TextureLoadResult& resultData);
     TextureTargetMode getTargetMode() const {return targetMode;}
@@ -51,9 +51,10 @@ public:
     int getWidth() const {return width;}
     int getHeight() const {return height;}
     int getDepth() const {return depth;}
-    int getMipMapLevel() const {return mipMapLevel;}
+    int getNumMipMaps() const {return numMipMaps;}
     bool isParamsDirty() const {return paramsDirty;}
     bool isDataDirty() const {return dataDirty;}
+    bool isCompressed() const { return pixelFormat == TexturePixelFormat::DXT1 || pixelFormat == TexturePixelFormat::DXT3 || pixelFormat == TexturePixelFormat::DXT5; }
     void unDirtyParams() {paramsDirty = false;}
     void unDirtyData() {dataDirty = false;}
     const unsigned char* getCubeMapFaceData(CubeMapFace face) const {return cubeMapFaceData[static_cast<int>(face)];}
@@ -79,7 +80,7 @@ private:
     int width;
     int height;
     int depth = 1;
-    int mipMapLevel = 0; //numMipMaps could be better name?
+    int numMipMaps = 0;
     bool paramsDirty = true;
     bool dataDirty = true;
     FixedArray<unsigned char*, NumCubeMapFaces> cubeMapFaceData;

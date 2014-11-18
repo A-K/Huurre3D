@@ -31,9 +31,11 @@ namespace Huurre3D
 
 struct TextureLoadResult
 {
-    bool cubeMap;
+    TextureTargetMode targetMode;
     int width;
     int height;
+    int numMipMaps = 10;
+    int pixelDataSize;
     TexturePixelFormat format;
     FixedArray<unsigned char*, NumCubeMapFaces> pixelData;
 };
@@ -49,8 +51,10 @@ public:
     void releasedata(TextureLoadResult& resultData);
 
 private:
-    void loadPixelDataFromFile(const char* fileName, int index, TextureLoadResult& result);
+    void loadPixelDataFromFile(const std::string& fileName, int index, TextureLoadResult& result, bool flipVertically);
     void flipVertically(TextureLoadResult& result, int index);
+    void flipCompressedVertically(TextureLoadResult& result, int index);
+    void flipCompressedBlocks(unsigned char* blockData, unsigned int blockSizeBytes, unsigned int numBlocks, TexturePixelFormat format);
 };
 
 }

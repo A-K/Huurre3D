@@ -54,9 +54,9 @@ void Texture::setDepth(int depth)
     dataDirty = true;
 }
 
-void Texture::setMipMapLevel(int mipMapLevel)
+void Texture::setNumMipMaps(int numMipMaps)
 {
-    this->mipMapLevel = mipMapLevel;
+    this->numMipMaps = numMipMaps;
     paramsDirty = true;
     dataDirty = true;
 }
@@ -65,22 +65,21 @@ void Texture::setData(const TextureLoadResult& resultData)
 {
     if(resultData.width == width && resultData.height == height && resultData.format == pixelFormat)
     {
-        if(!resultData.cubeMap)
-        {
-            int imageSize = imageSize = resultData.width * resultData.height * pixelFormaSizeInBytes[static_cast<int>(resultData.format)];
-            setPixelData(resultData.pixelData[0], imageSize);
-        }
-        else
-        {
-            int imageSize = resultData.width * resultData.height * pixelFormaSizeInBytes[static_cast<int>(resultData.format)];
+        numMipMaps = resultData.numMipMaps;
 
+        if(resultData.targetMode == TextureTargetMode::Texture2D)
+        {
+            setPixelData(resultData.pixelData[0], resultData.pixelDataSize);
+        }
+        else if(resultData.targetMode == TextureTargetMode::TextureCubeMap)
+        {
             //Copy the data from each cube map face into the buffer.
             for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-                append(resultData.pixelData[i], imageSize);
+                append(resultData.pixelData[i], resultData.pixelDataSize);
 
             //Get the pointers to the data of each face.
             for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-                cubeMapFaceData[i] = &data[i * imageSize];
+                cubeMapFaceData[i] = &data[i * resultData.pixelDataSize];
         }
     }
     else

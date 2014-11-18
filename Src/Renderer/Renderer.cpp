@@ -336,7 +336,6 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
 
     if(index == -1)
     {
-        std::cout << "Loading image: " << texFileName << std::endl;
         TextureLoadResult result = textureLoader.loadFromFile(texFileName, true);
 
         if(result.pixelData[0])
@@ -344,12 +343,15 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
             texture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::Repeat, TextureFilterMode::Trilinear, result.format, result.width, result.height);
             texture->setData(result);
             texture->setSlotIndex(slotIndex);
-            texture->setMipMapLevel(10);
+            //texture->setNumMipMaps(10);
             TextureCacheItem cacheItem;
             cacheItem.fileNameHash = fileNameHash;
             cacheItem.texture = texture;
             materialTextureCache.pushBack(cacheItem);
+            std::cout << "Loaded Texture: " << texFileName << std::endl;
         }
+        else
+            std::cout << "Failed to load texture: " << texFileName << std::endl;
 
         textureLoader.releasedata(result);
     }
