@@ -149,7 +149,6 @@ const GLsizei glIndexSize[] =
 const GLenum glBlendSourceFactor[] =
 {
     GL_ZERO,
-    GL_ZERO,
     GL_ONE,
     GL_SRC_ALPHA,
     GL_SRC_ALPHA,
@@ -158,7 +157,6 @@ const GLenum glBlendSourceFactor[] =
 
 const GLenum glBlendDestFactor[] =
 {
-    GL_ZERO,
     GL_ONE,
     GL_ONE,
     GL_ONE_MINUS_SRC_ALPHA,
@@ -180,7 +178,6 @@ const GLenum glCompareMode[] =
 
 const GLenum glCullMode[] =
 {
-    GL_ZERO,
     GL_FRONT,
     GL_BACK,
     GL_FRONT_AND_BACK

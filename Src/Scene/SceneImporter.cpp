@@ -190,7 +190,7 @@ MaterialDescription SceneImporter::createMaterialDescription(const aiMaterial* a
     if(assimpMaterial->Get(AI_MATKEY_TWOSIDED, twoSided) == AI_SUCCESS)
     {
         if(twoSided != 0)
-            description.rasterState.cullMode = CullMode::None;
+            description.rasterState.cullState.enabled = false;
     }
 
     return description;

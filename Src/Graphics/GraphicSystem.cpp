@@ -25,8 +25,7 @@
 namespace Huurre3D
 {
 
-GraphicSystem::GraphicSystem():
-currentRasterState(BlendMode::Off, CompareMode::Never, CullMode::None)
+GraphicSystem::GraphicSystem()
 {
     graphicSystemBackEnd = CreateGraphicSystemBackEnd();
 }

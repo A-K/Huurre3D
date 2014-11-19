@@ -80,9 +80,6 @@ public:
     void drawInstanced(int numIndices, int indexOffset, int instancesCount);
 
 private:
-    void setBlendMode(BlendMode mode);
-    void setDepthCompareMode(CompareMode mode);
-    void setCullMode(CullMode mode);
     void updateTexture(Texture* texture);
     void updateShaderProgram(ShaderProgram* program);
     void updateRenderTarget(RenderTarget* renderTarget);
@@ -108,14 +105,15 @@ private:
 
     int currentlyActiveTextureSlot = 0;
     Texture* texturesInUse[static_cast<int>(TextureSlotIndex::NumSlots)];
-    BlendMode currentBlendMode = BlendMode::Off;
-    CompareMode currentCompareMode = CompareMode::Never;
-    CullMode currentCullMode = CullMode::None;
+    BlendState currentBlendState = BlendState(false, BlendFunction::Replace);
+    CompareState currentCompareState = CompareState(false, CompareFunction::Less);
+    CullState currentCullState = CullState(false, CullFace::Back);
     unsigned int currentShaderProgramId = 0;
     unsigned int currentFBOId = 0;
     unsigned int currentBindedShaderBlockId = 0;
     PrimitiveType currentPrimitiveType = PrimitiveType::Triangles;
     IndexType currentIndexType = IndexType::Short;
+    Vector4 currentClearColor = Vector4::ZERO;
 };
 
 }

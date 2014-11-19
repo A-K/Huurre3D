@@ -56,9 +56,7 @@ public:
     void setSpecularPower(float specularPower);
     void setRoughness(float roughness);
     void setReflectance(float refiectance);
-    void setCompareMode(CompareMode compareMode);
-    void setCullMode(CullMode cullMode);
-    void setBlendMode(BlendMode blendMode);
+    void setRasterState(const RasterState& state);
     void setDiffuseTexture(Texture* texture);
     void setSpecularTexture(Texture* texture);
     void setNormalMap(Texture* texture);
@@ -73,9 +71,6 @@ public:
     float getRoughness() const {return parameters[0].w;}
     float getReflectance() const {return parameters[2].w;}
     unsigned int getCurrentShaderCombinationTag() const {return currentShaderCombinationTag;}
-    CompareMode getCompareMode() const {return rasterState.compareMode;}
-    CullMode getCullMode() const {return rasterState.cullMode;}
-    BlendMode getBlendMode() const {return rasterState.blendMode;}
     const Vector<ShaderDefine>& getShaderDefines() const {return shaderDefines;}
     RasterState getRasterState() const {return rasterState;}
     const Matrix4x4& getParameters() const {return parameters;}

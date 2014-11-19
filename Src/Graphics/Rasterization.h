@@ -27,27 +27,104 @@
 namespace Huurre3D
 {
 
+struct BlendState
+{
+    bool enabled;
+    BlendFunction blendFunction;
+    BlendState(bool enabled, BlendFunction function):
+    enabled(enabled),
+    blendFunction(function)
+    {}
+
+    bool operator == (const BlendState& rhs) const
+    {
+        return enabled == rhs.enabled && blendFunction == rhs.blendFunction;
+    }
+
+    bool operator != (const BlendState& rhs) const
+    {
+        return enabled != rhs.enabled || blendFunction != rhs.blendFunction;
+    }
+};
+
+struct CompareState
+{
+    bool enabled = false;
+    CompareFunction compareFunction = CompareFunction::Less;
+    CompareState(bool enabled, CompareFunction function) :
+    enabled(enabled),
+    compareFunction(function)
+    {}
+
+    bool operator == (const CompareState& rhs) const
+    {
+        return enabled == rhs.enabled && compareFunction == rhs.compareFunction;
+    }
+
+    bool operator != (const CompareState& rhs) const
+    {
+        return enabled != rhs.enabled || compareFunction != rhs.compareFunction;
+    }
+};
+
+struct CullState
+{
+    bool enabled = false;
+    CullFace cullFace = CullFace::Back;
+    CullState(bool enabled, CullFace cullFace) :
+    enabled(enabled),
+    cullFace(cullFace)
+    {}
+
+    bool operator == (const CullState& rhs) const
+    {
+        return (enabled == rhs.enabled) && (cullFace == rhs.cullFace);
+    }
+
+    bool operator != (const CullState& rhs) const
+    {
+        return (enabled != rhs.enabled) || (cullFace != rhs.cullFace);
+    }
+};
+
 struct RasterState
 {
-    BlendMode blendMode;
-    CompareMode compareMode;
-    CullMode cullMode;
+    unsigned int stateId = 0;
+    BlendState blendState = BlendState(false, BlendFunction::Replace);
+    CompareState compareState = CompareState(false, CompareFunction::Never);
+    CullState cullState = CullState(false, CullFace::Back);
 
-    RasterState(BlendMode blendMode, CompareMode compareMode, CullMode cullMode):
-    blendMode(blendMode),
-    compareMode(compareMode),
-    cullMode(cullMode)
+    RasterState() = default;
+    RasterState(BlendState blendState, CompareState compareState, CullState cullState) :
+    blendState(blendState),
+    compareState(compareState),
+    cullState(cullState)
     {
+        if(blendState.enabled)
+        {
+            stateId |= 1 << 1;
+            stateId |= 1 << (2 + static_cast<unsigned int>(blendState.blendFunction));
+        }
+        if(compareState.enabled)
+        {
+            stateId |= 1 << 7;
+            stateId |= 1 << (8 + static_cast<unsigned int>(compareState.compareFunction));
+        }
+        if(cullState.enabled)
+        {
+            stateId |= 1 << 16;
+            stateId |= 1 << (17 + static_cast<unsigned int>(cullState.cullFace));
+        }
     }
 
     bool operator == (const RasterState& rhs) const
     {
-        return blendMode == rhs.blendMode && compareMode == rhs.compareMode && cullMode == rhs.cullMode;
+        return stateId == rhs.stateId;
     }
 
     bool operator != (const RasterState& rhs) const
     {
-        return blendMode != rhs.blendMode || compareMode != rhs.compareMode || cullMode != cullMode;
+        return stateId != rhs.stateId;
     }
 };
 

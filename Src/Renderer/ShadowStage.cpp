@@ -59,7 +59,7 @@ void ShadowStage::init()
     shadowOcclusionTexture->setSlotIndex(TextureSlotIndex::ShadowOcclusion);
     shadowOcclusionRenderTarget->setColorBuffer(shadowOcclusionTexture);
 
-    shadowOcllusionShaderPass.rasterState = RasterState(BlendMode::Add, CompareMode::Never, CullMode::None);
+    shadowOcllusionShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
     Shader* shadowOcclusionVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
     Shader* shadowOcclusionFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("ShadowOcclusion.frag"));
     shadowOcclusionVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
@@ -125,6 +125,7 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
     ViewPort screenViewPort = renderer->getScreenViewPort();
     Frustum shadowFrustum;
     SceneCuller sceneCuller;
+    RasterState depthPassRasterState = RasterState(BlendState(false, BlendFunction::Add), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back));
 
     for(unsigned int i = 0; i < shadowDepthData.size(); ++i)
     {
@@ -147,6 +148,7 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
             for(unsigned int k = 0; k < itemsInShadowfrustum.size(); ++k)
             {
                 ShaderPass depthShaderPass;
+                depthShaderPass.rasterState = depthPassRasterState;
                 depthShaderPass.vertexData = itemsInShadowfrustum[k].geometry->getVertexData();
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_worldTransform, itemsInShadowfrustum[k].geometry->getWorldTransform()));
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_lightViewProjectionMatrix, shadowDepthData[i].shadowViewProjectionMatrices[j]));

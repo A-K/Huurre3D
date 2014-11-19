@@ -75,17 +75,16 @@ const int indexSize[] =
     sizeof(unsigned int)
 };
 
-enum class BlendMode
+enum class BlendFunction
 {
-    Off = 0,
-    Replace,
+    Replace = 0,
     Add,
     Alpha,
     AddAlpha,
     Modulate
 };
 
-enum class CompareMode
+enum class CompareFunction
 {
     Always = 0,
     Equal,
@@ -97,10 +96,9 @@ enum class CompareMode
     Never
 };
 
-enum class CullMode
+enum class CullFace
 {
-    None = 0,
-    Front,
+    Front = 0,
     Back,
     FrontAndBack
 };

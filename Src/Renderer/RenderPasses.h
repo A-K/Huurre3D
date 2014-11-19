@@ -43,11 +43,6 @@ struct ShaderPass
     Vector<ShaderParameter> shaderParameters;
     Vector<ShaderParameterBlock*> shaderParameterBlocks;
     Vector<Texture*> textures;
-
-    ShaderPass():
-    rasterState(BlendMode::Off, CompareMode::Less, CullMode::Back)
-    {
-    }
 };
 
 struct RenderPass

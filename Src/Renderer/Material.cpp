@@ -28,7 +28,7 @@ namespace Huurre3D
 
 Material::Material():
 Material(Matrix4x4(Vector4(DefaultColor, DefaultRoughness), Vector4(DefaultColor, DefaultSpecularPower), Vector4(Vector3::ZERO, DefaultReflectance), Vector4(DefaultColor, DefaultAlpha)), 
-         RasterState(BlendMode::Off, CompareMode::Less, CullMode::Back))
+         RasterState(BlendState(false, BlendFunction::Replace), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back)))
 {
 }
 
@@ -57,6 +57,7 @@ void Material::setEmissiveColor(const Vector3& emissive)
 {
     setEmissiveColor(emissive.x, emissive.y, emissive.z);
 }
+
 void Material::setAmbientColor(float r, float g, float b)
 {
     parameters[3].x = r;
@@ -106,6 +107,7 @@ void Material::setRoughness(float roughness)
     parameters[0].w = roughness;
     parametersDirty = true;
 }
+
 void Material::setReflectance(float reflectance)
 {
     parameters[2].w = reflectance;
@@ -141,19 +143,9 @@ void Material::setCurrentShaderCombinationTag(unsigned int shaderCombinationTag)
     currentShaderCombinationTag = shaderCombinationTag;
 }
 
-void Material::setCompareMode(CompareMode compareMode) 
+void Material::setRasterState(const RasterState& state)
 {
-    rasterState.compareMode = compareMode;
-}
-
-void Material::setCullMode(CullMode cullMode) 
-{
-    rasterState.cullMode = cullMode;
-}
-
-void Material::setBlendMode(BlendMode blendMode) 
-{
-    rasterState.blendMode = blendMode;
+    rasterState = state;
 }
 
 void Material::getTextures(Vector<Texture*>& texturesOut)

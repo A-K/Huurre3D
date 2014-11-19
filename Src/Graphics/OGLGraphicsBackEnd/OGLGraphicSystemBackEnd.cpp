@@ -46,7 +46,11 @@ void OGLGraphicSystemBackEnd::clear(unsigned int flags, const Vector4& color)
     if((flags & CLEAR_COLOR) == CLEAR_COLOR)
     {
         glFlags |= GL_COLOR_BUFFER_BIT;
-        glClearColor(color.x, color.y, color.z, color.w);
+        if(currentClearColor != color)
+        {
+            glClearColor(color.x, color.y, color.z, color.w);
+            currentClearColor = color;
+        }
     }
     if((flags & CLEAR_DEPTH) == CLEAR_DEPTH)
         glFlags |= GL_DEPTH_BUFFER_BIT;
@@ -347,7 +351,7 @@ void OGLGraphicSystemBackEnd::updateCompressedTextureData(Texture* texture)
     switch(target) 
     {
         case GL_TEXTURE_2D:
-            for(unsigned int i = 0; i < texture->getNumMipMaps(); ++i)
+            for(int i = 0; i < texture->getNumMipMaps(); ++i)
             {
                 GLsizei size = ((width + 3) / 4) * ((height + 3) / 4) * pixelFormatSizeInBytes[static_cast<int>(pixelFormat)];
                 glCompressedTexImage2D(target, i, internalFormat, width, height, 0, size, data + offset);
@@ -667,89 +671,74 @@ void OGLGraphicSystemBackEnd::setTexture(Texture* texture)
 
 void OGLGraphicSystemBackEnd::setRasterState(const RasterState& state)
 {
-    if(currentBlendMode != state.blendMode)
-        setBlendMode(state.blendMode);
-
-    if(currentCompareMode != state.compareMode)
-        setDepthCompareMode(state.compareMode);
-
-    if(currentCullMode != state.cullMode)
-        setCullMode(state.cullMode);
-}
-
-void OGLGraphicSystemBackEnd::setBlendMode(BlendMode mode)
-{
-    if(mode == BlendMode::Off)
+    if(currentBlendState != state.blendState)
     {
-        glDisable(GL_BLEND);
-    }
-    else
-    {
-        if(currentBlendMode == BlendMode::Off)
+        if(!state.blendState.enabled)
         {
-            glEnable(GL_BLEND);
-
-            if(mode == BlendMode::Replace)//Replace is the default value.
+            glDisable(GL_BLEND);
+            currentBlendState.enabled = state.blendState.enabled;
+        }
+        else
+        {
+            if(!currentBlendState.enabled)
             {
-                currentBlendMode = mode;
-                return;
+                glEnable(GL_BLEND);
+                currentBlendState.enabled = state.blendState.enabled;
+            }
+
+            if(currentBlendState.blendFunction != state.blendState.blendFunction)
+            {
+                glBlendFunc(glBlendSourceFactor[static_cast<int>(state.blendState.blendFunction)], glBlendDestFactor[static_cast<int>(state.blendState.blendFunction)]);
+                currentBlendState.blendFunction = state.blendState.blendFunction;
             }
         }
-
-        glBlendFunc(glBlendSourceFactor[static_cast<int>(mode)], glBlendDestFactor[static_cast<int>(mode)]);
     }
-    	
-    currentBlendMode = mode;
-}
 
-void OGLGraphicSystemBackEnd::setDepthCompareMode(CompareMode mode)
-{
-    if(mode == CompareMode::Never)
+    if(currentCompareState != state.compareState)
     {
-        glDisable(GL_DEPTH_TEST);
-    }
-    else
-    {
-        if(currentCompareMode == CompareMode::Never)
+        if(!state.compareState.enabled)
         {
-            glEnable(GL_DEPTH_TEST);
-
-            if(mode == CompareMode::Less) //Less is the default value.
+            glDisable(GL_DEPTH_TEST);
+            currentCompareState.enabled = state.compareState.enabled;
+        }
+        else
+        {
+            if(!currentCompareState.enabled)
             {
-                currentCompareMode = mode;
-                return;
+                glEnable(GL_DEPTH_TEST);
+                currentCompareState.enabled = state.compareState.enabled;
+            }
+        
+            if(currentCompareState.compareFunction != state.compareState.compareFunction)
+            {
+                glDepthFunc(glCompareMode[static_cast<int>(state.compareState.compareFunction)]);
+                currentCompareState.compareFunction = state.compareState.compareFunction;
             }
         }
-
-        glDepthFunc(glCompareMode[static_cast<int>(mode)]);
     }
-    	
-    currentCompareMode = mode; 
-}
 
-void OGLGraphicSystemBackEnd::setCullMode(CullMode mode)
-{
-    if(mode == CullMode::None)
+    if(currentCullState != state.cullState)
     {
-        glDisable(GL_CULL_FACE);
-    }
-    else
-    {
-        if(currentCullMode == CullMode::None)
+        if(!state.cullState.enabled)
         {
-            glEnable(GL_CULL_FACE);
-
-            if(mode == CullMode::Back)//Back face culling is the default value.
+            glDisable(GL_CULL_FACE);
+            currentCullState.enabled = state.cullState.enabled;
+        }
+        else
+        {
+            if(!currentCullState.enabled)
             {
-                currentCullMode = mode;
-                return;
+                glEnable(GL_CULL_FACE);
+                currentCullState.enabled = state.cullState.enabled;
+            }
+            
+            if(currentCullState.cullFace != state.cullState.cullFace)
+            {
+                glCullFace(glCullMode[static_cast<int>(state.cullState.cullFace)]);
+                currentCullState.cullFace = state.cullState.cullFace;
             }
         }
-
-        glCullFace(glCullMode[static_cast<int>(mode)]);
     }
-
-    currentCullMode = mode;
 }
 
 void OGLGraphicSystemBackEnd::setDepthWrite(bool enable)

@@ -46,7 +46,7 @@ void PostProcessStage::init()
     environmentPass.viewPort = screenViewPort;
 
     ShaderPass environmentShaderPass;
-    environmentShaderPass.rasterState = RasterState(BlendMode::Add, CompareMode::Never, CullMode::None);
+    environmentShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
 
     Shader* environmentVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
     Shader* environmentFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("Environment.frag"));
@@ -68,8 +68,6 @@ void PostProcessStage::init()
     postProcessRenderPass.viewPort = screenViewPort;
 	
     ShaderPass postProcessPass;
-    postProcessPass.rasterState = RasterState(BlendMode::Off, CompareMode::Never, CullMode::None);
-
     Shader* postProcessVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
     Shader* postProcessFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("PostProcess.frag"));
     postProcessFrag->setDefine(ShaderDefineType::FxaaQuality, 12);

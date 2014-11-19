@@ -69,7 +69,6 @@ void LightingStage::init(int tileWidth, int tileHeight)
     tileLightTexture->setSlotIndex(TextureSlotIndex::TileLightInfo);
 
     ShaderPass tiledDeferredPass;
-    tiledDeferredPass.rasterState = RasterState(BlendMode::Off, CompareMode::Never, CullMode::None);
     tiledDeferredPass.program = graphicSystem->createShaderProgram(tiledDeferredVert, tiledDeferredFrag);
     tiledDeferredPass.vertexData = renderer->getFullScreenQuad();
     tiledDeferredPass.textures.pushBack(tileLightTexture);

@@ -60,7 +60,7 @@ struct MaterialDescription
     RasterState rasterState;
 
     MaterialDescription():
-    rasterState(BlendMode::Off, CompareMode::Less, CullMode::Back)
+    rasterState(BlendState(false, BlendFunction::Replace), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back))
     {}
 };
 
