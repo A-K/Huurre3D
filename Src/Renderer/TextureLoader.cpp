@@ -256,7 +256,6 @@ void TextureLoader::flipCompressedVertically(TextureLoadResult& result, int inde
         mipMapOffset += numBlocksHorizontal * rowByteCount;
         width = max(1, width / 2);
         height = max(1, height / 2);
-        std::cout << numBlocksHorizontal << " " << numBlocksVertical << std::endl;
     }
     delete[] temp;
 }
