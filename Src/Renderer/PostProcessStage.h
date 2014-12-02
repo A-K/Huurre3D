@@ -30,7 +30,7 @@ namespace Huurre3D
 
 struct PostProcessParameterValue
 {
-    Vector4 SAOParameters;
+    //Vector4 SAOParameters;
     Vector2 renderTargetSize;
 };
 

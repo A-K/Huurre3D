@@ -125,7 +125,8 @@ enum class ShaderDefineType
     Hdr,
     SAO,
     NumSAOSamples,
-    NumSAOSpiralTurns
+    NumSAOSpiralTurns,
+    VerticalBlur
 };
 
 enum class ShaderParameterType
@@ -160,6 +161,7 @@ enum class TextureSlotIndex
     TileLightInfo,
     ShadowDepth,
     ShadowOcclusion,
+    SSAO,
     Lighting,
     SkyBox,
     NumSlots

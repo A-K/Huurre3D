@@ -230,7 +230,8 @@ const GLchar* glShaderDefines[] =
     "#define HDR",
     "#define SAO",
     "#define NUM_SAO_SAMPLES",
-    "#define NUM_SAO_SPIRAL_TURNS"
+    "#define NUM_SAO_SPIRAL_TURNS",
+    "#define VERTICAL_BLUR"
 };
 
 
@@ -245,6 +246,7 @@ const GLchar* glShaderParameters[] =
     "u_lightViewProjectionMatrix",
     "u_shadowOcclusionParameters",
     "u_shadowOcclusionParameterIndex",
+    "u_SSAOParameters",
     "u_postProcessParameters"
 };
 
@@ -260,6 +262,7 @@ const GLchar* glTextureSlots[] =
     "u_tileLightInfo",
     "u_shadowDepth",
     "u_shadowOcclusion",
+    "u_ssao",
     "u_lightingTexture",
     "u_skyBox"
 };

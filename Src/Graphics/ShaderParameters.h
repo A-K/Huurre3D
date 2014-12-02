@@ -67,9 +67,10 @@ extern const std::string sp_materialParameterIndex;
 extern const std::string sp_lightViewProjectionMatrix;
 extern const std::string sp_shadowOcclusionParameters;
 extern const std::string sp_shadowOcclusionParameterIndex;
+extern const std::string sp_SSAOParameters;
 extern const std::string sp_PostProcessParameters;
 
-static const int NUM_INBUILT_SHADER_PARAMETER_NAMES = 10;
+static const int NUM_INBUILT_SHADER_PARAMETER_NAMES = 11;
 
 }
 

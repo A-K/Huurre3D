@@ -71,14 +71,10 @@ void PostProcessStage::init()
     Shader* postProcessVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
     Shader* postProcessFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("PostProcess.frag"));
     postProcessFrag->setDefine(ShaderDefineType::FxaaQuality, 12);
-    //postProcessFrag->setDefine(ShaderDefineType::SAO);
-    //postProcessFrag->setDefine(ShaderDefineType::NumSAOSamples, NumSAOSamples);
-    //postProcessFrag->setDefine(ShaderDefineType::NumSAOSpiralTurns, NumSAOSpiralTurns);
     postProcessPass.program = graphicSystem->createShaderProgram(postProcessVert, postProcessFrag);
     postProcessPass.vertexData = renderer->getFullScreenQuad();
 
     PostProcessParameterValue postProcessParameterValue;
-    postProcessParameterValue.SAOParameters = Vector4(500.0f, 0.5f, 0.016f, 1.0f);
     postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
     postProcessPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
     postProcessPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
@@ -102,7 +98,6 @@ void PostProcessStage::resizeResources()
 
     //Resize the post process shader parameter block.
     PostProcessParameterValue postProcessParameterValue;
-    postProcessParameterValue.SAOParameters = Vector4(500.0f, 0.5f, 0.016f, 1.0f);
     postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
     renderPasses[1].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
 }
