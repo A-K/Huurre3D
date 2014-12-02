@@ -18,6 +18,8 @@ uniform isampler2D u_tileLightInfo;
 //Texture which includes the shadow occlusion for 32 lights is accessed usign the light's shadow occlusion mask. 
 uniform sampler2D u_shadowOcclusion;
 
+uniform sampler2DArray u_ssao;
+
 //Texture which includes the result from lighting calculations.
 uniform sampler2D u_lightingTexture;
 

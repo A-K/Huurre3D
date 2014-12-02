@@ -19,6 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #include "Uniforms.frag"
 #include "Samplers.frag"
 #include "TiledShading.frag"
@@ -47,14 +48,21 @@ void main()
     vec3 globalAmbient = u_numLightsAndGlobalAmbientLight.yzw;
     vec4 ambient = vec4(materialProperties.u_ambientColor.rgb * diffuse.rgb * globalAmbient, 1.0f);
     vec4 lighting = processFragment(f_texCoord0, position, normal.rgb, diffuse.rgb, specular.rgb, roughness, reflectance);
-    vec4 finalColor = lighting + ambient + vec4(materialProperties.u_emissiveColor.rgb, 1.0f);
 
-    //Tone mapping
-#ifdef HDR
-    finalColor.rgb = uncharted2Tonemap(finalColor.rgb);
+#ifdef SSAO
+    float ambientOcclusion = texture(u_ssao, vec3(f_texCoord0, 0.0f)).r;
+    vec4 finalColor = lighting + ambient * ambientOcclusion + vec4(materialProperties.u_emissiveColor.rgb, 1.0f);
+#else
+    vec4 finalColor = lighting + ambient + vec4(materialProperties.u_emissiveColor.rgb, 1.0f);
 #endif
+
+#ifdef HDR
+    //Tone mapping
+    finalColor.rgb = uncharted2Tonemap(finalColor.rgb);
     //Gamma correction.
     finalColor.rgb = toSrgb(finalColor.rgb);
+#endif
+
     //Calculate Luma for FXAA.
     finalColor.a = dot(finalColor.rgb, vec3(0.299f, 0.587f, 0.114f));
     o_color = finalColor;

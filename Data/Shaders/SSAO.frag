@@ -24,20 +24,31 @@
 #include "Samplers.frag"
 
 in vec2 f_texCoord0;
+in vec3 f_frustumCorner;
+in vec3 f_frustumFarPlaneLeftBottomCorner;
+in vec2 f_frustumFarPlaneSize;
 
-#include "FXAA.frag"
+#ifdef SAO
+#include "SAO.frag"
+#endif
 
-out vec4 o_color;
+out float o_ambientOcclusion;
 
 void main()
 {
-    vec3 color = vec3(0.0f, 0.0f, 0.0f);
-    vec2 texOffset = vec2(1.0f / u_postRenderTargetSize.x, 1.0f / u_postRenderTargetSize.y);
+    vec2 texOffset = vec2(1.0f / u_SSAORenderTargetSize.x, 1.0f / u_SSAORenderTargetSize.y);
+    float ambientOcclusion = 1.0f;
+    vec4 normal = texture(u_normalBuffer, f_texCoord0);
 
-    float fxaaQualitySubpix = 0.75;
-    float fxaaQualityEdgeThreshold = 0.166;
-    float fxaaQualityEdgeThresholdMin = 0.0833;
-    color = fxaaPixelShader(f_texCoord0, u_lightingTexture, texOffset, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin).rgb;
+#ifdef SAO
+    ivec2 screenSpacePosition = ivec2(gl_FragCoord.xy);
+    float projScale = u_SAOParameters.x;
+    float radius = u_SAOParameters.y;
+    float bias = u_SAOParameters.z;
+    float intensity = u_SAOParameters.w;
+    ambientOcclusion = calculateSAO(screenSpacePosition, normal, projScale, radius, bias, texOffset);
+    ambientOcclusion = clamp(pow(ambientOcclusion, 1.0 + intensity), 0.0, 1.0);
+#endif
 
-    o_color = vec4(color, 1.0f);
+    o_ambientOcclusion = ambientOcclusion;
 }

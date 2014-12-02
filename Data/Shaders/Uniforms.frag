@@ -55,9 +55,14 @@ layout(std140) uniform u_lightGridParameters
     vec2 u_renderTargetSize;
 };
 
-layout(std140) uniform u_postProcessParameters
+layout(std140) uniform u_SSAOParameters
 {
     vec4 u_SAOParameters; //projScale, radius, bias, intensity
+    vec2 u_SSAORenderTargetSize;
+};
+
+layout(std140) uniform u_postProcessParameters
+{
     vec2 u_postRenderTargetSize;
 };
 
