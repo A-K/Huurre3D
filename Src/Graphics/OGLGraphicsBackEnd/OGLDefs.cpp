@@ -228,6 +228,7 @@ const GLchar* glShaderDefines[] =
     "#define USE_WORLD_PARAMETERS",
     "#define FXAA_QUALITY__PRESET",
     "#define HDR",
+    "#define SSAO",
     "#define SAO",
     "#define NUM_SAO_SAMPLES",
     "#define NUM_SAO_SPIRAL_TURNS",

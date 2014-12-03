@@ -123,6 +123,7 @@ enum class ShaderDefineType
     UseWorldSpaceParameters,
     FxaaQuality,
     Hdr,
+    SSAO,
     SAO,
     NumSAOSamples,
     NumSAOSpiralTurns,
