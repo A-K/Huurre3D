@@ -58,30 +58,30 @@ void PostProcessStage::init()
     environmentPass.shaderPasses.pushBack(environmentShaderPass);
     renderPasses.pushBack(environmentPass);
 
-    //Create the post process pass.
-    RenderPass postProcessRenderPass;
-    postProcessRenderPass.colorWrite = true;
-    postProcessRenderPass.depthWrite = false;
-    postProcessRenderPass.flags = CLEAR_COLOR;
-    postProcessRenderPass.renderTargetLayer = 0;
-    postProcessRenderPass.renderTarget = nullptr;
-    postProcessRenderPass.viewPort = screenViewPort;
+    //Create anti-aliasing pass.
+    RenderPass antiAliasingRenderPass;
+    antiAliasingRenderPass.colorWrite = true;
+    antiAliasingRenderPass.depthWrite = false;
+    antiAliasingRenderPass.flags = CLEAR_COLOR;
+    antiAliasingRenderPass.renderTargetLayer = 0;
+    antiAliasingRenderPass.renderTarget = nullptr;
+    antiAliasingRenderPass.viewPort = screenViewPort;
 	
-    ShaderPass postProcessPass;
-    Shader* postProcessVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* postProcessFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("PostProcess.frag"));
-    postProcessFrag->setDefine(ShaderDefineType::FxaaQuality, 12);
-    postProcessPass.program = graphicSystem->createShaderProgram(postProcessVert, postProcessFrag);
-    postProcessPass.vertexData = renderer->getFullScreenQuad();
+    ShaderPass antiAliasingShaderPass;
+    Shader* antiAliasingVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
+    Shader* antiAliasingFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("PostProcess.frag"));
+    antiAliasingFrag->setDefine(ShaderDefineType::FxaaQuality, 12);
+    antiAliasingShaderPass.program = graphicSystem->createShaderProgram(antiAliasingVert, antiAliasingFrag);
+    antiAliasingShaderPass.vertexData = renderer->getFullScreenQuad();
 
     PostProcessParameterValue postProcessParameterValue;
     postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    postProcessPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
-    postProcessPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
-    postProcessPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+    antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
+    antiAliasingShaderPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
+    antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
 
-    postProcessRenderPass.shaderPasses.pushBack(postProcessPass);
-    renderPasses.pushBack(postProcessRenderPass);
+    antiAliasingRenderPass.shaderPasses.pushBack(antiAliasingShaderPass);
+    renderPasses.pushBack(antiAliasingRenderPass);
 }
 
 void PostProcessStage::resizeResources()
@@ -93,7 +93,7 @@ void PostProcessStage::resizeResources()
     renderPasses[0].renderTarget = graphicSystem->getRenderTargetByName("lighting");
     renderPasses[0].viewPort = screenViewPort;
 
-    //Resize the post process pass
+    //Resize the anti aliasing pass
     renderPasses[1].viewPort = screenViewPort;
 
     //Resize the post process shader parameter block.
