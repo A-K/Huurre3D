@@ -34,25 +34,103 @@ RenderStage(renderer)
 {
 }
 
-void LightingStage::init(int tileWidth, int tileHeight)
+void LightingStage::init(int tileWidth, int tileHeight, bool ssao, bool hdr)
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
 
-    RenderTarget* renderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false);
+    if(ssao)
+    {
+        //Create SSAO renderpasses: 1. Raw SSAO; 2. Horizontal blur; 3. Vertical blur.
+        RenderTarget* SSAORenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false, 1, 2);
+        Texture* SSAOTexture = graphicSystem->createTexture(TextureTargetMode::Texture2DArray, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Red16F, screenViewPort.width, screenViewPort.height);
+        SSAOTexture->setDepth(2);
+        SSAOTexture->setSlotIndex(TextureSlotIndex::SSAO);
+        SSAORenderTarget->setColorBuffer(SSAOTexture);
+
+        RenderPass SSAORenderPass;
+        SSAORenderPass.colorWrite = true;
+        SSAORenderPass.depthWrite = false;
+        SSAORenderPass.flags = CLEAR_COLOR;
+        SSAORenderPass.renderTargetLayer = 0;
+        SSAORenderPass.renderTarget = SSAORenderTarget;
+        SSAORenderPass.viewPort = screenViewPort;
+
+        ShaderPass SSAOPass;
+        Shader* SSAOVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
+        Shader* SSAOFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAO.frag"));
+        SSAOFrag->setDefine(ShaderDefineType::SAO);
+        SSAOFrag->setDefine(ShaderDefineType::NumSAOSamples, NumSAOSamples);
+        SSAOFrag->setDefine(ShaderDefineType::NumSAOSpiralTurns, NumSAOSpiralTurns);
+        SSAOPass.program = graphicSystem->createShaderProgram(SSAOVert, SSAOFrag);
+        SSAOPass.vertexData = renderer->getFullScreenQuad();
+
+        SSAOParameterValue SSAOValue;
+        SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+
+        SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_SSAOParameters));
+        SSAOPass.shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
+        SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+
+        SSAORenderPass.shaderPasses.pushBack(SSAOPass);
+
+        //Horizontal blur
+        RenderPass verticalBlurRenderPass;
+        verticalBlurRenderPass.colorWrite = true;
+        verticalBlurRenderPass.depthWrite = false;
+        verticalBlurRenderPass.flags = 0;
+        verticalBlurRenderPass.renderTargetLayer = 1;
+        verticalBlurRenderPass.renderTarget = SSAORenderTarget;
+        verticalBlurRenderPass.viewPort = screenViewPort;
+
+        ShaderPass verticalBlurShaderPass;
+        Shader* verticalBlurVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
+        Shader* verticalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAOBlur.frag"));
+        verticalBlurShaderPass.program = graphicSystem->createShaderProgram(verticalBlurVert, verticalBlurFrag);
+        verticalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
+        verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
+        verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+
+        verticalBlurRenderPass.shaderPasses.pushBack(verticalBlurShaderPass);
+
+        //Vertical blur
+        RenderPass horizontalBlurRenderPass;
+        horizontalBlurRenderPass.colorWrite = true;
+        horizontalBlurRenderPass.depthWrite = false;
+        horizontalBlurRenderPass.flags = 0;
+        horizontalBlurRenderPass.renderTargetLayer = 0;
+        horizontalBlurRenderPass.renderTarget = SSAORenderTarget;
+        horizontalBlurRenderPass.viewPort = screenViewPort;
+
+        ShaderPass horizontalBlurShaderPass;
+        Shader* horizontalBlurVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
+        Shader* horizontalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAOBlur.frag"));
+        horizontalBlurFrag->setDefine(ShaderDefineType::VerticalBlur);
+        horizontalBlurShaderPass.program = graphicSystem->createShaderProgram(horizontalBlurVert, horizontalBlurFrag);
+        horizontalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
+        horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
+        horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+
+        horizontalBlurRenderPass.shaderPasses.pushBack(horizontalBlurShaderPass);
+
+        renderPasses.pushBack(SSAORenderPass);
+        renderPasses.pushBack(verticalBlurRenderPass);
+        renderPasses.pushBack(horizontalBlurRenderPass);
+    }
+
+    RenderTarget* lightingRenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false);
     Texture* lightingTexture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Rgba8, screenViewPort.width, screenViewPort.height);
     lightingTexture->setSlotIndex(TextureSlotIndex::Lighting);
-    renderTarget->setColorBuffer(lightingTexture);
-    renderTarget->setName("lighting");
+    lightingRenderTarget->setColorBuffer(lightingTexture);
+    lightingRenderTarget->setName("lighting");
 
-    RenderPass renderPass;
-    renderPass.colorWrite = true;
-    renderPass.depthWrite = false;
-    renderPass.flags = CLEAR_COLOR;
-    renderPass.renderTargetLayer = 0;
-    renderPass.renderTarget = renderTarget;
-    renderPass.viewPort = screenViewPort;
-    renderPasses.pushBack(renderPass);
+    RenderPass lightingRenderPass;
+    lightingRenderPass.colorWrite = true;
+    lightingRenderPass.depthWrite = false;
+    lightingRenderPass.flags = CLEAR_COLOR;
+    lightingRenderPass.renderTargetLayer = 0;
+    lightingRenderPass.renderTarget = lightingRenderTarget;
+    lightingRenderPass.viewPort = screenViewPort;
 
     tileGrid.setGridDimensions(tileWidth, tileHeight, screenViewPort.width, screenViewPort.height);
     
@@ -63,7 +141,11 @@ void LightingStage::init(int tileWidth, int tileHeight)
     Shader* tiledDeferredFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + "TiledDeferredShading.frag");
     tiledDeferredFrag->setDefine(ShaderDefineType::MaxNumLights, MaXNumLights);
     tiledDeferredFrag->setDefine(ShaderDefineType::MaxNumMaterials, MaxNumMaterials);
-    tiledDeferredFrag->setDefine(ShaderDefineType::Hdr);
+    
+    if(ssao)
+        tiledDeferredFrag->setDefine(ShaderDefineType::SSAO);
+    if(hdr)
+        tiledDeferredFrag->setDefine(ShaderDefineType::Hdr);
 
     Texture* tileLightTexture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::ClampEdge, TextureFilterMode::Nearest, TexturePixelFormat::Red32I, 0, 0);
     tileLightTexture->setSlotIndex(TextureSlotIndex::TileLightInfo);
@@ -85,16 +167,38 @@ void LightingStage::init(int tileWidth, int tileHeight)
     tiledDeferredPass.shaderParameterBlocks[1]->setParameterData(&lightGridParameterValue, sizeof(lightGridParameterValue));
     tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
     tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_materialProperties));
-    renderPasses[0].shaderPasses.pushBack(tiledDeferredPass);
+
+    lightingRenderPass.shaderPasses.pushBack(tiledDeferredPass);
+    renderPasses.pushBack(lightingRenderPass);
 }
 
 void LightingStage::resizeResources()
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
-    renderPasses[0].viewPort = screenViewPort;
+    int lightingRenderPassIndex = (renderPasses.size() > 1) ? 3 : 0;
+
+    if(lightingRenderPassIndex == 3)
+    {
+        //Resize the SSAO render target texture.
+        Texture* SSAOTexture = renderPasses[0].renderTarget->getColorBuffers()[0];
+        SSAOTexture->setWidth(screenViewPort.width);
+        SSAOTexture->setHeight(screenViewPort.height);
+
+        //Resize the viewport of SSAO and both blur passes
+        renderPasses[0].viewPort = screenViewPort;
+        renderPasses[1].viewPort = screenViewPort;
+        renderPasses[2].viewPort = screenViewPort;
+
+        //Resize the SSAO shader parameter block.
+        SSAOParameterValue SSAOValue;
+        SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+        renderPasses[0].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
+    }
+
+    renderPasses[lightingRenderPassIndex].viewPort = screenViewPort;
 
     //Resize the render target texture.
-    Texture* lightingTexture = renderPasses[0].renderTarget->getColorBuffers()[0];
+    Texture* lightingTexture = renderPasses[lightingRenderPassIndex].renderTarget->getColorBuffers()[0];
     lightingTexture->setWidth(screenViewPort.width);
     lightingTexture->setHeight(screenViewPort.height);
 
@@ -110,11 +214,13 @@ void LightingStage::resizeResources()
     lightGridParameterValue.gridDimensions[2] = newGridDimensions.widthResolution;
     lightGridParameterValue.gridDimensions[3] = newGridDimensions.heightResolution;
     lightGridParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    renderPasses[0].shaderPasses[0].shaderParameterBlocks[1]->setParameterData(&lightGridParameterValue, sizeof(lightGridParameterValue));
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].shaderParameterBlocks[1]->setParameterData(&lightGridParameterValue, sizeof(lightGridParameterValue));
 }
 
 void LightingStage::setData(const Vector<Light*>& lights, const Vector3& globalAmbientLight, Camera* camera)
 {
+    int lightingRenderPassIndex = (renderPasses.size() > 1) ? 3 : 0;
+
     //Bin lights to tiles.
     tileGrid.binLightsToTiles(lights, camera);
     
@@ -127,16 +233,16 @@ void LightingStage::setData(const Vector<Light*>& lights, const Vector3& globalA
     lightParameterBlock.numLightsAndGlobalAmbient.w = globalAmbientLight.z;
 
     //Update the lights parameter block in Tiled deferred shader pass.
-    renderPasses[0].shaderPasses[0].shaderParameterBlocks[0]->clearBuffer();
-    renderPasses[0].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&lightParameterBlock, sizeof(lightParameterBlock));
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].shaderParameterBlocks[0]->clearBuffer();
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&lightParameterBlock, sizeof(lightParameterBlock));
 
     //Update the light info texture in Tiled deferred shader pass.
     int width = lights.size();;
     int height = gridDimensions.widthResolution * gridDimensions.heightResolution;
     int size = sizeof(int) * width * height;
-    renderPasses[0].shaderPasses[0].textures[0]->setWidth(width);
-    renderPasses[0].shaderPasses[0].textures[0]->setHeight(height);
-    renderPasses[0].shaderPasses[0].textures[0]->setPixelData(tileGrid.getTileLightInfo().data(), size);
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setWidth(width);
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setHeight(height);
+    renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setPixelData(tileGrid.getTileLightInfo().data(), size);
 }
 
 }

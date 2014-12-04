@@ -71,82 +71,6 @@ void ShadowStage::init()
     shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_shadowOcclusionParameters));
     shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
     shadowOcllusionShaderPass.shaderParameters.pushBack(ShaderParameter(sp_shadowOcclusionParameterIndex, 0));
-
-    //Create SSAO renderpasses: 1. Raw SSAO; 2. Horizontal blur; 3. Vertical blur.
-    RenderTarget* SSAORenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false, 1, 2);
-    Texture* SSAOTexture = graphicSystem->createTexture(TextureTargetMode::Texture2DArray, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Red16F, screenViewPort.width, screenViewPort.height);
-    SSAOTexture->setDepth(2);
-    SSAOTexture->setSlotIndex(TextureSlotIndex::SSAO);
-    SSAORenderTarget->setColorBuffer(SSAOTexture);
-
-    RenderPass SSAORenderPass;
-    SSAORenderPass.colorWrite = true;
-    SSAORenderPass.depthWrite = false;
-    SSAORenderPass.flags = CLEAR_COLOR;
-    SSAORenderPass.renderTargetLayer = 0;
-    SSAORenderPass.renderTarget = SSAORenderTarget;
-    SSAORenderPass.viewPort = screenViewPort;
-
-    ShaderPass SSAOPass;
-    Shader* SSAOVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* SSAOFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAO.frag"));
-    SSAOFrag->setDefine(ShaderDefineType::SAO);
-    SSAOFrag->setDefine(ShaderDefineType::NumSAOSamples, NumSAOSamples);
-    SSAOFrag->setDefine(ShaderDefineType::NumSAOSpiralTurns, NumSAOSpiralTurns);
-    SSAOPass.program = graphicSystem->createShaderProgram(SSAOVert, SSAOFrag);
-    SSAOPass.vertexData = renderer->getFullScreenQuad();
-
-    SSAOParameterValue SSAOValue;
-    SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-
-    SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_SSAOParameters));
-    SSAOPass.shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
-    SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
-
-    SSAORenderPass.shaderPasses.pushBack(SSAOPass);
-
-    //Horizontal blur
-    RenderPass verticalBlurRenderPass;
-    verticalBlurRenderPass.colorWrite = true;
-    verticalBlurRenderPass.depthWrite = false;
-    verticalBlurRenderPass.flags = 0;
-    verticalBlurRenderPass.renderTargetLayer = 1;
-    verticalBlurRenderPass.renderTarget = SSAORenderTarget;
-    verticalBlurRenderPass.viewPort = screenViewPort;
-
-    ShaderPass verticalBlurShaderPass;
-    Shader* verticalBlurVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* verticalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAOBlur.frag"));
-    verticalBlurShaderPass.program = graphicSystem->createShaderProgram(verticalBlurVert, verticalBlurFrag);
-    verticalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
-    verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
-    verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
-
-    verticalBlurRenderPass.shaderPasses.pushBack(verticalBlurShaderPass);
-
-    //Vertical blur
-    RenderPass horizontalBlurRenderPass;
-    horizontalBlurRenderPass.colorWrite = true;
-    horizontalBlurRenderPass.depthWrite = false;
-    horizontalBlurRenderPass.flags = 0;
-    horizontalBlurRenderPass.renderTargetLayer = 0;
-    horizontalBlurRenderPass.renderTarget = SSAORenderTarget;
-    horizontalBlurRenderPass.viewPort = screenViewPort;
-
-    ShaderPass horizontalBlurShaderPass;
-    Shader* horizontalBlurVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* horizontalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("SSAOBlur.frag"));
-    horizontalBlurFrag->setDefine(ShaderDefineType::VerticalBlur);
-    horizontalBlurShaderPass.program = graphicSystem->createShaderProgram(horizontalBlurVert, horizontalBlurFrag);
-    horizontalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
-    horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
-    horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
-
-    horizontalBlurRenderPass.shaderPasses.pushBack(horizontalBlurShaderPass);
-
-    SSAORenderPasses.pushBack(SSAORenderPass);
-    SSAORenderPasses.pushBack(verticalBlurRenderPass);
-    SSAORenderPasses.pushBack(horizontalBlurRenderPass);
 }
 
 void ShadowStage::resizeResources()
@@ -155,21 +79,6 @@ void ShadowStage::resizeResources()
     Texture* shadowOcclusionTexture = shadowOcclusionRenderTarget->getColorBuffers()[0];
     shadowOcclusionTexture->setWidth(screenViewPort.width);
     shadowOcclusionTexture->setHeight(screenViewPort.height);
-
-    //Resize the SSAO render target texture.
-    Texture* SSAOTexture = SSAORenderPasses[0].renderTarget->getColorBuffers()[0];
-    SSAOTexture->setWidth(screenViewPort.width);
-    SSAOTexture->setHeight(screenViewPort.height);
-
-    //Resize the viewport of SSAO and both blur passes
-    SSAORenderPasses[0].viewPort = screenViewPort;
-    SSAORenderPasses[1].viewPort = screenViewPort;
-    SSAORenderPasses[2].viewPort = screenViewPort;
-
-    //Resize the SSAO shader parameter block.
-    SSAOParameterValue SSAOValue;
-    SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    SSAORenderPasses[0].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
 }
 
 void ShadowStage::setData(const Vector<RenderItem>& renderItems, const Vector<Light*>& lights, Camera* camera)
@@ -181,8 +90,6 @@ void ShadowStage::setData(const Vector<RenderItem>& renderItems, const Vector<Li
         shadowOcllusionShaderPass.shaderParameterBlocks[0]->clearBuffer();
         shadowOcllusionShaderPass.shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getData(), shadowOcclusionData.getSizeInBytes());
     }
-
-    renderPasses.pushBack(SSAORenderPasses);
 }
 
 void ShadowStage::clearStage()

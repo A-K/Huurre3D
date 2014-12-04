@@ -28,12 +28,6 @@
 namespace Huurre3D
 {
 
-struct SSAOParameterValue
-{
-    Vector4 SAOParameters = Vector4(500.0f, 0.55f, 0.026f, 5.0f);;
-    Vector2 renderTargetSize;
-};
-
 class Renderer;
 class Light;
 class Camera;
@@ -61,7 +55,6 @@ private:
     Vector<RenderItem> itemsInShadowfrustum;
     Vector<ShadowDepthData> shadowDepthData;
     Vector<ShadowOcclusionData> shadowOcclusionData;
-    Vector<RenderPass> SSAORenderPasses;
 };
 
 }
