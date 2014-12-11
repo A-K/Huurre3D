@@ -1,0 +1,42 @@
+{
+    "assetPath" : "../Assets/",
+    "renderer" : {
+        "deferredStage" : {
+            "vertexShader" : "../../Data/Shaders/Gbuffer.vert",
+            "fragmentShader" : "../../Demos/SimpleScene/GbufferDiffuseAlphaDiscard.frag" 
+        },
+        "shadowStage" : {
+            "shadowDepthPass" : {
+                "vertexShader" : "../../Data/Shaders/ShadowDepth.vert",
+                "fragmentShader" : "../../Data/Shaders/ShadowDepth.frag",
+                "shadowMapSize" : 2048
+             },
+             "shadowOcclusionPass" : {
+                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
+                "fragmentShader" : "../../Data/Shaders/ShadowOcclusion.frag",
+                "maxShadowLights" : 32
+             } 
+        },
+        "lightingStage" : {
+            "lightingPass" : {
+                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
+                "fragmentShader" : "../../Data/Shaders/TiledDeferredShading.frag",
+                "lightTileWidth" : 32,
+                "lightTileHeight" : 32,
+                "HDR" : true
+            }
+        },
+        "postProcessStage" : {
+            "environmentPass" : {
+                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
+                "fragmentShader" : "../../Data/Shaders/Environment.frag"
+            },
+            "antiAliasingPass":
+            {
+                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
+                "fragmentShader" : "../../Data/Shaders/AntiAliasing.frag",
+                "FXAAQuality" : 12
+            }
+        }
+    }
+}

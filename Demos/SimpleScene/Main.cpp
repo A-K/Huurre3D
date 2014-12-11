@@ -23,10 +23,9 @@
 
 int main(int argc, const char* argv[])
 {
-    Engine* engine = new Engine();
-    SimpleSceneDemo* simpleSceneDemoApp = new SimpleSceneDemo();
-    engine->setApp(simpleSceneDemoApp);
-    engine->run();
-
-    delete engine;
+    Engine engine;
+    SimpleSceneDemo simpleSceneDemoApp;
+    assert(engine.init("../../Demos/SimpleScene/SimpleSceneConfig.json"));
+    engine.setApp(&simpleSceneDemoApp);
+    engine.run();
 }

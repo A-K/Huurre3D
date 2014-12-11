@@ -20,13 +20,13 @@
 // THE SOFTWARE.
 
 #include "LightDemoApp.h"
+#include <assert.h>
 
 int main(int argc, const char* argv[])
 {
-    Engine* engine = new Engine();
-    LightDemoApp* lightDemoApp = new LightDemoApp();
-    engine->setApp(lightDemoApp);
-    engine->run();
-
-    delete engine;
+    Engine engine;
+    LightDemoApp lightDemoApp;
+    assert(engine.init("../../Demos/LightDemo/LightDemoConfig.json"));
+    engine.setApp(&lightDemoApp);
+    engine.run();
 }
