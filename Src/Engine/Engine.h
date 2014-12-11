@@ -22,6 +22,7 @@
 #ifndef Engine_H
 #define Engine_H
 
+#include "Renderer/RendererDescription.h"
 #include "Util/Vector.h"
 #include "Util/Timer.h"
 
@@ -34,27 +35,26 @@ class SceneImporter;
 class Input;
 class App;
 
+const std::string defaultConfigFile = "../DefaultHuurre3DConfig.json";
+
 class Engine
 {
 public:
-    Engine();
+    Engine() = default;
     ~Engine();
 	
+    bool init(const std::string& engineConfigFile = defaultConfigFile);
     void run();
     void setApp(App* app);
     void removeApp(App* app);
     Scene* createScene();
-    void setAssetPath(const std::string& path);
-    void setShaderPath(const std::string& path);
     Scene* getScene(unsigned int id = 0) const {return scenes[id];}
     SceneImporter* getSceneImporter() const {return sceneImporter;}
     Renderer* getRenderer() const {return renderer;}
     Input* getInput() const {return input;}
     static std::string& getAssetPath() {return assetPath;}
-    static std::string& getShaderPath() {return shaderPath;}
 
 private:
-    void init();
     void deInit();
     void update();
     Renderer* renderer = nullptr;
@@ -64,7 +64,6 @@ private:
     Input* input = nullptr;
     Timer timer;
     float lastFrame = 0.0f;
-    static std::string shaderPath;
     static std::string assetPath;
 };
 
