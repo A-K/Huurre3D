@@ -23,13 +23,7 @@ namespace Huurre3D
 {
     static const unsigned int MaxNumMaterials = 255; //Material index is stored in Gbuffer using one byte.
     static const unsigned int MaXNumLights = 1000; //The size of one light parameter is 64 bytes an 64k bytes is the maximum size of an an uniform buffer.
-    static const unsigned int LightTileWidth = 32;
-    static const unsigned int LightTileHeight = 32;
-    static const unsigned int NumSAOSamples = 11;
-    static const unsigned int NumSAOSpiralTurns = 9;
     static const unsigned int MaxSplits = 4;
-    static const int ShadowMapSize = 2048; //4096; //1024;
-    static const unsigned int MaxNumShadowLights = 32; //Int bitflag.
 }
 
 #endif
