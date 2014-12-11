@@ -39,7 +39,7 @@ struct LightGridParameterValue
 
 struct SSAOParameterValue
 {
-    Vector4 SAOParameters = Vector4(500.0f, 0.55f, 0.026f, 5.0f);;
+    Vector4 SAOParameters;
     Vector2 renderTargetSize;
 };
 
@@ -49,8 +49,8 @@ public:
     LightingStage(Renderer* renderer);
     ~LightingStage() = default;
     
-    void init(int tileWidth, int tileHeight, bool ssao, bool hdr);
-    void resizeResources();
+    void init(const LightingStageDescription& lightingStageDescription);
+    void resizeResources(const LightingStageDescription& lightingStageDescription);
     void setData(const Vector<Light*>& lights, const Vector3& globalAmbientLight, Camera* camera);
 
 private:
