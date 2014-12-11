@@ -31,75 +31,87 @@ RenderStage(renderer)
 {
 }
 
-void PostProcessStage::init()
+void PostProcessStage::init(const PostProcessStageDescription& postProcessStageDescription)
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
 
-    //Create environment pass.
-    RenderPass environmentPass;
-    environmentPass.colorWrite = true;
-    environmentPass.depthWrite = false;
-    environmentPass.flags = 0;
-    environmentPass.renderTargetLayer = 0;
-    environmentPass.renderTarget = graphicSystem->getRenderTargetByName("lighting");
-    environmentPass.viewPort = screenViewPort;
+    if(postProcessStageDescription.hasEnvironmentPass)
+    {
+        //Create environment pass.
+        RenderPass environmentPass;
+        environmentPass.colorWrite = true;
+        environmentPass.depthWrite = false;
+        environmentPass.flags = 0;
+        environmentPass.renderTargetLayer = 0;
+        environmentPass.renderTarget = graphicSystem->getRenderTargetByName("lighting");
+        environmentPass.viewPort = screenViewPort;
 
-    ShaderPass environmentShaderPass;
-    environmentShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
+        ShaderPass environmentShaderPass;
+        environmentShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
 
-    Shader* environmentVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* environmentFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("Environment.frag"));
-    environmentVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
-    environmentShaderPass.program = graphicSystem->createShaderProgram(environmentVert, environmentFrag);
-    environmentShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
-    environmentShaderPass.vertexData = renderer->getFullScreenQuad();
+        Shader* environmentVert = graphicSystem->createShader(ShaderType::Vertex, postProcessStageDescription.environmentPass.vertexShader);
+        Shader* environmentFrag = graphicSystem->createShader(ShaderType::Fragment, postProcessStageDescription.environmentPass.fragmentShader);
+        environmentVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
+        environmentShaderPass.program = graphicSystem->createShaderProgram(environmentVert, environmentFrag);
+        environmentShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+        environmentShaderPass.vertexData = renderer->getFullScreenQuad();
 
-    environmentPass.shaderPasses.pushBack(environmentShaderPass);
-    renderPasses.pushBack(environmentPass);
+        environmentPass.shaderPasses.pushBack(environmentShaderPass);
+        renderPasses.pushBack(environmentPass);
+    }
 
-    //Create anti-aliasing pass.
-    RenderPass antiAliasingRenderPass;
-    antiAliasingRenderPass.colorWrite = true;
-    antiAliasingRenderPass.depthWrite = false;
-    antiAliasingRenderPass.flags = CLEAR_COLOR;
-    antiAliasingRenderPass.renderTargetLayer = 0;
-    antiAliasingRenderPass.renderTarget = nullptr;
-    antiAliasingRenderPass.viewPort = screenViewPort;
-	
-    ShaderPass antiAliasingShaderPass;
-    Shader* antiAliasingVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* antiAliasingFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("PostProcess.frag"));
-    antiAliasingFrag->setDefine(ShaderDefineType::FxaaQuality, 12);
-    antiAliasingShaderPass.program = graphicSystem->createShaderProgram(antiAliasingVert, antiAliasingFrag);
-    antiAliasingShaderPass.vertexData = renderer->getFullScreenQuad();
+    if(postProcessStageDescription.hasAntiAliasingPass)
+    {
+        //Create anti-aliasing pass.
+        RenderPass antiAliasingRenderPass;
+        antiAliasingRenderPass.colorWrite = true;
+        antiAliasingRenderPass.depthWrite = false;
+        antiAliasingRenderPass.flags = CLEAR_COLOR;
+        antiAliasingRenderPass.renderTargetLayer = 0;
+        antiAliasingRenderPass.renderTarget = nullptr;
+        antiAliasingRenderPass.viewPort = screenViewPort;
 
-    PostProcessParameterValue postProcessParameterValue;
-    postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
-    antiAliasingShaderPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
-    antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+        ShaderPass antiAliasingShaderPass;
+        Shader* antiAliasingVert = graphicSystem->createShader(ShaderType::Vertex, postProcessStageDescription.antiAliasingPass.vertexShader);
+        Shader* antiAliasingFrag = graphicSystem->createShader(ShaderType::Fragment, postProcessStageDescription.antiAliasingPass.fragmentShader);
+        antiAliasingFrag->setDefine(ShaderDefineType::FxaaQuality, postProcessStageDescription.antiAliasingPass.fxaaQuality);
+        antiAliasingShaderPass.program = graphicSystem->createShaderProgram(antiAliasingVert, antiAliasingFrag);
+        antiAliasingShaderPass.vertexData = renderer->getFullScreenQuad();
 
-    antiAliasingRenderPass.shaderPasses.pushBack(antiAliasingShaderPass);
-    renderPasses.pushBack(antiAliasingRenderPass);
+        PostProcessParameterValue postProcessParameterValue;
+        postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+        antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
+        antiAliasingShaderPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
+        antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+
+        antiAliasingRenderPass.shaderPasses.pushBack(antiAliasingShaderPass);
+        renderPasses.pushBack(antiAliasingRenderPass);
+    }
 }
 
-void PostProcessStage::resizeResources()
+void PostProcessStage::resizeResources(const PostProcessStageDescription& postProcessStageDescription)
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
 
-    //Resize the environment pass.
-    renderPasses[0].renderTarget = graphicSystem->getRenderTargetByName("lighting");
-    renderPasses[0].viewPort = screenViewPort;
+    if(postProcessStageDescription.hasEnvironmentPass)
+    {
+        //Resize the environment pass.
+        renderPasses[0].renderTarget = graphicSystem->getRenderTargetByName("lighting");
+        renderPasses[0].viewPort = screenViewPort;
+    }
 
-    //Resize the anti aliasing pass
-    renderPasses[1].viewPort = screenViewPort;
+    if(postProcessStageDescription.hasAntiAliasingPass)
+    {
+        //Resize the anti aliasing pass
+        renderPasses[1].viewPort = screenViewPort;
 
-    //Resize the post process shader parameter block.
-    PostProcessParameterValue postProcessParameterValue;
-    postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    renderPasses[1].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
+        //Resize the post process shader parameter block.
+        PostProcessParameterValue postProcessParameterValue;
+        postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+        renderPasses[1].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
+    }
 }
 
 void PostProcessStage::setSkybox(SkyBox* skyBox)
