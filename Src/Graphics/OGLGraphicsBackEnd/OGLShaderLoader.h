@@ -39,7 +39,7 @@ public:
     void load(Shader* shader);
 
 private: 
-    bool loadShaderSource(const char *fileName);
+    bool loadShaderSource(const std::string& fileName);
     void parseLine(std::string& line);
     void processInclude(std::string& line);
     void addDefines(std::string& line);
@@ -47,6 +47,7 @@ private:
     Shader* shaderInProcess = nullptr;
     std::string processedSource;
     Vector<std::string> processedIncludes;
+    std::string currentDirectoryPath;
     const std::string include = "#include";
     const std::string version = "#version";
 };

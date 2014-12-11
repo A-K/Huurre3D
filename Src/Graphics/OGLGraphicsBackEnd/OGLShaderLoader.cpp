@@ -31,14 +31,15 @@ namespace Huurre3D
 void OGLShaderLoader::load(Shader* shader)
 {
     shaderInProcess = shader;
-    loadShaderSource(shader->getSourceFileName().c_str());
+    loadShaderSource(shader->getSourceFileName());
     shader->setSource(processedSource);
     processedSource.clear();
     processedIncludes.clear();
-    shaderInProcess = 0;
+    currentDirectoryPath.clear();
+    shaderInProcess = nullptr;
 }
 
-bool OGLShaderLoader::loadShaderSource(const char *fileName)
+bool OGLShaderLoader::loadShaderSource(const std::string& fileName)
 {
     std::ifstream file(fileName);
 
@@ -48,6 +49,7 @@ bool OGLShaderLoader::loadShaderSource(const char *fileName)
         return false;
     }
 
+    currentDirectoryPath = fileName.substr(0, fileName.find_last_of("/") + 1);
     std::string line;
     while(file.good()) 
     {
@@ -81,7 +83,7 @@ void OGLShaderLoader::processInclude(std::string& line)
         line = "";
 
         //Get the path to the actual file.
-        std::string includeFile = Engine::getShaderPath() + includeName;
+        std::string includeFile = currentDirectoryPath + includeName;
         if(!loadShaderSource(includeFile.c_str()))
             std::cout <<"Failed to load include file: " <<includeFile<<std::endl;
     }
