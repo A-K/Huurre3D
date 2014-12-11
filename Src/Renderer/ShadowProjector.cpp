@@ -46,7 +46,6 @@ ShadowProjector::ShadowProjector()
 void ShadowProjector::calculateDirectionalLightShadowViewProjections(const Vector<Light*>& lights, const ShadowInputParameters& parameters,
     Vector<ShadowDepthData>& shadowDepthDataArray, Vector<ShadowOcclusionData>& shadowOcclusionDataArray) const
 {
-    float shadowMapSize = static_cast<float>(ShadowMapSize);
     for(unsigned int k = 0; k < lights.size(); ++k)
     {
         ShadowDepthData shadowDepthData;

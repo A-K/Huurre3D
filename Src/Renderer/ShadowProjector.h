@@ -84,12 +84,14 @@ public:
         Vector<ShadowDepthData>& shadowDepthDataArray, Vector<ShadowOcclusionData>& shadowOcclusionDataArray) const;
     void calculatePointLightShadowViewProjections(const Vector<Light*>& lights, const ShadowInputParameters& parameters,
         Vector<ShadowDepthData>& shadowDepthDataArray, Vector<ShadowOcclusionData>& shadowOcclusionDataArray) const;
+    void setShadowMapSize(float size) {shadowMapSize = size;}
 
 private:
     //Calculate the cascade splits so that each successive split is larger than the previous.
     FixedArray<float, MaxSplits> calculateCascedeSplits(float near, float far, int numSplits) const;
     FixedArray<Vector3, NumCubeMapFaces> pointLightDirections;
     FixedArray<Vector3, NumCubeMapFaces> pointLightupVectors;
+    float shadowMapSize;
 };
 
 }

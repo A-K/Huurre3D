@@ -38,7 +38,7 @@ public:
     ShadowStage(Renderer* renderer);
     ~ShadowStage() = default;
     void clearStage();
-    void init();
+    void init(const ShadowStageDescription& shadowStageDescription);
     void resizeResources();
     void setData(const Vector<RenderItem>& renderItems, const Vector<Light*>& lights, Camera* camera);
 

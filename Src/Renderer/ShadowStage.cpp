@@ -36,22 +36,23 @@ RenderStage(renderer)
 {
 }
 
-void ShadowStage::init()
+void ShadowStage::init(const ShadowStageDescription& shadowStageDescription)
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
 
     //Create the render target, shader program and viewport for shadow depth pass.
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    Shader* shadowDepthVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("ShadowDepth.vert"));
-    Shader* shadowDepthFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("ShadowDepth.frag"));
+    Shader* shadowDepthVert = graphicSystem->createShader(ShaderType::Vertex, shadowStageDescription.shadowDepthPass.vertexShader);
+    Shader* shadowDepthFrag = graphicSystem->createShader(ShaderType::Fragment, shadowStageDescription.shadowDepthPass.fragmentShader);
     shadowDepthProgram = graphicSystem->createShaderProgram(shadowDepthVert, shadowDepthFrag);
 
-    shadowDepthRenderTarget = graphicSystem->createRenderTarget(ShadowMapSize, ShadowMapSize, false, 1, NumCubeMapFaces);
-    Texture* shadowDepth = graphicSystem->createTexture(TextureTargetMode::Texture2DArray, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Depth24, ShadowMapSize, ShadowMapSize);
+    int shadowMapSize = shadowStageDescription.shadowDepthPass.ShadowMapSize;
+    shadowDepthRenderTarget = graphicSystem->createRenderTarget(shadowMapSize, shadowMapSize, false, 1, NumCubeMapFaces);
+    Texture* shadowDepth = graphicSystem->createTexture(TextureTargetMode::Texture2DArray, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Depth24, shadowMapSize, shadowMapSize);
     shadowDepth->setDepth(NumCubeMapFaces);
     shadowDepth->setSlotIndex(TextureSlotIndex::ShadowDepth);
     shadowDepthRenderTarget->setDepthBuffer(shadowDepth);
-    shadowDepthViewPort.set(0, 0, ShadowMapSize, ShadowMapSize);
+    shadowDepthViewPort.set(0, 0, shadowMapSize, shadowMapSize);
 
     //Create the shadow occlusion pass.
     shadowOcclusionRenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false);
@@ -60,10 +61,10 @@ void ShadowStage::init()
     shadowOcclusionRenderTarget->setColorBuffer(shadowOcclusionTexture);
 
     shadowOcllusionShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
-    Shader* shadowOcclusionVert = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + std::string("FullScreenQuad.vert"));
-    Shader* shadowOcclusionFrag = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + std::string("ShadowOcclusion.frag"));
+    Shader* shadowOcclusionVert = graphicSystem->createShader(ShaderType::Vertex, shadowStageDescription.shadowOcclusionPass.vertexShader);
+    Shader* shadowOcclusionFrag = graphicSystem->createShader(ShaderType::Fragment, shadowStageDescription.shadowOcclusionPass.fragmentShader);
     shadowOcclusionVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
-    shadowOcclusionFrag->setDefine(ShaderDefineType::MaxNumShadowLights, MaxNumShadowLights);
+    shadowOcclusionFrag->setDefine(ShaderDefineType::MaxNumShadowLights, shadowStageDescription.shadowOcclusionPass.maxNumShadowLights);
     shadowOcllusionShaderPass.program = graphicSystem->createShaderProgram(shadowOcclusionVert, shadowOcclusionFrag);
 
     shadowOcllusionShaderPass.vertexData = renderer->getFullScreenQuad();
@@ -71,6 +72,8 @@ void ShadowStage::init()
     shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_shadowOcclusionParameters));
     shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
     shadowOcllusionShaderPass.shaderParameters.pushBack(ShaderParameter(sp_shadowOcclusionParameterIndex, 0));
+
+    shadowProjector.setShadowMapSize(static_cast<float>(shadowMapSize));
 }
 
 void ShadowStage::resizeResources()
