@@ -34,11 +34,12 @@
 namespace Huurre3D
 {
 
-Renderer::Renderer(void):
+Renderer::Renderer(const RendererDescription& rendererDescription) :
 deferredStage(this),
 shadowStage(this),
 lightingStage(this),
-postProcessStage(this)
+postProcessStage(this),
+rendererDescription(rendererDescription)
 {
     graphicWindow = new GraphicWindow();
     graphicSystem = new GraphicSystem();
@@ -65,9 +66,9 @@ bool Renderer::createRenderWindow(int width, int height, const std::string& wind
         createFullScreenQuad();
         screenViewPort.set(0, 0, width, height);
         deferredStage.init();
-        shadowStage.init();
-        lightingStage.init(LightTileWidth, LightTileHeight);
-        postProcessStage.init();
+        shadowStage.init(rendererDescription.shadowStageDescription);
+        lightingStage.init(rendererDescription.lightingStageDescription);
+        postProcessStage.init(rendererDescription.postProcessStageDescription);
     }
     return success;
 }
@@ -77,8 +78,8 @@ void Renderer::resizeRenderWindow(int width, int height)
     screenViewPort.set(0, 0, width, height);
     deferredStage.resizeResources();
     shadowStage.resizeResources();
-    lightingStage.resizeResources();
-    postProcessStage.resizeResources();
+    lightingStage.resizeResources(rendererDescription.lightingStageDescription);
+    postProcessStage.resizeResources(rendererDescription.postProcessStageDescription);
 }
 
 void Renderer::renderScene(Scene* scene, Camera* camera)
@@ -219,8 +220,8 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
 
     //The material has no program set, try if the shader program exist.
     Vector<std::string> shaderFileNames;
-    shaderFileNames.pushBack("Gbuffer.vert");
-    shaderFileNames.pushBack("Gbuffer.frag");
+    shaderFileNames.pushBack(rendererDescription.deferredStageDescription.vertexShader);
+    shaderFileNames.pushBack(rendererDescription.deferredStageDescription.fragmentShader);
     Vector<ShaderDefine> materialShaderDefines = material->getShaderDefines();
 
     ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, materialShaderDefines);
@@ -228,8 +229,8 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     //If the program dont exist, create one.
     if(!program)
     {
-        Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, Engine::getShaderPath() + "Gbuffer.vert");
-        Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, Engine::getShaderPath() + "Gbuffer.frag");
+        Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, rendererDescription.deferredStageDescription.vertexShader);
+        Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, rendererDescription.deferredStageDescription.fragmentShader);
         fShader->setDefines(materialShaderDefines);
         program = graphicSystem->createShaderProgram(vShader, fShader);
     }

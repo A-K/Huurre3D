@@ -24,6 +24,7 @@
 
 #include "Graphics/GraphicWindow.h"
 #include "Graphics/GraphicSystem.h"
+#include "Renderer/RendererDescription.h"
 #include "Renderer/DeferredStage.h"
 #include "Renderer/LightingStage.h"
 #include "Renderer/ShadowStage.h"
@@ -104,7 +105,7 @@ struct TextureCacheItem
 class Renderer
 {
 public:
-    Renderer();
+    Renderer(const RendererDescription& rendererDescription);
     ~Renderer();
 
     bool createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen = false, bool vsync = true);
@@ -157,7 +158,7 @@ private:
     SceneCuller sceneCuller;
     WorkQueue<WorkQueueSize> workQueue;
     TextureLoader textureLoader;
-
+    RendererDescription rendererDescription;
 };
 
 }
