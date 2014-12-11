@@ -25,6 +25,7 @@
 #include "Scene/Camera.h"
 #include "Renderer/RenderItem.h"
 #include "Renderer/RenderPasses.h"
+#include "Renderer/RendererDescription.h"
 #include "Renderer/RendererDefs.h"
 
 namespace Huurre3D
@@ -41,12 +42,7 @@ class RenderStage
 public:
     RenderStage(Renderer* renderer);
     virtual ~RenderStage() = default;
-    
-    void init() {}
-    void deInit() {}
-    void resizeResources() {}
     void execute() const {drawRenderPasses(renderPasses);}
-    void clearStage() {}
 
 protected:
     void drawRenderPasses(const Vector<RenderPass>& renderPasses) const;
