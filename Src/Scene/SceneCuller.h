@@ -24,6 +24,7 @@
 
 #include "Scene/Scene.h"
 #include "Scene/Light.h"
+#include "Scene/Mesh.h"
 
 namespace Huurre3D
 {
