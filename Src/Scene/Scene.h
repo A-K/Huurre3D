@@ -47,7 +47,7 @@ public:
     SceneItem* getSceneItem(unsigned int id) const;
     SceneItem* getSceneItem(const std::string& sceneItemType) const;
     void getSceneItemsByType(const std::string& sceneItemType, Vector<SceneItem*>& itemsOut) const;
-    void getAllRenderItems(Vector<RenderItem>& renderItemsOut);
+    void getAllRenderItems(Vector<RenderItem>& renderItemsOut) const;
     void setGlobalAmbientLight(const Vector3& ambientLight);
     void setSceneItemForUpdate(SceneItem* sceneItem) {dirtySceneItems.pushBack(sceneItem);}
     Camera* getMainCamera() const {return mainCamera;}

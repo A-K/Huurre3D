@@ -80,7 +80,7 @@ void Scene::getSceneItemsByType(const std::string& sceneItemType, Vector<SceneIt
     sceneItems.findItems([sceneItemType](SceneItem* item){return item->getSceneItemType() == sceneItemType;}, itemsOut);
 }
 
-void Scene::getAllRenderItems(Vector<RenderItem>& renderItemsOut)
+void Scene::getAllRenderItems(Vector<RenderItem>& renderItemsOut) const
 {
     Vector<Mesh*> meshes;
     getSceneItemsByType<Mesh>(meshes);
