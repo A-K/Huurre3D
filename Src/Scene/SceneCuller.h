@@ -28,65 +28,56 @@
 namespace Huurre3D
 {
 
-class SceneCuller
+template<class BoundingVolume> void cullRenderItems(const Vector<RenderItem>& items, Vector<RenderItem>& result, const BoundingVolume& volume)
 {
-public:
-    SceneCuller() = default;
-    ~SceneCuller() = default;
-    
-    template<class BoundingVolume> void cullRenderItems(const Vector<RenderItem>& items, Vector<RenderItem>& result, const BoundingVolume& volume)
+    for(unsigned int i = 0; i < items.size(); ++i)
     {
-        for(unsigned int i = 0; i < items.size(); ++i)
-        {
-            BoundingBox worlBoundingBox = items[i].geometry->getWorldBoundingBox();
-            if(volume.isInsideNoIntersection(worlBoundingBox))
-                result.pushBack(items[i]);
-        }
+        BoundingBox worlBoundingBox = items[i].geometry->getWorldBoundingBox();
+        if(volume.isInsideNoIntersection(worlBoundingBox))
+            result.pushBack(items[i]);
     }
+}
 
-    template<class BoundingVolume> void cullRenderItems(const Scene* scene, Vector<RenderItem>& result, const BoundingVolume& volume)
+template<class BoundingVolume> void cullRenderItems(const Scene* scene, Vector<RenderItem>& result, const BoundingVolume& volume)
+{
+    Vector<Mesh*> meshes;
+    scene->getSceneItemsByType<Mesh>(meshes);
+
+    Matrix4x4 worldTransform;
+    for(unsigned int i = 0; i < meshes.size(); ++i)
     {
-        Vector<Mesh*> meshes;
-        scene->getSceneItemsByType<Mesh>(meshes);
-
-        Matrix4x4 worldTransform;
-        for(unsigned int i = 0; i < meshes.size(); ++i)
-        {
-            worldTransform = meshes[i]->getWorldTransform4x4();
-            auto items = meshes[i]->getRenderItems();
+        worldTransform = meshes[i]->getWorldTransform4x4();
+        auto items = meshes[i]->getRenderItems();
             
-            //Test if the mesh is inside the bounding volume.
-            switch(volume.isInside(meshes[i]->getBoundingBox().transformed(worldTransform)))
-            {	
-                //case Intersection::Outside:
-                    //continue;
-                case Intersection::Inside:
-                    //If mesh is fully inside the frustum, add all renderItems at once.
-                    result.pushBack(items);
-                    break;
-                case Intersection::Intersects:
-                    //Cull each render item.
-                    cullRenderItems(items, result, volume);
-                    break;
-            }
+        //Test if the mesh is inside the bounding volume.
+        switch(volume.isInside(meshes[i]->getBoundingBox().transformed(worldTransform)))
+        {	
+            //case Intersection::Outside:
+                //continue;
+            case Intersection::Inside:
+                //If mesh is fully inside the frustum, add all renderItems at once.
+                result.pushBack(items);
+                break;
+            case Intersection::Intersects:
+                //Cull each render item.
+                cullRenderItems(items, result, volume);
+                break;
         }
     }
+}
 
-    template<class BoundingVolume> void cullLights(const Scene* scene, Vector<Light*>& result, const BoundingVolume& volume)
+template<class BoundingVolume> void cullLights(const Scene* scene, Vector<Light*>& result, const BoundingVolume& volume)
+{
+    Vector<Light*> lights;
+    scene->getSceneItemsByType<Light>(lights);
+    //Cull light bounding volumes against the given bounding volume.
+    for(unsigned int i = 0; i < lights.size(); ++i)
     {
-        Vector<Light*> lights;
-        scene->getSceneItemsByType<Light>(lights);
-
-        //Cull light bounding volumes against the given bounding volume.
-        for(unsigned int i = 0; i < lights.size(); ++i)
-        {
-            Sphere worldSpaceBoundingSphere(lights[i]->getPosition(FrameOfReference::World), lights[i]->getRadius());
-
-            if(volume.isInsideNoIntersection(worldSpaceBoundingSphere))
-                result.pushBack(lights[i]);
-        }
+        Sphere worldSpaceBoundingSphere(lights[i]->getPosition(FrameOfReference::World), lights[i]->getRadius());
+        if(volume.isInsideNoIntersection(worldSpaceBoundingSphere))
+            result.pushBack(lights[i]);
     }
-};
+}
 
 }
 

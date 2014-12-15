@@ -127,7 +127,6 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
     Frustum shadowFrustum;
-    SceneCuller sceneCuller;
     RasterState depthPassRasterState = RasterState(BlendState(false, BlendFunction::Add), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back));
 
     for(unsigned int i = 0; i < shadowDepthData.size(); ++i)
@@ -137,7 +136,7 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
             //Cull the items which are in the shadow light's frustum.
             itemsInShadowfrustum.clear();
             shadowFrustum.set(shadowDepthData[i].shadowViewProjectionMatrices[j].transpose());
-            sceneCuller.cullRenderItems(renderItems, itemsInShadowfrustum, shadowFrustum);
+            cullRenderItems(renderItems, itemsInShadowfrustum, shadowFrustum);
 
             //Construct the shadow depth pass with shaser pass for each render item.
             RenderPass depthPass;

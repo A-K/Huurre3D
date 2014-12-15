@@ -98,11 +98,11 @@ void Renderer::renderScene(Scene* scene, Camera* camera)
 
     Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
 
-    auto deferredItemsCullResult = workQueue.submitTask([this, scene, worldSpaceCameraViewFrustum](){sceneCuller.cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum); });
+    auto deferredItemsCullResult = workQueue.submitTask([this, scene, worldSpaceCameraViewFrustum](){cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum); });
     //sceneCuller.cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum);
     
     scene->getAllRenderItems(shadowRenderItems);
-    sceneCuller.cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
+    cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
 
     frustumLights.findItems([](const Light* light) {return light->getCastShadow(); }, shadowLights);
 

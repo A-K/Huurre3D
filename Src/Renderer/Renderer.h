@@ -155,7 +155,6 @@ private:
 
     GraphicSystem* graphicSystem;
     GraphicWindow* graphicWindow;
-    SceneCuller sceneCuller;
     WorkQueue<WorkQueueSize> workQueue;
     TextureLoader textureLoader;
     RendererDescription rendererDescription;
