@@ -38,12 +38,9 @@ public:
     ~SkyBox() = default;
 
     void setTextureFiles(const FixedArray<std::string, NumCubeMapFaces>& fileNames);
-    void setTexture(Texture* texture);
     const FixedArray<std::string, NumCubeMapFaces>& getTextureFiles() const { return cubeMapTextureFileNames; }
-    Texture* getTexture() const {return cubeMapTexture;}
 
 private:
-    Texture* cubeMapTexture = nullptr;
     FixedArray<std::string, NumCubeMapFaces> cubeMapTextureFileNames;
 };
 

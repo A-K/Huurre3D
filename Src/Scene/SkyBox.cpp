@@ -31,9 +31,4 @@ void SkyBox::setTextureFiles(const FixedArray<std::string, NumCubeMapFaces>& fil
     cubeMapTextureFileNames = fileNames;
 }
 
-void SkyBox::setTexture(Texture* texture)
-{ 
-    cubeMapTexture = texture; 
-}
-
 }
