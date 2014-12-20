@@ -52,18 +52,16 @@ layout(std140) uniform u_lightParameters
 layout(std140) uniform u_lightGridParameters
 {
     ivec4 u_gridDimensions; //Tile width, tile height, width resolution, height resolution.
-    vec2 u_renderTargetSize;
 };
 
 layout(std140) uniform u_SSAOParameters
 {
-    vec4 u_SAOParameters; //projScale, radius, bias, intensity
-    vec2 u_SSAORenderTargetSize;
+    vec4 u_SAOParameters; //projScale, radius, bias, intensity 
 };
 
-layout(std140) uniform u_postProcessParameters
+layout(std140) uniform u_renderTargetParameters
 {
-    vec2 u_postRenderTargetSize;
+    vec4 u_renderTargetSize; //width, height, inverse width and inverse height
 };
 
 uniform int u_shadowOcclusionParameterIndex;

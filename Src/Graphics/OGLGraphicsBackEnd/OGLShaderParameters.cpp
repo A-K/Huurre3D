@@ -34,6 +34,5 @@ const std::string sp_lightViewProjectionMatrix = "u_lightViewProjectionMatrix";
 const std::string sp_shadowOcclusionParameters = "u_shadowOcclusionParameters";
 const std::string sp_shadowOcclusionParameterIndex = "u_shadowOcclusionParameterIndex";
 const std::string sp_SSAOParameters = "u_SSAOParameters";
-const std::string sp_PostProcessParameters = "u_postProcessParameters";
-
+const std::string sp_renderTargetSize = "u_renderTargetParameters";
 }

@@ -36,7 +36,6 @@ out float o_ambientOcclusion;
 
 void main()
 {
-    vec2 texOffset = vec2(1.0f / u_SSAORenderTargetSize.x, 1.0f / u_SSAORenderTargetSize.y);
     float ambientOcclusion = 1.0f;
     vec4 normal = texture(u_normalBuffer, f_texCoord0);
 
@@ -46,7 +45,7 @@ void main()
     float radius = u_SAOParameters.y;
     float bias = u_SAOParameters.z;
     float intensity = u_SAOParameters.w;
-    ambientOcclusion = calculateSAO(screenSpacePosition, normal, projScale, radius, bias, texOffset);
+    ambientOcclusion = calculateSAO(screenSpacePosition, normal, projScale, radius, bias, u_renderTargetSize.zw);
     ambientOcclusion = clamp(pow(ambientOcclusion, 1.0 + intensity), 0.0, 1.0);
 #endif
 

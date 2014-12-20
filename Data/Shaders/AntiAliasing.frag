@@ -32,12 +32,11 @@ out vec4 o_color;
 void main()
 {
     vec3 color = vec3(0.0f, 0.0f, 0.0f);
-    vec2 texOffset = vec2(1.0f / u_postRenderTargetSize.x, 1.0f / u_postRenderTargetSize.y);
 
     float fxaaQualitySubpix = 0.75;
     float fxaaQualityEdgeThreshold = 0.166;
     float fxaaQualityEdgeThresholdMin = 0.0833;
-    color = fxaaPixelShader(f_texCoord0, u_lightingTexture, texOffset, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin).rgb;
+    color = fxaaPixelShader(f_texCoord0, u_lightingTexture, u_renderTargetSize.zw, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin).rgb;
 
     o_color = vec4(color, 1.0f);
 }

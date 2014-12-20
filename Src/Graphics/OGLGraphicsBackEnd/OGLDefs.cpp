@@ -248,7 +248,7 @@ const GLchar* glShaderParameters[] =
     "u_shadowOcclusionParameters",
     "u_shadowOcclusionParameterIndex",
     "u_SSAOParameters",
-    "u_postProcessParameters"
+    "u_renderTargetParameters"
 };
 
 const GLchar* glTextureSlots[] = 

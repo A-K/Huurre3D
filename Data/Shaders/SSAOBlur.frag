@@ -53,7 +53,7 @@ void main()
         return;
     }
 
-    vec2 texOffset = vec2(1.0f / u_SSAORenderTargetSize.x, 1.0f / u_SSAORenderTargetSize.y);
+    vec2 texOffset = u_renderTargetSize.zw;
     vec4 weights = gaussian;
     vec3 samplePositions[4] = vec3[4](vec3(f_texCoord0, layer) + vec3(texOffset * offsets.x * dir, 0.0f),
                                       vec3(f_texCoord0, layer) + vec3(texOffset * offsets.y * dir, 0.0f),
