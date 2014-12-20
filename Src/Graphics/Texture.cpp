@@ -54,6 +54,12 @@ void Texture::setDepth(int depth)
     dataDirty = true;
 }
 
+void Texture::setPixelFormat(TexturePixelFormat pixelFormat)
+{
+    this->pixelFormat = pixelFormat;
+    dataDirty = true;
+}
+
 void Texture::setNumMipMaps(int numMipMaps)
 {
     this->numMipMaps = numMipMaps;

@@ -40,6 +40,7 @@ public:
     void setWidth(int width);
     void setHeight(int height);
     void setDepth(int depth);
+    void setPixelFormat(TexturePixelFormat pixelFormat);
     void setNumMipMaps(int numMipMaps);
     void setSlotIndex(TextureSlotIndex slotIndex) {this->slotIndex = slotIndex;}
     void setData(const TextureLoadResult& resultData);
