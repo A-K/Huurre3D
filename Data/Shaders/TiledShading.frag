@@ -40,9 +40,7 @@ vec4 processFragment(in vec2 texCoord, in vec3 position, in vec3 normal, in vec3
     vec3 color = vec3(0.0f, 0.0f, 0.0f);
     int numLights = int(u_numLightsAndGlobalAmbientLight.x);
 
-    //Get the shadow occlusion values for this fragment.
-    vec2 texOffset = vec2(1.0f / u_renderTargetSize.x, 1.0f / u_renderTargetSize.y);
-    ivec4 shadowOcllusionValues = readAndDecodeShadowOcclusion2x2(texCoord, texOffset, u_shadowOcclusion);
+    //vec2 texOffset = vec2(1.0f / u_renderTargetSize.x, 1.0f / u_renderTargetSize.y);
 
     while(lightIndexSampler.x < numLights)
     {
@@ -59,6 +57,8 @@ vec4 processFragment(in vec2 texCoord, in vec3 position, in vec3 normal, in vec3
         //Does the light cast shadows.
         if(light.u_innerOuterAngles.z > 0)
         {
+            //Get the shadow occlusion values for this fragment.
+            ivec4 shadowOcllusionValues = readAndDecodeShadowOcclusion2x2(texCoord, u_renderTargetSize.zw, u_shadowOcclusion);
             int mask = int(light.u_innerOuterAngles.w);
             shadowOcclusion = PCF4(shadowOcllusionValues, mask);
         }
