@@ -159,7 +159,7 @@ bool Engine::init(const std::string& engineConfigFile)
         rendererDescription.lightingStageDescription.lightingPass.fragmentShader = cJSON_GetObjectItem(lightingPassValue, "fragmentShader")->valuestring;
         rendererDescription.lightingStageDescription.lightingPass.lightTileWidth = cJSON_GetObjectItem(lightingPassValue, "lightTileWidth")->valueint;
         rendererDescription.lightingStageDescription.lightingPass.lightTileHeight = cJSON_GetObjectItem(lightingPassValue, "lightTileHeight")->valueint;
-        rendererDescription.lightingStageDescription.lightingPass.hdr = cJSON_GetObjectItem(lightingPassValue, "HDR")->type;
+        rendererDescription.lightingStageDescription.lightingPass.hdr = cJSON_GetObjectItem(lightingPassValue, "HDR")->type != 0;
 
         if(SSAOPassValue)
         {
@@ -178,37 +178,48 @@ bool Engine::init(const std::string& engineConfigFile)
 
     //Parse optional stages
     cJSON* shadowStageValue = cJSON_GetObjectItem(rendererDescriptionValue, "shadowStage");
+   
+    if(shadowStageValue)
+    {
+        cJSON* shadowDepthPassValue = cJSON_GetObjectItem(shadowStageValue, "shadowDepthPass");
+        cJSON* shadowOcclusionPassValue = cJSON_GetObjectItem(shadowStageValue, "shadowOcclusionPass");
+
+        if(shadowDepthPassValue && shadowOcclusionPassValue)
+        {
+            rendererDescription.hasShadowStage = true;
+            rendererDescription.shadowStageDescription.shadowDepthPass.vertexShader = cJSON_GetObjectItem(shadowDepthPassValue, "vertexShader")->valuestring;
+            rendererDescription.shadowStageDescription.shadowDepthPass.fragmentShader = cJSON_GetObjectItem(shadowDepthPassValue, "fragmentShader")->valuestring;
+            rendererDescription.shadowStageDescription.shadowDepthPass.ShadowMapSize = cJSON_GetObjectItem(shadowDepthPassValue, "shadowMapSize")->valueint;
+
+            rendererDescription.shadowStageDescription.shadowOcclusionPass.vertexShader = cJSON_GetObjectItem(shadowOcclusionPassValue, "vertexShader")->valuestring;
+            rendererDescription.shadowStageDescription.shadowOcclusionPass.fragmentShader = cJSON_GetObjectItem(shadowOcclusionPassValue, "fragmentShader")->valuestring;
+            rendererDescription.shadowStageDescription.shadowOcclusionPass.maxNumShadowLights = cJSON_GetObjectItem(shadowOcclusionPassValue, "maxShadowLights")->valueint;
+        }
+        else
+            std::cout << "Ignoring shadow stage, it should include both depth and occlusion passes." << std::endl;
+    }
+
     cJSON* postProcessStageValue = cJSON_GetObjectItem(rendererDescriptionValue, "postProcessStage");
 
-    cJSON* shadowDepthPassValue = cJSON_GetObjectItem(shadowStageValue, "shadowDepthPass");
-    cJSON* shadowOcclusionPassValue = cJSON_GetObjectItem(shadowStageValue, "shadowOcclusionPass");
-
-    if(shadowDepthPassValue && shadowOcclusionPassValue)
+    if(postProcessStageValue)
     {
-        rendererDescription.shadowStageDescription.shadowDepthPass.vertexShader = cJSON_GetObjectItem(shadowDepthPassValue, "vertexShader")->valuestring;
-        rendererDescription.shadowStageDescription.shadowDepthPass.fragmentShader = cJSON_GetObjectItem(shadowDepthPassValue, "fragmentShader")->valuestring;
-        rendererDescription.shadowStageDescription.shadowDepthPass.ShadowMapSize = cJSON_GetObjectItem(shadowDepthPassValue, "shadowMapSize")->valueint;
+        cJSON* environmentPassValue = cJSON_GetObjectItem(postProcessStageValue, "environmentPass");
+        cJSON* antialiasingPassValue = cJSON_GetObjectItem(postProcessStageValue, "antiAliasingPass");
+        rendererDescription.hasPostProcessStage = true;
 
-        rendererDescription.shadowStageDescription.shadowOcclusionPass.vertexShader = cJSON_GetObjectItem(shadowOcclusionPassValue, "vertexShader")->valuestring;
-        rendererDescription.shadowStageDescription.shadowOcclusionPass.fragmentShader = cJSON_GetObjectItem(shadowOcclusionPassValue, "fragmentShader")->valuestring;
-        rendererDescription.shadowStageDescription.shadowOcclusionPass.maxNumShadowLights = cJSON_GetObjectItem(shadowOcclusionPassValue, "maxShadowLights")->valueint;
-    }
-    else
-        std::cout << "Ignoring shadow stage, it should include both depth and occlusion passes." << std::endl;
-
-    cJSON* environmentPassValue = cJSON_GetObjectItem(postProcessStageValue, "environmentPass");
-    cJSON* antialiasingPassValue = cJSON_GetObjectItem(postProcessStageValue, "antiAliasingPass");
-
-    if(environmentPassValue)
-    {
-        rendererDescription.postProcessStageDescription.environmentPass.vertexShader = cJSON_GetObjectItem(environmentPassValue, "vertexShader")->valuestring;
-        rendererDescription.postProcessStageDescription.environmentPass.fragmentShader = cJSON_GetObjectItem(environmentPassValue, "fragmentShader")->valuestring;
-    }
-    if(antialiasingPassValue)
-    {
-        rendererDescription.postProcessStageDescription.antiAliasingPass.vertexShader = cJSON_GetObjectItem(antialiasingPassValue, "vertexShader")->valuestring;
-        rendererDescription.postProcessStageDescription.antiAliasingPass.fragmentShader = cJSON_GetObjectItem(antialiasingPassValue, "fragmentShader")->valuestring;
-        rendererDescription.postProcessStageDescription.antiAliasingPass.fxaaQuality = cJSON_GetObjectItem(antialiasingPassValue, "FXAAQuality")->valueint;
+        if(environmentPassValue)
+        {
+            rendererDescription.postProcessStageDescription.hasEnvironmentPass = true;
+            rendererDescription.postProcessStageDescription.environmentPass.vertexShader = cJSON_GetObjectItem(environmentPassValue, "vertexShader")->valuestring;
+            rendererDescription.postProcessStageDescription.environmentPass.fragmentShader = cJSON_GetObjectItem(environmentPassValue, "fragmentShader")->valuestring;
+        }
+        if(antialiasingPassValue)
+        {
+            rendererDescription.postProcessStageDescription.hasAntiAliasingPass = true;
+            rendererDescription.postProcessStageDescription.antiAliasingPass.vertexShader = cJSON_GetObjectItem(antialiasingPassValue, "vertexShader")->valuestring;
+            rendererDescription.postProcessStageDescription.antiAliasingPass.fragmentShader = cJSON_GetObjectItem(antialiasingPassValue, "fragmentShader")->valuestring;
+            rendererDescription.postProcessStageDescription.antiAliasingPass.fxaaQuality = cJSON_GetObjectItem(antialiasingPassValue, "FXAAQuality")->valueint;
+        }
     }
 
     cJSON_Delete(engineConfigJson);

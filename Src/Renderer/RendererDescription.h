@@ -96,16 +96,16 @@ struct PostProcessStageDescription
         int fxaaQuality;
     };
 
-    bool hasEnvironmentPass;
-    bool hasAntiAliasingPass;
+    bool hasEnvironmentPass = false;
+    bool hasAntiAliasingPass = false;
     EnvironmentPass environmentPass;
     AntiAliasingPass antiAliasingPass;
 };
 
 struct RendererDescription
 {
-    bool hasShadowStage;
-    bool hasPostProcessStage;
+    bool hasShadowStage = false;
+    bool hasPostProcessStage = false;
     DeferredStageDescription deferredStageDescription;
     ShadowStageDescription shadowStageDescription;
     LightingStageDescription lightingStageDescription;
