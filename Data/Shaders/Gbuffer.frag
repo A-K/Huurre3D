@@ -59,7 +59,7 @@ void main()
     diffuse = texture(u_diffuseTexture, f_texCoord0).rgb;
 #endif
 
-    o_diffuse = vec4(diffuse, float(u_materialParameterIndex) / 256.0f);
+    o_diffuse = vec4(diffuse, float(u_materialParameterIndex) / 255.0f);
 
 #ifdef SPECULAR_TEXTURE
     specular = texture(u_specularTexture, f_texCoord0).rgb;
