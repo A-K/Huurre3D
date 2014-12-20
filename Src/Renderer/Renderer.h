@@ -142,11 +142,7 @@ private:
     VertexData* fullScreenQuad;
     ShaderParameterBlock* cameraShaderParameterBlock;
     ShaderParameterBlock* materialParameterBlock;
-
-    Vector<RenderItem> deferredRenderItems;
-    Vector<RenderItem> shadowRenderItems;
-    Vector<Light*> frustumLights;
-    Vector<Light*> shadowLights;
+    ShaderParameterBlock* renderTargetSizeBlock;
 
     Vector<Material*> materials;
     Vector<Geometry*> geometries;

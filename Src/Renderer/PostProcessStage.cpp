@@ -49,6 +49,9 @@ void PostProcessStage::init(const PostProcessStageDescription& postProcessStageD
 
         ShaderPass environmentShaderPass;
         environmentShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
+        Texture* skyBoxTexture = graphicSystem->createTexture(TextureTargetMode::TextureCubeMap, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Rgb8, 0, 0);
+        skyBoxTexture->setSlotIndex(TextureSlotIndex::SkyBox);
+        environmentShaderPass.textures.pushBack(skyBoxTexture);
 
         Shader* environmentVert = graphicSystem->createShader(ShaderType::Vertex, postProcessStageDescription.environmentPass.vertexShader);
         Shader* environmentFrag = graphicSystem->createShader(ShaderType::Fragment, postProcessStageDescription.environmentPass.fragmentShader);
@@ -79,47 +82,31 @@ void PostProcessStage::init(const PostProcessStageDescription& postProcessStageD
         antiAliasingShaderPass.program = graphicSystem->createShaderProgram(antiAliasingVert, antiAliasingFrag);
         antiAliasingShaderPass.vertexData = renderer->getFullScreenQuad();
 
-        PostProcessParameterValue postProcessParameterValue;
-        postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-        antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_PostProcessParameters));
-        antiAliasingShaderPass.shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
         antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+        antiAliasingShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
 
         antiAliasingRenderPass.shaderPasses.pushBack(antiAliasingShaderPass);
         renderPasses.pushBack(antiAliasingRenderPass);
     }
 }
 
-void PostProcessStage::resizeResources(const PostProcessStageDescription& postProcessStageDescription)
+void PostProcessStage::resizeResources()
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
 
-    if(postProcessStageDescription.hasEnvironmentPass)
-    {
-        //Resize the environment pass.
-        renderPasses[0].renderTarget = graphicSystem->getRenderTargetByName("lighting");
-        renderPasses[0].viewPort = screenViewPort;
-    }
-
-    if(postProcessStageDescription.hasAntiAliasingPass)
-    {
-        //Resize the anti aliasing pass
-        renderPasses[1].viewPort = screenViewPort;
-
-        //Resize the post process shader parameter block.
-        PostProcessParameterValue postProcessParameterValue;
-        postProcessParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-        renderPasses[1].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&postProcessParameterValue, sizeof(postProcessParameterValue));
-    }
+    for(unsigned int i = 0; i < renderPasses.size(); ++i)
+        renderPasses[i].viewPort = screenViewPort;
 }
 
-void PostProcessStage::setSkybox(SkyBox* skyBox)
+void PostProcessStage::update(const Scene* scene)
 {
-    if(currentSkyBox != skyBox)
+    Texture* skyBoxTexture = renderer->getGraphicSystem()->getTextureBySlotIndex(TextureSlotIndex::SkyBox);
+
+    if(skyBoxTexture)
     {
-        Texture* skyBoxTexture = skyBox->getTexture();
-        if(!skyBoxTexture)
+        SkyBox* skyBox = (SkyBox*)scene->getSceneItem("SkyBox");
+        if(currentSkyBox != skyBox)
         {
             FixedArray<bool, 6> flipImages;
             flipImages.fill(false);
@@ -128,19 +115,13 @@ void PostProcessStage::setSkybox(SkyBox* skyBox)
 
             if(result.pixelData[0] && result.pixelData[1] && result.pixelData[2] && result.pixelData[3] && result.pixelData[4] && result.pixelData[5])
             {
-                skyBoxTexture = renderer->getGraphicSystem()->createTexture(TextureTargetMode::TextureCubeMap, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, result.format, result.width, result.height);
+                skyBoxTexture->setPixelFormat(result.format);
+                skyBoxTexture->setWidth(result.width);
+                skyBoxTexture->setHeight(result.height);
                 skyBoxTexture->setData(result);
             }
 
             loader.releasedata(result);
-        }
-
-        if(skyBoxTexture)
-        {
-            renderPasses[0].shaderPasses[0].textures.clear();
-            renderPasses[0].shaderPasses[0].textures.pushBack(skyBoxTexture);
-            skyBoxTexture->setSlotIndex(TextureSlotIndex::SkyBox);
-            skyBox->setTexture(skyBoxTexture);
             currentSkyBox = skyBox;
         }
     }

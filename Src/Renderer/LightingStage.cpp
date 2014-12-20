@@ -64,12 +64,12 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         SSAOPass.program = graphicSystem->createShaderProgram(SSAOVert, SSAOFrag);
         SSAOPass.vertexData = renderer->getFullScreenQuad();
 
-        SSAOParameterValue SSAOValue;
-        SSAOValue.SAOParameters = Vector4(500.0f, lightingStageDescription.ssaoPass.ssaoRadius, lightingStageDescription.ssaoPass.ssaoBias, lightingStageDescription.ssaoPass.ssaoIntensity);
-        SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+        ShaderParameterBlock* SSAOParametersBlock = graphicSystem->createShaderParameterBlock(sp_SSAOParameters);
+        Vector4 ssaoParameters = Vector4(500.0f, lightingStageDescription.ssaoPass.ssaoRadius, lightingStageDescription.ssaoPass.ssaoBias, lightingStageDescription.ssaoPass.ssaoIntensity);
+        SSAOParametersBlock->addParameter(ssaoParameters);
 
-        SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_SSAOParameters));
-        SSAOPass.shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
+        SSAOPass.shaderParameterBlocks.pushBack(SSAOParametersBlock);
+        SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
         SSAOPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
 
         SSAORenderPass.shaderPasses.pushBack(SSAOPass);
@@ -88,7 +88,7 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         Shader* verticalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, lightingStageDescription.ssaoPass.SSAOBlurFragmentShader);
         verticalBlurShaderPass.program = graphicSystem->createShaderProgram(verticalBlurVert, verticalBlurFrag);
         verticalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
-        verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
+        verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
         verticalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
 
         verticalBlurRenderPass.shaderPasses.pushBack(verticalBlurShaderPass);
@@ -108,7 +108,7 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         horizontalBlurFrag->setDefine(ShaderDefineType::VerticalBlur);
         horizontalBlurShaderPass.program = graphicSystem->createShaderProgram(horizontalBlurVert, horizontalBlurFrag);
         horizontalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
-        horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_SSAOParameters));
+        horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
         horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
 
         horizontalBlurRenderPass.shaderPasses.pushBack(horizontalBlurShaderPass);
@@ -117,6 +117,8 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         renderPasses.pushBack(verticalBlurRenderPass);
         renderPasses.pushBack(horizontalBlurRenderPass);
     }
+
+    tileGrid.setGridDimensions(lightingStageDescription.lightingPass.lightTileWidth, lightingStageDescription.lightingPass.lightTileHeight, screenViewPort.width, screenViewPort.height);
 
     RenderTarget* lightingRenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false);
     Texture* lightingTexture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Rgba8, screenViewPort.width, screenViewPort.height);
@@ -131,11 +133,6 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
     lightingRenderPass.renderTargetLayer = 0;
     lightingRenderPass.renderTarget = lightingRenderTarget;
     lightingRenderPass.viewPort = screenViewPort;
-
-    tileGrid.setGridDimensions(lightingStageDescription.lightingPass.lightTileWidth, lightingStageDescription.lightingPass.lightTileHeight, screenViewPort.width, screenViewPort.height);
-    
-    //Create the tiled lighting shader pass.
-    auto gridDimensions = tileGrid.getGridDimensions();
 
     Shader* tiledDeferredVert = graphicSystem->createShader(ShaderType::Vertex, lightingStageDescription.lightingPass.vertexShader);
     Shader* tiledDeferredFrag = graphicSystem->createShader(ShaderType::Fragment, lightingStageDescription.lightingPass.fragmentShader);
@@ -155,74 +152,63 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
     tiledDeferredPass.vertexData = renderer->getFullScreenQuad();
     tiledDeferredPass.textures.pushBack(tileLightTexture);
 
-    LightGridParameterValue lightGridParameterValue;
-    lightGridParameterValue.gridDimensions[0] = gridDimensions.tileWidth;
-    lightGridParameterValue.gridDimensions[1] = gridDimensions.tileHeight;
-    lightGridParameterValue.gridDimensions[2] = gridDimensions.widthResolution;
-    lightGridParameterValue.gridDimensions[3] = gridDimensions.heightResolution;
-    lightGridParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
+    auto gridDimensions = tileGrid.getGridDimensions();
+    ShaderParameterBlock* lightGridParametersBlock = graphicSystem->createShaderParameterBlock(sp_lightGridParameters);
+    lightGridParametersBlock->setParameterData(&gridDimensions, sizeof(gridDimensions));
 
     tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_lightParameters));
-    tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_lightGridParameters));
-    tiledDeferredPass.shaderParameterBlocks[1]->setParameterData(&lightGridParameterValue, sizeof(lightGridParameterValue));
-    tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
+    tiledDeferredPass.shaderParameterBlocks.pushBack(lightGridParametersBlock);
     tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_materialProperties));
+    tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
+    tiledDeferredPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
 
     lightingRenderPass.shaderPasses.pushBack(tiledDeferredPass);
     renderPasses.pushBack(lightingRenderPass);
 }
 
-void LightingStage::resizeResources(const LightingStageDescription& lightingStageDescription)
+void LightingStage::resizeResources()
 {
+    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
     ViewPort screenViewPort = renderer->getScreenViewPort();
-    int lightingRenderPassIndex = (lightingStageDescription.hasSSAOPass) ? 3 : 0;
+    int lightingRenderPassIndex = (renderPasses.size() > 1) ? 3 : 0;
 
-    if(lightingStageDescription.hasSSAOPass)
+    for(unsigned int i = 0; i < renderPasses.size(); ++i)
+        renderPasses[i].viewPort = screenViewPort;
+
+    if(lightingRenderPassIndex == 3)
     {
         //Resize the SSAO render target texture.
         Texture* SSAOTexture = renderPasses[0].renderTarget->getColorBuffers()[0];
         SSAOTexture->setWidth(screenViewPort.width);
         SSAOTexture->setHeight(screenViewPort.height);
-
-        //Resize the viewport of SSAO and both blur passes
-        renderPasses[0].viewPort = screenViewPort;
-        renderPasses[1].viewPort = screenViewPort;
-        renderPasses[2].viewPort = screenViewPort;
-
-        //Resize the SSAO shader parameter block.
-        SSAOParameterValue SSAOValue;
-        SSAOValue.SAOParameters = Vector4(500.0f, lightingStageDescription.ssaoPass.ssaoRadius, lightingStageDescription.ssaoPass.ssaoBias, lightingStageDescription.ssaoPass.ssaoIntensity);
-        SSAOValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-        renderPasses[0].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&SSAOValue, sizeof(SSAOValue));
     }
 
-    renderPasses[lightingRenderPassIndex].viewPort = screenViewPort;
-
-    //Resize the render target texture.
+    //Resize lighting pass render target texture.
     Texture* lightingTexture = renderPasses[lightingRenderPassIndex].renderTarget->getColorBuffers()[0];
     lightingTexture->setWidth(screenViewPort.width);
     lightingTexture->setHeight(screenViewPort.height);
 
     //Resize the light grid.
-    tileGrid.setGridDimensions(lightingStageDescription.lightingPass.lightTileWidth, lightingStageDescription.lightingPass.lightTileHeight, screenViewPort.width, screenViewPort.height);
+    auto gridDimensions = tileGrid.getGridDimensions();
+    tileGrid.setGridDimensions(gridDimensions.tileWidth, gridDimensions.tileHeight, screenViewPort.width, screenViewPort.height);
 
     //Resize the light grid dimensions shader parameter block.
     auto newGridDimensions = tileGrid.getGridDimensions();
-    LightGridParameterValue lightGridParameterValue;
-    lightGridParameterValue.gridDimensions[0] = newGridDimensions.tileWidth;
-    lightGridParameterValue.gridDimensions[1] = newGridDimensions.tileHeight;
-    lightGridParameterValue.gridDimensions[2] = newGridDimensions.widthResolution;
-    lightGridParameterValue.gridDimensions[3] = newGridDimensions.heightResolution;
-    lightGridParameterValue.renderTargetSize = Vector2(static_cast<float>(screenViewPort.width), static_cast<float>(screenViewPort.height));
-    renderPasses[lightingRenderPassIndex].shaderPasses[0].shaderParameterBlocks[1]->setParameterData(&lightGridParameterValue, sizeof(lightGridParameterValue));
+    ShaderParameterBlock* lightGridParametersBlock = graphicSystem->getShaderParameterBlockByName(sp_lightGridParameters);
+    lightGridParametersBlock->setParameterData(&newGridDimensions, sizeof(newGridDimensions));
 }
 
-void LightingStage::setData(const Vector<Light*>& lights, const Vector3& globalAmbientLight, Camera* camera)
+void LightingStage::update(const Scene* scene)
 {
     int lightingRenderPassIndex = (renderPasses.size() > 1) ? 3 : 0;
 
+    Camera* camera = scene->getMainCamera();
+    Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
+    cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
+    Vector3 globalAmbientLight = scene->getGlobalAmbientLight();
+
     //Bin lights to tiles.
-    tileGrid.binLightsToTiles(lights, camera);
+    tileGrid.binLightsToTiles(frustumLights, camera);
     
     auto gridDimensions = tileGrid.getGridDimensions();
     auto lightParameterBlock = tileGrid.getLightParameterBlockValues();
@@ -237,12 +223,17 @@ void LightingStage::setData(const Vector<Light*>& lights, const Vector3& globalA
     renderPasses[lightingRenderPassIndex].shaderPasses[0].shaderParameterBlocks[0]->setParameterData(&lightParameterBlock, sizeof(lightParameterBlock));
 
     //Update the light info texture in Tiled deferred shader pass.
-    int width = lights.size();;
+    int width = frustumLights.size();;
     int height = gridDimensions.widthResolution * gridDimensions.heightResolution;
     int size = sizeof(int) * width * height;
     renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setWidth(width);
     renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setHeight(height);
     renderPasses[lightingRenderPassIndex].shaderPasses[0].textures[0]->setPixelData(tileGrid.getTileLightInfo().data(), size);
+}
+
+void LightingStage::clearStage()
+{
+    frustumLights.clear();
 }
 
 }

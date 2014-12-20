@@ -52,10 +52,10 @@ struct LightParameterBlockValues
 
 struct GridDimensions
 {
-    int widthResolution = 0;
-    int heightResolution = 0;
     int tileWidth = 0;
     int tileHeight = 0;
+    int widthResolution = 0;
+    int heightResolution = 0;
 };
 
 struct Tile

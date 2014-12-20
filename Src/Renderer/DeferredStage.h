@@ -38,10 +38,11 @@ public:
     void deInit();
     void resizeResources();
     void clearStage();
-    void setData(const Vector<RenderItem>& renderItems);
+    void update(const Scene* scene);
 
 private:
     GBuffer* gBuffer = nullptr;
+    Vector<RenderItem> deferredRenderItems;
 };
 
 }

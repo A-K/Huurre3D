@@ -84,12 +84,25 @@ void ShadowStage::resizeResources()
     shadowOcclusionTexture->setHeight(screenViewPort.height);
 }
 
-void ShadowStage::setData(const Vector<RenderItem>& renderItems, const Vector<Light*>& lights, Camera* camera)
+void ShadowStage::update(const Scene* scene)
 {
-    if(!lights.empty())
+    scene->getAllRenderItems(shadowRenderItems);
+    Camera* camera = scene->getMainCamera();
+    Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
+    Vector<Light*> lights;
+    cullLights(scene, lights, worldSpaceCameraViewFrustum);
+    lights.findItems([](const Light* light) {return light->getCastShadow(); }, shadowLights);
+
+    if(!shadowLights.empty())
     {
-        calculateShadowCameraViewProjections(lights, camera);
-        createLightShadowPasses(renderItems);
+        for(unsigned int i = 0; i < shadowLights.size(); ++i)
+        {
+            int mask = 1 << i;
+            shadowLights[i]->setShadowOcclusionMask(mask);
+        }
+
+        calculateShadowCameraViewProjections(shadowLights, camera);
+        createLightShadowPasses(shadowRenderItems);
         shadowOcllusionShaderPass.shaderParameterBlocks[0]->clearBuffer();
         shadowOcllusionShaderPass.shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getData(), shadowOcclusionData.getSizeInBytes());
     }
@@ -97,6 +110,8 @@ void ShadowStage::setData(const Vector<RenderItem>& renderItems, const Vector<Li
 
 void ShadowStage::clearStage()
 {
+    shadowRenderItems.clear();
+    shadowLights.clear();
     renderPasses.clear();
     shadowDepthData.clear();
     shadowOcclusionData.clear();

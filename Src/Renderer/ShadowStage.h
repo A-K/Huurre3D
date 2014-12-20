@@ -40,12 +40,14 @@ public:
     void clearStage();
     void init(const ShadowStageDescription& shadowStageDescription);
     void resizeResources();
-    void setData(const Vector<RenderItem>& renderItems, const Vector<Light*>& lights, Camera* camera);
+    void update(const Scene* scene);
 
 private:
     void calculateShadowCameraViewProjections(const Vector<Light*>& lights, Camera* camera);
     void drawShadowDepthPasses();
     void createLightShadowPasses(const Vector<RenderItem>& renderItems);
+    Vector<Light*> shadowLights;
+    Vector<RenderItem> shadowRenderItems;
     ViewPort shadowDepthViewPort;
     ShaderProgram* shadowDepthProgram;
     RenderTarget* shadowDepthRenderTarget;

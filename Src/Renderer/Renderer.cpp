@@ -63,12 +63,20 @@ bool Renderer::createRenderWindow(int width, int height, const std::string& wind
     {
         cameraShaderParameterBlock = graphicSystem->createShaderParameterBlock(sp_cameraParameters);
         materialParameterBlock = graphicSystem->createShaderParameterBlock(sp_materialProperties);
+        renderTargetSizeBlock = graphicSystem->createShaderParameterBlock(sp_renderTargetSize);
+        Vector4 renderTargetSizeValue = Vector4(float(width), float(height), (1.0f / float(width)), (1.0f / float(height)));
+        renderTargetSizeBlock->addParameter(renderTargetSizeValue);
+
         createFullScreenQuad();
         screenViewPort.set(0, 0, width, height);
         deferredStage.init();
-        shadowStage.init(rendererDescription.shadowStageDescription);
         lightingStage.init(rendererDescription.lightingStageDescription);
-        postProcessStage.init(rendererDescription.postProcessStageDescription);
+
+        if(rendererDescription.hasShadowStage)
+            shadowStage.init(rendererDescription.shadowStageDescription);
+
+        if(rendererDescription.hasPostProcessStage)
+            postProcessStage.init(rendererDescription.postProcessStageDescription);
     }
     return success;
 }
@@ -76,68 +84,58 @@ bool Renderer::createRenderWindow(int width, int height, const std::string& wind
 void Renderer::resizeRenderWindow(int width, int height)
 {
     screenViewPort.set(0, 0, width, height);
+    Vector4 renderTargetSizeValue = Vector4(float(width), float(height), (1.0f / float(width)), (1.0f / float(height)));
+    renderTargetSizeBlock->clearBuffer();
+    renderTargetSizeBlock->addParameter(renderTargetSizeValue);
+
     deferredStage.resizeResources();
-    shadowStage.resizeResources();
-    lightingStage.resizeResources(rendererDescription.lightingStageDescription);
-    postProcessStage.resizeResources(rendererDescription.postProcessStageDescription);
+    lightingStage.resizeResources();
+
+    if(rendererDescription.hasShadowStage)
+        shadowStage.resizeResources();
+
+    if(rendererDescription.hasPostProcessStage)
+        postProcessStage.resizeResources();
 }
 
 void Renderer::renderScene(Scene* scene, Camera* camera)
 {
     scene->update();
 
-    deferredRenderItems.clear();
-    shadowRenderItems.clear();
-    frustumLights.clear();
-    shadowLights.clear();
-
     deferredStage.clearStage();
     shadowStage.clearStage();
+    lightingStage.clearStage();
 
     camera->getCameraShaderParameterBlock(cameraShaderParameterBlock);
 
-    Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
-
-    auto deferredItemsCullResult = workQueue.submitTask([this, scene, worldSpaceCameraViewFrustum](){cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum); });
-    //sceneCuller.cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum);
+    FixedArray<std::future<void>, 4> stageupdateResults;
+    stageupdateResults[0] = workQueue.submitTask([this, scene](){deferredStage.update(scene); });
     
-    scene->getAllRenderItems(shadowRenderItems);
-    cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
+    if(rendererDescription.hasShadowStage)
+        stageupdateResults[1] = workQueue.submitTask([this, scene](){shadowStage.update(scene); });
+    
+    stageupdateResults[2] = workQueue.submitTask([this, scene](){lightingStage.update(scene); });
 
-    frustumLights.findItems([](const Light* light) {return light->getCastShadow(); }, shadowLights);
+    if(rendererDescription.hasPostProcessStage)
+        stageupdateResults[3] = workQueue.submitTask([this, scene](){postProcessStage.update(scene); });
 
-    SkyBox* skyBox = (SkyBox*)scene->getSceneItem("SkyBox");
-
-    for(unsigned int i = 0; i < shadowLights.size(); ++i)
-    {
-        int mask = 1 << i;
-        shadowLights[i]->setShadowOcclusionMask(mask);
-    }
-
-    deferredItemsCullResult.wait();
-    auto deferredStageResult = workQueue.submitTask([this](){deferredStage.setData(deferredRenderItems); });
-    //deferredStage.setData(deferredRenderItems);
-
-    auto shadowStageResult = workQueue.submitTask([this, camera](){shadowStage.setData(shadowRenderItems, shadowLights, camera); });
-    //shadowStage.setData(shadowRenderItems, shadowLights, camera);
-
-    Vector3 globalAmbientLight = scene->getGlobalAmbientLight();
-    auto lightingStageResult = workQueue.submitTask([this, globalAmbientLight, camera](){lightingStage.setData(frustumLights, globalAmbientLight, camera); });
-    //lightingStage.setData(frustumLights, globalAmbientLight, camera);
-
-    if(skyBox)
-        postProcessStage.setSkybox(skyBox);
-
-    deferredStageResult.wait();
+    stageupdateResults[0].wait();
     deferredStage.execute();
 
-    shadowStageResult.wait();
-    shadowStage.execute();
+    if(rendererDescription.hasShadowStage)
+    {
+        stageupdateResults[1].wait();
+        shadowStage.execute();
+    }
 
-    lightingStageResult.wait();
+    stageupdateResults[2].wait();
     lightingStage.execute();
 
-    postProcessStage.execute();
+    if(rendererDescription.hasPostProcessStage)
+    {
+        stageupdateResults[3].wait();
+        postProcessStage.execute();
+    }
 
     graphicWindow->swapBuffers();
 }

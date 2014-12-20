@@ -67,30 +67,34 @@ void DeferredStage::resizeResources()
 
 void DeferredStage::clearStage()
 {
+    deferredRenderItems.clear();
     renderPasses[0].shaderPasses.clear();
 }
 
-void DeferredStage::setData(const Vector<RenderItem>& renderItems)
+void DeferredStage::update(const Scene* scene)
 {
+    Frustum worldSpaceCameraViewFrustum = scene->getMainCamera()->getViewFrustumInWorldSpace();
+    cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum);
+
     Vector<unsigned int> materialBufferIndicies = renderer->getMaterialBufferIndicies();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
     ShaderParameterBlock* cameraShaderParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_cameraParameters);
 
     //Create a shader pass for each material.
-    for(unsigned int i = 0; i <renderItems.size(); ++i)
+    for(unsigned int i = 0; i < deferredRenderItems.size(); ++i)
     {
         ShaderPass materialPass;
-        renderItems[i].material->getTextures(materialPass.textures);
-        materialPass.rasterState = renderItems[i].material->getRasterState();
-        materialPass.vertexData = renderItems[i].geometry->getVertexData();
-        materialPass.shaderParameters.pushBack(ShaderParameter(sp_worldTransform, renderItems[i].geometry->getWorldTransform()));
+        deferredRenderItems[i].material->getTextures(materialPass.textures);
+        materialPass.rasterState = deferredRenderItems[i].material->getRasterState();
+        materialPass.vertexData = deferredRenderItems[i].geometry->getVertexData();
+        materialPass.shaderParameters.pushBack(ShaderParameter(sp_worldTransform, deferredRenderItems[i].geometry->getWorldTransform()));
 
-        unsigned int materialParameterId = renderItems[i].material->getParameterId();
+        unsigned int materialParameterId = deferredRenderItems[i].material->getParameterId();
         int materialBufferIndex = materialBufferIndicies.getIndexToItem(materialParameterId);
         materialPass.shaderParameters.pushBack(ShaderParameter(sp_materialParameterIndex, materialBufferIndex));
         materialPass.shaderParameterBlocks.pushBack(cameraShaderParameterBlock);
 
-        materialPass.program = graphicSystem->getShaderCombination(renderItems[i].material->getCurrentShaderCombinationTag());
+        materialPass.program = graphicSystem->getShaderCombination(deferredRenderItems[i].material->getCurrentShaderCombinationTag());
         renderPasses[0].shaderPasses.pushBack(materialPass);
     }
 }

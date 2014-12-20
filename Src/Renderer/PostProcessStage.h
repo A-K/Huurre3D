@@ -40,8 +40,9 @@ public:
     ~PostProcessStage() = default;
     
     void init(const PostProcessStageDescription& postProcessStageDescription);
-    void resizeResources(const PostProcessStageDescription& postProcessStageDescription);
-    void setSkybox(SkyBox* skyBox);
+    void resizeResources();
+    void update(const Scene* scene);
+
 private:
     SkyBox* currentSkyBox = nullptr;
 };
