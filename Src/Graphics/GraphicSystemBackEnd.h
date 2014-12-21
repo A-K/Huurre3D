@@ -25,7 +25,7 @@
 #include "Graphics/Rasterization.h"
 #include "Graphics/Texture.h"
 #include "Graphics/VertexData.h"
-#include "Graphics/ShaderParameters.h"
+#include "Graphics/ShaderParameter.h"
 #include "Graphics/ShaderProgram.h"
 #include "Util/Vector.h"
 
@@ -43,10 +43,12 @@ public:
 	
     void setViewPort(const ViewPort& viewPort) {}
     void clear(unsigned int flags, const Vector4& color) {}
-    unsigned int createBuffer() {return graphicResourceId++;}
-    unsigned int createVertexData() { return graphicResourceId++; }
-    unsigned int createTexture() { return graphicResourceId++; }
-    unsigned int createShaderProgram() { return graphicResourceId++; }
+    unsigned int createAttributeBuffer() {return graphicResourceId++;}
+    unsigned int createIndexBuffer() {return graphicResourceId++;}
+    unsigned int createShaderParameterBlock(const std::string& name)  { return graphicResourceId++; }
+    unsigned int createVertexData() {return graphicResourceId++;}
+    unsigned int createTexture() {return graphicResourceId++;}
+    unsigned int createShaderProgram() {return graphicResourceId++;}
     unsigned int createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers) { return graphicResourceId++; }
     void removeBuffer(unsigned int bufferId) {}
     void removeVertexData(unsigned int vertexDataId) {}

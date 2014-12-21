@@ -47,7 +47,6 @@ extern const GLenum glCullMode[];
 extern const GLchar* glAttributeName[];
 extern const GLenum glUniformType[];
 extern const GLchar* glShaderDefines[];
-extern const GLchar* glShaderParameters[];
 extern const GLchar* glTextureSlots[];
 extern const GLenum shaderTypes[];
 

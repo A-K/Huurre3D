@@ -23,7 +23,7 @@
 #define ShaderProgram_H
 
 #include "Graphics/Shader.h"
-#include "Graphics/ShaderParameters.h"
+//#include "Graphics/ShaderParameter.h"
 #include "Util/Vector.h"
 #include "Math/MathFunctions.h"
 

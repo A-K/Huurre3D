@@ -40,8 +40,9 @@ public:
 
     void setViewPort(const ViewPort& viewPort);
     void clear(unsigned int flags, const Vector4& color);
-    //Generates a buffer object for attribute, index and uniform buffers.
-    unsigned int createBuffer();
+    unsigned int createAttributeBuffer();
+    unsigned int createIndexBuffer();
+    unsigned int createShaderParameterBlock(const std::string& name);
     //Generates a vertex array object, that is used to encapsulate the vertex data state.
     unsigned int createVertexData();
     //Generates a texture object.
@@ -80,6 +81,8 @@ public:
     void drawInstanced(int numIndices, int indexOffset, int instancesCount);
 
 private:
+    //Generates a buffer object for attribute, index and uniform buffers.
+    unsigned int createBuffer();
     void updateTexture(Texture* texture);
     void updateShaderProgram(ShaderProgram* program);
     void updateRenderTarget(RenderTarget* renderTarget);
@@ -114,6 +117,8 @@ private:
     PrimitiveType currentPrimitiveType = PrimitiveType::Triangles;
     IndexType currentIndexType = IndexType::Short;
     Vector4 currentClearColor = Vector4::ZERO;
+    //Used to define binding points for each different buffer.
+    Vector<std::string> shaderParameterBlockNames;
 };
 
 }

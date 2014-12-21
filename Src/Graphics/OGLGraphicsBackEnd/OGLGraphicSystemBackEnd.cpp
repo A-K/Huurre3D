@@ -58,6 +58,22 @@ void OGLGraphicSystemBackEnd::clear(unsigned int flags, const Vector4& color)
     glClear(glFlags);
 }
 
+unsigned int OGLGraphicSystemBackEnd::createAttributeBuffer()
+{
+    return createBuffer();
+}
+
+unsigned int OGLGraphicSystemBackEnd::createIndexBuffer()
+{
+    return createBuffer();
+}
+
+unsigned int OGLGraphicSystemBackEnd::createShaderParameterBlock(const std::string& name)
+{
+    shaderParameterBlockNames.pushBack(name);
+    return createBuffer();
+}
+
 unsigned int OGLGraphicSystemBackEnd::createBuffer()
 {
     GLuint bufferId;
@@ -491,9 +507,9 @@ void OGLGraphicSystemBackEnd::fetchUniformBlocks(ShaderProgram* program)
         glGetActiveUniformBlockiv(programId, paramBlockDesc.shaderIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &paramBlockDesc.size);
 
         //search the buffer binding point.
-        for(unsigned int j = 0; j < NUM_INBUILT_SHADER_PARAMETER_NAMES; ++j)
+        for(unsigned int j = 0; j < shaderParameterBlockNames.size(); ++j)
         {
-            if(glShaderParameters[j] == paramBlockDesc.name)
+            if(shaderParameterBlockNames[j] == paramBlockDesc.name)
             {
                 paramBlockDesc.bindingPoint = j;
                 break;
@@ -617,7 +633,6 @@ void OGLGraphicSystemBackEnd::setShaderParameterBlock(ShaderParameterBlockDescri
         glUniformBlockBinding(currentShaderProgramId, description->shaderIndex, bindingPoint);
         glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, blockId);
         block->setBindingIndex(bindingPoint);
-
         description->sourceBlockSetted = true;
     }
 

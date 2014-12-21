@@ -57,7 +57,7 @@ AttributeBuffer* GraphicSystem::createAttributeBuffer(AttributeType type, Attrib
 {
     AttributeBuffer* attributeBuffer = new AttributeBuffer(this, type, semantic, numComponentsPerVertex, normalized, dynamic);
     unsigned int id;
-    dynamic ? id = graphicSystemBackEnd->createBuffer() : id = -1;
+    dynamic ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
     attributeBuffers.pushBack(attributeBuffer);
     attributeBuffer->setId(id);
     return attributeBuffer;
@@ -67,7 +67,7 @@ VertexStream* GraphicSystem::createVertexStream(int numVertices, bool interleave
 {
     VertexStream* vertexStream = new VertexStream(this, numVertices);
     unsigned int id;
-    interleaved ? id = graphicSystemBackEnd->createBuffer() : id = -1;
+    interleaved ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
     vertexStreams.pushBack(vertexStream);
     vertexStream->setId(id);
     return vertexStream;
@@ -76,7 +76,7 @@ VertexStream* GraphicSystem::createVertexStream(int numVertices, bool interleave
 IndexBuffer* GraphicSystem::createIndexBuffer(IndexType indexType, int numIndices, bool dynamic)
 {
     IndexBuffer* indexBuffer = new IndexBuffer(this, indexType, numIndices, dynamic);
-    unsigned int id = graphicSystemBackEnd->createBuffer();
+    unsigned int id = graphicSystemBackEnd->createIndexBuffer();
     indexBuffers.pushBack(indexBuffer);
     indexBuffer->setId(id);
     return indexBuffer;
@@ -126,7 +126,7 @@ RenderTarget* GraphicSystem::createRenderTarget(int width, int height, bool dept
 ShaderParameterBlock* GraphicSystem::createShaderParameterBlock(const std::string& name)
 {
     ShaderParameterBlock* shaderParameterBlock = new ShaderParameterBlock(this, name);
-    unsigned int id = graphicSystemBackEnd->createBuffer();
+    unsigned int id = graphicSystemBackEnd->createShaderParameterBlock(name);
     shaderParameterBlocks.pushBack(shaderParameterBlock);
     shaderParameterBlock->setId(id);
     return shaderParameterBlock;

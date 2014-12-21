@@ -23,7 +23,7 @@
 #define RenderPasses_H
 
 #include "Util/Vector.h"
-#include "Graphics/ShaderParameters.h"
+#include "Graphics/ShaderParameter.h"
 #include "Graphics/Rasterization.h"
 
 namespace Huurre3D

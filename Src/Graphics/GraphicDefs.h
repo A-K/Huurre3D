@@ -22,6 +22,8 @@
 #ifndef GraphicDefs_H
 #define GraphicDefs_H
 
+#include <string>
+
 namespace Huurre3D
 {
 
@@ -231,6 +233,19 @@ enum class CubeMapFace
 
 static const unsigned int NumCubeMapFaces = 6;
 static const int MaxRenderTargetBuffers = 10;
+
+//Inbuilt engine parameters
+static const std::string sp_worldTransform = "u_worldTransform";
+static const std::string sp_cameraParameters = "u_cameraParameters";
+static const std::string sp_lightParameters = "u_lightParameters";
+static const std::string sp_lightGridParameters = "u_lightGridParameters";
+static const std::string sp_materialProperties = "u_materialProperties";
+static const std::string sp_materialParameterIndex = "u_materialParameterIndex";
+static const std::string sp_lightViewProjectionMatrix = "u_lightViewProjectionMatrix";
+static const std::string sp_shadowOcclusionParameters = "u_shadowOcclusionParameters";
+static const std::string sp_shadowOcclusionParameterIndex = "u_shadowOcclusionParameterIndex";
+static const std::string sp_SSAOParameters = "u_SSAOParameters";
+static const std::string sp_renderTargetSize = "u_renderTargetParameters";
 
 }
 

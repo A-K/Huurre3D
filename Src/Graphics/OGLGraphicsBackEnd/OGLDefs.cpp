@@ -235,22 +235,6 @@ const GLchar* glShaderDefines[] =
     "#define VERTICAL_BLUR"
 };
 
-
-const GLchar* glShaderParameters[] = 
-{
-    "u_worldTransform",
-    "u_cameraParameters",
-    "u_lightParameters",
-    "u_lightGridParameters",
-    "u_materialProperties",
-    "u_materialParameterIndex",
-    "u_lightViewProjectionMatrix",
-    "u_shadowOcclusionParameters",
-    "u_shadowOcclusionParameterIndex",
-    "u_SSAOParameters",
-    "u_renderTargetParameters"
-};
-
 const GLchar* glTextureSlots[] = 
 {
     "u_diffuseTexture",

@@ -26,7 +26,7 @@
 #include "Graphics/VertexData.h"
 #include "Graphics/ShaderProgram.h"
 #include "Graphics/ShaderParameterBlock.h"
-#include "Graphics/ShaderParameters.h"
+#include "Graphics/ShaderParameter.h"
 #include "Graphics/Rasterization.h"
 #include "Graphics/RenderTarget.h"
 #include "Math/Rect.h"

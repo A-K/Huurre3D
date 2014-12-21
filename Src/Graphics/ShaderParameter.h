@@ -58,20 +58,6 @@ struct ShaderParameter
     }
 };
 
-extern const std::string sp_worldTransform;
-extern const std::string sp_cameraParameters;
-extern const std::string sp_lightParameters;
-extern const std::string sp_lightGridParameters;
-extern const std::string sp_materialProperties;
-extern const std::string sp_materialParameterIndex;
-extern const std::string sp_lightViewProjectionMatrix;
-extern const std::string sp_shadowOcclusionParameters;
-extern const std::string sp_shadowOcclusionParameterIndex;
-extern const std::string sp_SSAOParameters;
-extern const std::string sp_renderTargetSize;
-
-static const int NUM_INBUILT_SHADER_PARAMETER_NAMES = 11;
-
 }
 
 #endif
