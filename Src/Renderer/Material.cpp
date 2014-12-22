@@ -117,25 +117,25 @@ void Material::setReflectance(float reflectance)
 void Material::setDiffuseTexture(Texture* texture)
 {
     diffuseTexture = texture;
-    shaderDefines.pushBack(ShaderDefine(ShaderDefineType::DiffuseTexture, ""));
+    shaderDefines.pushBack(ShaderDefine(sd_diffuseTexture, ""));
 }
 
 void Material::setSpecularTexture(Texture* texture)
 {
     specularTexture = texture;
-    shaderDefines.pushBack(ShaderDefine(ShaderDefineType::SpecularTexture, ""));
+    shaderDefines.pushBack(ShaderDefine(sd_specularTexture, ""));
 }
 
 void Material::setNormalMap(Texture* texture)
 {
     normalMap = texture;
-    shaderDefines.pushBack(ShaderDefine(ShaderDefineType::NormalTexture, ""));
+    shaderDefines.pushBack(ShaderDefine(sd_normalTexture, ""));
 }
 
 void Material::setAlphaTexture(Texture* texture)
 {
     alphaTexture = texture;
-    shaderDefines.pushBack(ShaderDefine(ShaderDefineType::AlphaMask, ""));
+    shaderDefines.pushBack(ShaderDefine(sd_alphaMask, ""));
 }
 
 void Material::setCurrentShaderCombinationTag(unsigned int shaderCombinationTag)

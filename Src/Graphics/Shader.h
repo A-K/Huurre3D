@@ -32,13 +32,13 @@ namespace Huurre3D
 
 struct ShaderDefine
 {
-    ShaderDefineType defineType;
+    std::string defineName;
     std::string value;
 
     ShaderDefine() = default;
 
-    ShaderDefine(ShaderDefineType define, std::string value):
-    defineType(define),
+    ShaderDefine(const std::string& defineName, const std::string& value) :
+    defineName(defineName),
     value(value)
     {
     }
@@ -51,14 +51,14 @@ public:
     ~Shader() = default;
 
     void setCompiled(bool compiled) {this->compiled = compiled;}
-    template<typename T> void setDefine(ShaderDefineType define, const T& value)
+    template<typename T> void setDefine(const std::string& defineName, const T& value)
     {
         std::ostringstream oss; 
         oss << value; 
-        shaderDefines.pushBack(ShaderDefine(define, oss.str()));
+        shaderDefines.pushBack(ShaderDefine(defineName, oss.str()));
         dirty = true;
     }
-    void setDefine(ShaderDefineType shaderDefineType);
+    void setDefine(const std::string& defineName);
     void setDefine(ShaderDefine shaderDefine);
     void setDefines(const Vector<ShaderDefine>& shaderDefines);
     void setSource(const std::string& source);

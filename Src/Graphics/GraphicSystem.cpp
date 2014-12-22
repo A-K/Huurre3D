@@ -506,12 +506,8 @@ unsigned int GraphicSystem::generateShaderCombinationTag(const Vector<std::strin
     for(unsigned int i = 0; i < shaderFileNames.size(); ++i)
         id.append(shaderFileNames[i]); 
 
-    char tempBuffer[24];
     for(unsigned int i = 0; i < shaderDefines.size(); ++i)
-    {
-        sprintf(tempBuffer, "%d", shaderDefines[i].defineType);
-        id.append(tempBuffer);
-    }
+        id.append(shaderDefines[i].defineName);
  
     return generateHash((unsigned char*)id.c_str(), id.size()); 
 }

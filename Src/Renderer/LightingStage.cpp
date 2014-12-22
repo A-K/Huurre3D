@@ -58,9 +58,9 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         ShaderPass SSAOPass;
         Shader* SSAOVert = graphicSystem->createShader(ShaderType::Vertex, lightingStageDescription.ssaoPass.vertexShader);
         Shader* SSAOFrag = graphicSystem->createShader(ShaderType::Fragment, lightingStageDescription.ssaoPass.SSAOFragmentShader);
-        SSAOFrag->setDefine(ShaderDefineType::SAO);
-        SSAOFrag->setDefine(ShaderDefineType::NumSAOSamples, lightingStageDescription.ssaoPass.numSAOSamples);
-        SSAOFrag->setDefine(ShaderDefineType::NumSAOSpiralTurns, lightingStageDescription.ssaoPass.numSAOSpiralTurns);
+        SSAOFrag->setDefine(sd_SAO);
+        SSAOFrag->setDefine(sd_numSAOSamples, lightingStageDescription.ssaoPass.numSAOSamples);
+        SSAOFrag->setDefine(sd_numSAOSpiralTurns, lightingStageDescription.ssaoPass.numSAOSpiralTurns);
         SSAOPass.program = graphicSystem->createShaderProgram(SSAOVert, SSAOFrag);
         SSAOPass.vertexData = renderer->getFullScreenQuad();
 
@@ -105,7 +105,7 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
         ShaderPass horizontalBlurShaderPass;
         Shader* horizontalBlurVert = graphicSystem->createShader(ShaderType::Vertex, lightingStageDescription.ssaoPass.vertexShader);
         Shader* horizontalBlurFrag = graphicSystem->createShader(ShaderType::Fragment, lightingStageDescription.ssaoPass.SSAOBlurFragmentShader);
-        horizontalBlurFrag->setDefine(ShaderDefineType::VerticalBlur);
+        horizontalBlurFrag->setDefine(sd_verticalBlur);
         horizontalBlurShaderPass.program = graphicSystem->createShaderProgram(horizontalBlurVert, horizontalBlurFrag);
         horizontalBlurShaderPass.vertexData = renderer->getFullScreenQuad();
         horizontalBlurShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_renderTargetSize));
@@ -136,13 +136,13 @@ void LightingStage::init(const LightingStageDescription& lightingStageDescriptio
 
     Shader* tiledDeferredVert = graphicSystem->createShader(ShaderType::Vertex, lightingStageDescription.lightingPass.vertexShader);
     Shader* tiledDeferredFrag = graphicSystem->createShader(ShaderType::Fragment, lightingStageDescription.lightingPass.fragmentShader);
-    tiledDeferredFrag->setDefine(ShaderDefineType::MaxNumLights, MaXNumLights);
-    tiledDeferredFrag->setDefine(ShaderDefineType::MaxNumMaterials, MaxNumMaterials);
+    tiledDeferredFrag->setDefine(sd_maxNumLights, MaXNumLights);
+    tiledDeferredFrag->setDefine(sd_maxNumMaterials, MaxNumMaterials);
     
     if(lightingStageDescription.hasSSAOPass)
-        tiledDeferredFrag->setDefine(ShaderDefineType::SSAO);
+        tiledDeferredFrag->setDefine(sd_SSAO);
     if(lightingStageDescription.lightingPass.hdr)
-        tiledDeferredFrag->setDefine(ShaderDefineType::Hdr);
+        tiledDeferredFrag->setDefine(sd_HDR);
 
     Texture* tileLightTexture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::ClampEdge, TextureFilterMode::Nearest, TexturePixelFormat::Red32I, 0, 0);
     tileLightTexture->setSlotIndex(TextureSlotIndex::TileLightInfo);

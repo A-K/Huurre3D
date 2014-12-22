@@ -31,9 +31,9 @@ GraphicObject(graphicSystem)
 {
 }
 
-void Shader::setDefine(ShaderDefineType shaderDefineType)
+void Shader::setDefine(const std::string& defineName)
 {
-    shaderDefines.pushBack(ShaderDefine(shaderDefineType, ""));
+    shaderDefines.pushBack(ShaderDefine(defineName, ""));
     dirty = true;
 }
 

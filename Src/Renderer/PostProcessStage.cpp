@@ -55,7 +55,7 @@ void PostProcessStage::init(const PostProcessStageDescription& postProcessStageD
 
         Shader* environmentVert = graphicSystem->createShader(ShaderType::Vertex, postProcessStageDescription.environmentPass.vertexShader);
         Shader* environmentFrag = graphicSystem->createShader(ShaderType::Fragment, postProcessStageDescription.environmentPass.fragmentShader);
-        environmentVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
+        environmentVert->setDefine(sd_useWorldSpaceParameters);
         environmentShaderPass.program = graphicSystem->createShaderProgram(environmentVert, environmentFrag);
         environmentShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
         environmentShaderPass.vertexData = renderer->getFullScreenQuad();
@@ -78,7 +78,7 @@ void PostProcessStage::init(const PostProcessStageDescription& postProcessStageD
         ShaderPass antiAliasingShaderPass;
         Shader* antiAliasingVert = graphicSystem->createShader(ShaderType::Vertex, postProcessStageDescription.antiAliasingPass.vertexShader);
         Shader* antiAliasingFrag = graphicSystem->createShader(ShaderType::Fragment, postProcessStageDescription.antiAliasingPass.fragmentShader);
-        antiAliasingFrag->setDefine(ShaderDefineType::FxaaQuality, postProcessStageDescription.antiAliasingPass.fxaaQuality);
+        antiAliasingFrag->setDefine(sd_fxaaQuality, postProcessStageDescription.antiAliasingPass.fxaaQuality);
         antiAliasingShaderPass.program = graphicSystem->createShaderProgram(antiAliasingVert, antiAliasingFrag);
         antiAliasingShaderPass.vertexData = renderer->getFullScreenQuad();
 

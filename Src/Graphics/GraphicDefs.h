@@ -57,7 +57,7 @@ enum class AttributeSemantic
     NumSemantics
 };
 
-const int attributeSize[] =
+static const int attributeSize[] =
 {
     sizeof(unsigned char),
     sizeof(short),
@@ -71,7 +71,7 @@ enum class IndexType
     Int
 };
 
-const int indexSize[] =
+static const int indexSize[] =
 {
     sizeof(unsigned short),
     sizeof(unsigned int)
@@ -111,26 +111,6 @@ enum class ShaderType
     Fragment
 };
 
-//Defines to toggle features on.
-enum class ShaderDefineType
-{
-    DiffuseTexture,
-    SpecularTexture,
-    AlphaMask,
-    NormalTexture,
-    EnvironmentMap,
-    MaxNumMaterials,
-    MaxNumLights,
-    MaxNumShadowLights,
-    UseWorldSpaceParameters,
-    FxaaQuality,
-    Hdr,
-    SSAO,
-    SAO,
-    NumSAOSamples,
-    NumSAOSpiralTurns,
-    VerticalBlur
-};
 
 enum class ShaderParameterType
 {
@@ -203,12 +183,12 @@ enum class TexturePixelFormat
     DXT5,
 };
 
-const int pixelFormatNumComponents[] =
+static const int pixelFormatNumComponents[] =
 {
     3, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4
 };
 
-const int pixelFormatSizeInBytes[] =
+static const int pixelFormatSizeInBytes[] =
 {
     3, 4, 16, 8, 16, 2, 4, 2, 4, 1, 3, 8, 16, 16
 };
@@ -246,6 +226,23 @@ static const std::string sp_shadowOcclusionParameters = "u_shadowOcclusionParame
 static const std::string sp_shadowOcclusionParameterIndex = "u_shadowOcclusionParameterIndex";
 static const std::string sp_SSAOParameters = "u_SSAOParameters";
 static const std::string sp_renderTargetSize = "u_renderTargetParameters";
+
+//Shader defines.
+static const std::string sd_diffuseTexture = "#define DIFFUSE_TEXTURE";
+static const std::string sd_specularTexture = "#define SPECULAR_TEXTURE";
+static const std::string sd_alphaMask = "#define ALPHA_MASK";
+static const std::string sd_normalTexture = "#define NORMAL_TEXTURE";
+static const std::string sd_maxNumMaterials = "#define MAX_NUM_MATERIALS";
+static const std::string sd_maxNumLights = "#define MAX_NUM_LIGHTS";
+static const std::string sd_maxNumShadowLights = "#define MAX_SHADOW_LIGHTS";
+static const std::string sd_useWorldSpaceParameters = "#define USE_WORLD_PARAMETERS";
+static const std::string sd_fxaaQuality = "#define FXAA_QUALITY__PRESET";
+static const std::string sd_HDR = "#define HDR";
+static const std::string sd_SSAO = "#define SSAO";
+static const std::string sd_SAO = "#define SAO";
+static const std::string sd_numSAOSamples = "#define NUM_SAO_SAMPLES";
+static const std::string sd_numSAOSpiralTurns = "#define NUM_SAO_SPIRAL_TURNS";
+static const std::string sd_verticalBlur = "#define VERTICAL_BLUR";
 
 }
 

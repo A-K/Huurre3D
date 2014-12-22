@@ -22,7 +22,6 @@
 #ifndef OGLShaderLoader_H
 #define OGLShaderLoader_H
 
-#include "Graphics/OGLGraphicsBackEnd/OGLDefs.h"
 #include "Util/Vector.h"
 #include <string>
 

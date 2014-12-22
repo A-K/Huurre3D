@@ -63,8 +63,8 @@ void ShadowStage::init(const ShadowStageDescription& shadowStageDescription)
     shadowOcllusionShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
     Shader* shadowOcclusionVert = graphicSystem->createShader(ShaderType::Vertex, shadowStageDescription.shadowOcclusionPass.vertexShader);
     Shader* shadowOcclusionFrag = graphicSystem->createShader(ShaderType::Fragment, shadowStageDescription.shadowOcclusionPass.fragmentShader);
-    shadowOcclusionVert->setDefine(ShaderDefineType::UseWorldSpaceParameters);
-    shadowOcclusionFrag->setDefine(ShaderDefineType::MaxNumShadowLights, shadowStageDescription.shadowOcclusionPass.maxNumShadowLights);
+    shadowOcclusionVert->setDefine(sd_useWorldSpaceParameters);
+    shadowOcclusionFrag->setDefine(sd_maxNumShadowLights, shadowStageDescription.shadowOcclusionPass.maxNumShadowLights);
     shadowOcllusionShaderPass.program = graphicSystem->createShaderProgram(shadowOcclusionVert, shadowOcclusionFrag);
 
     shadowOcllusionShaderPass.vertexData = renderer->getFullScreenQuad();
