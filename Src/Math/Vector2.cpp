@@ -41,6 +41,12 @@ x(vector.x), y(vector.y)
 {
 }
 
+Vector2::Vector2(const float* data):
+x(data[0]), y(data[1])
+{
+
+}
+
 Vector2& Vector2::operator = (const Vector2& rhs)
 {
     x = rhs.x;

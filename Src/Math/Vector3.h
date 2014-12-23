@@ -30,7 +30,8 @@ class Vector3
 public:
     Vector3() = default;
     Vector3(float x, float y,float z);
-    Vector3(const Vector3& vector); 
+    Vector3(const Vector3& vector);
+    Vector3(const float* data);
     ~Vector3() = default;
 
     Vector3& operator = (const Vector3& rhs);

@@ -31,11 +31,12 @@ namespace Huurre3D
 class Vector4
 {
 public:
-    Vector4(void) = default;
+    Vector4() = default;
     Vector4(float x, float y,float z, float w);
     Vector4(const Vector4& vector);
     Vector4(const Vector3& vector, float w);
     Vector4(const Vector2& vector1, const Vector2& vector2);
+    Vector4(const float* data);
     ~Vector4() = default;
 
     Vector4& operator = (const Vector4& rhs);

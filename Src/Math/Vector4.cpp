@@ -53,6 +53,11 @@ x(vector1.x), y(vector1.y), z(vector2.x), w(vector2.y)
 {
 }
 
+Vector4::Vector4(const float* data):
+x(data[0]), y(data[1]), z(data[2]), w(data[3])
+{
+}
+
 Vector4& Vector4::operator = (const Vector4& rhs)
 {
     x = rhs.x;

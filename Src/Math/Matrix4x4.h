@@ -34,10 +34,10 @@ class Vector3;
 class Matrix4x4
 {
 public:
-    Matrix4x4(void) = default;
+    Matrix4x4() = default;
     Matrix4x4(const Vector4& col0, const Vector4& col1, const Vector4& col2, const Vector4& col3);
     Matrix4x4(const Matrix4x4& matrix);
-    ~Matrix4x4(void) = default;
+    ~Matrix4x4() = default;
 
     const Vector4& operator [] (int index) const;
     Vector4& operator [] (int index);
