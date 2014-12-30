@@ -22,7 +22,6 @@
 #ifndef ShadowProjector_H
 #define ShadowProjector_H
 
-#include "Renderer/RendererDefs.h"
 #include "Scene/Camera.h"
 #include "Graphics/Texture.h"
 
@@ -30,6 +29,8 @@ namespace Huurre3D
 {
 
 class Light;
+
+static const unsigned int MaxSplits = 4;
 
 struct ShadowDepthData
 {

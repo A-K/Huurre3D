@@ -22,7 +22,6 @@
 #ifndef LightTileGrid_H
 #define LightTileGrid_H
 
-#include "Renderer/RendererDefs.h"
 #include "Math/Rect.h"
 #include "Math/Vector4.h"
 #include "Util/FixedArray.h"
@@ -32,6 +31,7 @@
 namespace Huurre3D
 {
 
+static const unsigned int MaXNumLights = 1000;
 static const unsigned int TileLightInfoArraySize = MaXNumLights * 2000;
 class Light;
 class Camera;
