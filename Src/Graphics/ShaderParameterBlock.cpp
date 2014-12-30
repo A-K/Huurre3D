@@ -39,22 +39,58 @@ void ShaderParameterBlock::setBindingIndex(unsigned int bindingIndex)
     binded = true;
 }
 
+void ShaderParameterBlock::addParameter(int parameter)
+{
+    appendParameterBlock(&parameter, sizeof(int));
+}
+
+void ShaderParameterBlock::addParameter(const FixedArray<int, 2>& parameter)
+{
+    appendParameterBlock(parameter.data(), 2 * sizeof(int));
+}
+
+void ShaderParameterBlock::addParameter(const FixedArray<int, 3>& parameter)
+{
+    appendParameterBlock(parameter.data(), 3 * sizeof(int));
+}
+
+void ShaderParameterBlock::addParameter(const FixedArray<int, 4>& parameter)
+{
+    appendParameterBlock(parameter.data(), 4 * sizeof(int));
+}
+
 void ShaderParameterBlock::addParameter(float parameter) 
 {
-    appendParameter(&parameter, 4);
+    appendParameterBlock(&parameter, sizeof(float));
+}
+
+void ShaderParameterBlock::addParameter(const Vector2& parameter)
+{
+    appendParameterBlock(parameter.toArray(), 2 * sizeof(float));
+}
+
+void ShaderParameterBlock::addParameter(const Vector3& parameter)
+{
+    appendParameterBlock(parameter.toArray(), 3 * sizeof(float));
 }
 
 void ShaderParameterBlock::addParameter(const Vector4& parameter) 
 {
-    appendParameter(parameter.toArray(), 16);
+    appendParameterBlock(parameter.toArray(), 4 * sizeof(float));
 }
 
 void ShaderParameterBlock::addParameter(const Matrix4x4& parameter) 
 {
-    appendParameter(parameter.toArray(), 64);
+    appendParameterBlock(parameter.toArray(), 16 * sizeof(float));
 }
 
-void ShaderParameterBlock::appendParameter(const float* parameter, unsigned int size)
+void ShaderParameterBlock::appendParameterBlock(const float* parameter, unsigned int size)
+{
+    append(parameter, size);
+    dirty = true;
+}
+
+void ShaderParameterBlock::appendParameterBlock(const int* parameter, unsigned int size)
 {
     append(parameter, size);
     dirty = true;
