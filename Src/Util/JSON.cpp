@@ -28,7 +28,8 @@ namespace Huurre3D
     
 JSON::~JSON()
 {
-    cJSON_Delete(root.value);
+    if(root.value)
+        cJSON_Delete(root.value);
 }
 
 bool JSON::parseFromFile(const std::string& fileName)
@@ -41,7 +42,10 @@ bool JSON::parseFromFile(const std::string& fileName)
         std::string fileContent((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
         cJSON* cJSONroot = cJSON_Parse(fileContent.c_str());
         if(!cJSONroot)
+        {
             std::cout << "Failed to parse json file. Error before: " << cJSON_GetErrorPtr() << std::endl;
+            cJSON_Delete(cJSONroot);
+        }
         else
         {
             root.value = cJSONroot;

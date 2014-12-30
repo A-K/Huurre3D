@@ -35,42 +35,114 @@ JSONValue& JSONValue::operator = (const JSONValue& rhs)
     return *this;
 }
 
-JSONValue JSONValue::getJSONObject(const std::string& name) const
+JSONValue JSONValue::getJSONValue(const std::string& name) const
 {
     return JSONValue(cJSON_GetObjectItem(value, name.c_str()));
 }
 
-int JSONValue::getInt(const std::string& name) const
+JSONValue JSONValue::getJSONArrayItem(const unsigned int index) const
 {
-    return cJSON_GetObjectItem(value, name.c_str())->valueint;
+    return JSONValue(cJSON_GetArrayItem(value, index));
 }
 
-bool JSONValue::getBool(const std::string& name) const
+unsigned int JSONValue::getSize() const
 {
-    return cJSON_GetObjectItem(value, name.c_str())->type != 0;
+    return cJSON_GetArraySize(value);
 }
 
-float JSONValue::getFloat(const std::string& name) const
+int JSONValue::getInt() const
 {
-    return static_cast<float>(cJSON_GetObjectItem(value, name.c_str())->valuedouble);
+    return value->valueint;
 }
 
-Vector4 JSONValue::getVector4(const std::string& name) const
+FixedArray<int, 2> JSONValue::getInt2() const
+{
+    FixedArray<int, 2> data;
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+        data[i] = cJSON_GetArrayItem(value, i)->valueint;
+
+    return data;
+}
+
+FixedArray<int, 3> JSONValue::getInt3() const
+{
+    FixedArray<int, 3> data;
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+        data[i] = cJSON_GetArrayItem(value, i)->valueint;
+
+    return data;
+}
+
+FixedArray<int, 4> JSONValue::getInt4() const
+{
+    FixedArray<int, 4> data;
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+        data[i] = cJSON_GetArrayItem(value, i)->valueint;
+
+    return data;
+}
+
+bool JSONValue::getBool() const
+{
+    return value->type != 0;
+}
+
+float JSONValue::getFloat() const
+{
+    return static_cast<float>(value->valuedouble);
+}
+
+Vector2 JSONValue::getVector2() const
+{
+    float data[2];
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+    {
+        cJSON* subitem = cJSON_GetArrayItem(value, i);
+        data[i] = static_cast<float>(subitem->valuedouble);
+    }
+
+    return Vector2(data);
+}
+
+Vector3 JSONValue::getVector3() const
+{
+    float data[3];
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+    {
+        cJSON* subitem = cJSON_GetArrayItem(value, i);
+        data[i] = static_cast<float>(subitem->valuedouble);
+    }
+
+    return Vector3(data);
+}
+
+Vector4 JSONValue::getVector4() const
 {
     float data[4];
-    cJSON* cJSONarray = cJSON_GetObjectItem(value, name.c_str());
-    for(int i = 0; i < cJSON_GetArraySize(cJSONarray); i++)
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
     {
-        cJSON* subitem = cJSON_GetArrayItem(cJSONarray, i);
-        data[0] = static_cast<float>(subitem->valuedouble);
+        cJSON* subitem = cJSON_GetArrayItem(value, i);
+        data[i] = static_cast<float>(subitem->valuedouble);
     }
 
     return Vector4(data);
 }
 
-const std::string JSONValue::getString(const std::string& name) const
+Matrix4x4 JSONValue::getMatrix4x4() const
 {
-    return std::string(cJSON_GetObjectItem(value, name.c_str())->valuestring);
+    float data[16];
+    for(int i = 0; i < cJSON_GetArraySize(value); i++)
+    {
+        cJSON* subitem = cJSON_GetArrayItem(value, i);
+        data[i] = static_cast<float>(subitem->valuedouble);
+    }
+
+    return Matrix4x4(Vector4(&data[0]), Vector4(&data[4]), Vector4(&data[8]), Vector4(&data[12]));
+}
+
+const std::string JSONValue::getString() const
+{
+    return std::string(value->valuestring);
 }
 
 }

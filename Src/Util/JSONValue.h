@@ -22,7 +22,8 @@
 #ifndef JSONValue_H
 #define JSONValue_H
 
-#include "Math/Vector4.h"
+#include "Math/Matrix4x4.h"
+#include "Util/FixedArray.h"
 #include "ThirdParty/cJSON/cJSON.h"
 #include <string>
 
@@ -39,12 +40,21 @@ public:
     ~JSONValue() = default;
 
     JSONValue& operator = (const JSONValue& rhs);
-    JSONValue getJSONObject(const std::string& name) const;
-    int getInt(const std::string& name) const;
-    bool getBool(const std::string& name) const;
-    float getFloat(const std::string& name) const;
-    Vector4 getVector4(const std::string& name) const;
-    const std::string getString(const std::string& name) const;
+    JSONValue getJSONValue(const std::string& name) const;
+    JSONValue getJSONArrayItem(const unsigned int index) const;
+    //Returns array size.
+    unsigned int getSize() const;
+    int getInt() const;
+    FixedArray<int, 2> getInt2() const;
+    FixedArray<int, 3> getInt3() const;
+    FixedArray<int, 4> getInt4() const;
+    bool getBool() const;
+    float getFloat() const;
+    Vector2 getVector2() const;
+    Vector3 getVector3() const;
+    Vector4 getVector4() const;
+    Matrix4x4 getMatrix4x4() const;
+    const std::string getString() const;
     bool isNull() const { return value == nullptr; }
 
 private:
