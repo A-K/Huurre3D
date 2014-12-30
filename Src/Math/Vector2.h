@@ -48,6 +48,8 @@ public:
     Vector2&  operator /= (float scalar);
     Vector2 operator * (const Vector2& rhs);
     Vector2& operator *= (const Vector2& rhs);
+    const float* toArray() const { return &x; }
+    float* toArray() { return &x; }
 
     float x;
     float y;
