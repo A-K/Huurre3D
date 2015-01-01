@@ -50,7 +50,7 @@ public:
     //Generates a shader program object.
     unsigned int createShaderProgram();
     //Generates a frameBuffer object.
-    unsigned int createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers);
+    unsigned int createRenderTarget(int width, int height, int numBuffers, int numLayers);
     void removeBuffer(unsigned int bufferId);
     void removeVertexData(unsigned int vertexDataId);
     void removeTexture(unsigned int textureId);

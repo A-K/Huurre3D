@@ -210,10 +210,6 @@ static const GLenum glUniformType[] =
     GL_INT_VEC2,
     GL_INT_VEC3,
     GL_INT_VEC4,
-    GL_BOOL,
-    GL_BOOL_VEC2,
-    GL_BOOL_VEC3,
-    GL_BOOL_VEC4,
     GL_FLOAT_MAT2,
     GL_FLOAT_MAT3,
     GL_FLOAT_MAT4,
@@ -221,6 +217,7 @@ static const GLenum glUniformType[] =
 
 static const GLchar* glTextureSlots[] =
 {
+    "u_depth",
     "u_diffuseTexture",
     "u_specularTexture",
     "u_normalTexture",

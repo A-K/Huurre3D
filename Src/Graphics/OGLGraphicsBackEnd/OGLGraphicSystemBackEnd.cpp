@@ -100,23 +100,11 @@ unsigned int OGLGraphicSystemBackEnd::createShaderProgram()
     return glCreateProgram();
 }
 
-unsigned int OGLGraphicSystemBackEnd::createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers)
+unsigned int OGLGraphicSystemBackEnd::createRenderTarget(int width, int height, int numBuffers, int numLayers)
 {
     GLuint frameBufferId;
     glGenFramebuffers(1, &frameBufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-
-    if(depthBuffer)
-    {
-        GLuint depthRB;
-        glGenRenderbuffers(1, &depthRB);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRB);
-
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRB);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		
-    }
 
     GLenum drawBuffers[MaxRenderTargetBuffers];
     drawBuffers[0] = GL_NONE;
@@ -588,19 +576,15 @@ void OGLGraphicSystemBackEnd::setShaderParameter(ShaderParameterDescription* des
             glProgramUniform4fv(currentShaderProgramId, description->shaderIndex, description->arraySize, (const GLfloat*)shaderParameter.value);
             break;
         case ShaderParameterType::Int:
-        case ShaderParameterType::Bool:
             glProgramUniform1iv(currentShaderProgramId, description->shaderIndex, description->arraySize, (const GLint*)shaderParameter.value);
             break;
         case ShaderParameterType::IntVector2:
-        case ShaderParameterType::BoolVector2:
             glProgramUniform2iv(currentShaderProgramId, description->shaderIndex, description->arraySize, (const GLint*)shaderParameter.value);
             break;
         case ShaderParameterType::IntVector3:
-        case ShaderParameterType::BoolVector3:
             glProgramUniform3iv(currentShaderProgramId, description->shaderIndex, description->arraySize, (const GLint*)shaderParameter.value);
             break;
         case ShaderParameterType::IntVector4:
-        case ShaderParameterType::BoolVector4:
             glProgramUniform4iv(currentShaderProgramId, description->shaderIndex, description->arraySize, (const GLint*)shaderParameter.value);
             break;
         case ShaderParameterType::FloatMatrix2:
