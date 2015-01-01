@@ -40,6 +40,7 @@ public:
     ~JSONValue() = default;
 
     JSONValue& operator = (const JSONValue& rhs);
+    void setJSONValue(const JSONValue& valueJSON);
     JSONValue getJSONValue(const std::string& name) const;
     JSONValue getJSONArrayItem(const unsigned int index) const;
     //Returns array size.

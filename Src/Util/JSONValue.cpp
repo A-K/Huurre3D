@@ -35,6 +35,11 @@ JSONValue& JSONValue::operator = (const JSONValue& rhs)
     return *this;
 }
 
+void JSONValue::setJSONValue(const JSONValue& valueJSON)
+{
+    cJSON_AddItemReferenceToObject(value, valueJSON.value->string, valueJSON.value);
+}
+
 JSONValue JSONValue::getJSONValue(const std::string& name) const
 {
     return JSONValue(cJSON_GetObjectItem(value, name.c_str()));
