@@ -90,10 +90,8 @@
     <ClCompile Include="..\..\Src\Graphics\GraphicSystem.cpp" />
     <ClCompile Include="..\..\Src\Graphics\GraphicWindow.cpp" />
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.cpp" />
-    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.cpp" />
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.cpp" />
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.cpp" />
-    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderParameters.cpp" />
     <ClCompile Include="..\..\Src\Graphics\RenderTarget.cpp" />
     <ClCompile Include="..\..\Src\Graphics\Shader.cpp" />
     <ClCompile Include="..\..\Src\Graphics\ShaderParameterBlock.cpp" />
@@ -121,6 +119,7 @@
     <ClCompile Include="..\..\Src\Renderer\PostProcessStage.cpp" />
     <ClCompile Include="..\..\Src\Renderer\Renderer.cpp" />
     <ClCompile Include="..\..\Src\Renderer\RenderStage.cpp" />
+    <ClCompile Include="..\..\Src\Renderer\RenderStageFactory.cpp" />
     <ClCompile Include="..\..\Src\Renderer\ShadowProjector.cpp" />
     <ClCompile Include="..\..\Src\Renderer\ShadowStage.cpp" />
     <ClCompile Include="..\..\Src\Renderer\TextureLoader.cpp" />
@@ -133,6 +132,9 @@
     <ClCompile Include="..\..\Src\Scene\SceneItemFactory.cpp" />
     <ClCompile Include="..\..\Src\Scene\SkyBox.cpp" />
     <ClCompile Include="..\..\Src\Scene\SpatialSceneItem.cpp" />
+    <ClCompile Include="..\..\Src\ThirdParty\cJSON\cJSON.c" />
+    <ClCompile Include="..\..\Src\Util\JSON.cpp" />
+    <ClCompile Include="..\..\Src\Util\JSONValue.cpp" />
     <ClCompile Include="..\..\Src\Util\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -156,7 +158,7 @@
     <ClInclude Include="..\..\Src\Graphics\RenderTarget.h" />
     <ClInclude Include="..\..\Src\Graphics\Shader.h" />
     <ClInclude Include="..\..\Src\Graphics\ShaderParameterBlock.h" />
-    <ClInclude Include="..\..\Src\Graphics\ShaderParameters.h" />
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameter.h" />
     <ClInclude Include="..\..\Src\Graphics\ShaderProgram.h" />
     <ClInclude Include="..\..\Src\Graphics\Texture.h" />
     <ClInclude Include="..\..\Src\Graphics\VertexData.h" />
@@ -176,17 +178,16 @@
     <ClInclude Include="..\..\Src\Math\Vector3.h" />
     <ClInclude Include="..\..\Src\Math\Vector4.h" />
     <ClInclude Include="..\..\Src\Renderer\DeferredStage.h" />
-    <ClInclude Include="..\..\Src\Renderer\GBuffer.h" />
     <ClInclude Include="..\..\Src\Renderer\Geometry.h" />
     <ClInclude Include="..\..\Src\Renderer\LightingStage.h" />
     <ClInclude Include="..\..\Src\Renderer\LightTileGrid.h" />
     <ClInclude Include="..\..\Src\Renderer\Material.h" />
     <ClInclude Include="..\..\Src\Renderer\PostProcessStage.h" />
     <ClInclude Include="..\..\Src\Renderer\Renderer.h" />
-    <ClInclude Include="..\..\Src\Renderer\RendererDefs.h" />
     <ClInclude Include="..\..\Src\Renderer\RenderItem.h" />
     <ClInclude Include="..\..\Src\Renderer\RenderPasses.h" />
     <ClInclude Include="..\..\Src\Renderer\RenderStage.h" />
+    <ClInclude Include="..\..\Src\Renderer\RenderStageFactory.h" />
     <ClInclude Include="..\..\Src\Renderer\ShadowProjector.h" />
     <ClInclude Include="..\..\Src\Renderer\ShadowStage.h" />
     <ClInclude Include="..\..\Src\Renderer\TextureLoader.h" />
@@ -200,8 +201,12 @@
     <ClInclude Include="..\..\Src\Scene\SceneItemFactory.h" />
     <ClInclude Include="..\..\Src\Scene\SkyBox.h" />
     <ClInclude Include="..\..\Src\Scene\SpatialSceneItem.h" />
+    <ClInclude Include="..\..\Src\ThirdParty\cJSON\cJSON.h" />
     <ClInclude Include="..\..\Src\ThirdParty\Stb_image\stb_image.h" />
+    <ClInclude Include="..\..\Src\Util\EnumClassDeclaration.h" />
     <ClInclude Include="..\..\Src\Util\FixedArray.h" />
+    <ClInclude Include="..\..\Src\Util\JSON.h" />
+    <ClInclude Include="..\..\Src\Util\JSONValue.h" />
     <ClInclude Include="..\..\Src\Util\MemoryBuffer.h" />
     <ClInclude Include="..\..\Src\Util\Timer.h" />
     <ClInclude Include="..\..\Src\Util\Vector.h" />
@@ -216,12 +221,14 @@
     <None Include="..\..\Data\Shaders\FXAA.frag" />
     <None Include="..\..\Data\Shaders\Gbuffer.frag" />
     <None Include="..\..\Data\Shaders\Gbuffer.vert" />
-    <None Include="..\..\Data\Shaders\PostProcess.frag" />
+    <None Include="..\..\Data\Shaders\AntiAliasing.frag" />
     <None Include="..\..\Data\Shaders\Samplers.frag" />
     <None Include="..\..\Data\Shaders\SAO.frag" />
     <None Include="..\..\Data\Shaders\ShadowDepth.frag" />
     <None Include="..\..\Data\Shaders\ShadowDepth.vert" />
     <None Include="..\..\Data\Shaders\ShadowOcclusion.frag" />
+    <None Include="..\..\Data\Shaders\SSAO.frag" />
+    <None Include="..\..\Data\Shaders\SSAOBlur.frag" />
     <None Include="..\..\Data\Shaders\TiledDeferredShading.frag" />
     <None Include="..\..\Data\Shaders\TiledShading.frag" />
     <None Include="..\..\Data\Shaders\ToneMap.frag" />

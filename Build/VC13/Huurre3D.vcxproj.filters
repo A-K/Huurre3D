@@ -7,16 +7,10 @@
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\GLFWGraphicWindowImpl.cpp">
       <Filter>Graphics\OGLGraphicsBackEnd</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLDefs.cpp">
-      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLGraphicSystemBackEnd.cpp">
       <Filter>Graphics\OGLGraphicsBackEnd</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderLoader.cpp">
-      <Filter>Graphics\OGLGraphicsBackEnd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Src\Graphics\OGLGraphicsBackEnd\OGLShaderParameters.cpp">
       <Filter>Graphics\OGLGraphicsBackEnd</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Src\Graphics\GraphicSystem.cpp">
@@ -145,6 +139,18 @@
     <ClCompile Include="..\..\Src\Renderer\TextureLoader.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Src\ThirdParty\cJSON\cJSON.c">
+      <Filter>ThirdParty\cJSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Util\JSONValue.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Util\JSON.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Renderer\RenderStageFactory.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Src\Engine\App.h">
@@ -202,9 +208,6 @@
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Src\Graphics\ShaderParameterBlock.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Src\Graphics\ShaderParameters.h">
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Src\Graphics\ShaderProgram.h">
@@ -312,9 +315,6 @@
     <ClInclude Include="..\..\Src\Renderer\DeferredStage.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Src\Renderer\GBuffer.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Src\Renderer\Geometry.h">
       <Filter>Renderer</Filter>
     </ClInclude>
@@ -351,10 +351,25 @@
     <ClInclude Include="..\..\Src\Graphics\GraphicDefs.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Src\Renderer\RendererDefs.h">
+    <ClInclude Include="..\..\Src\Renderer\RenderStage.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Src\Renderer\RenderStage.h">
+    <ClInclude Include="..\..\Src\ThirdParty\cJSON\cJSON.h">
+      <Filter>ThirdParty\cJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Graphics\ShaderParameter.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\JSONValue.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\JSON.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Util\EnumClassDeclaration.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Renderer\RenderStageFactory.h">
       <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
@@ -392,6 +407,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{5898ba0e-e07e-4682-98b2-3e22cf73a510}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThirdParty\cJSON">
+      <UniqueIdentifier>{3a8f92f8-e7f9-48fd-944d-a09dc8d94c3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Data\Shaders\Attributes.vert">
@@ -413,9 +431,6 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\..\Data\Shaders\Gbuffer.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\..\Data\Shaders\PostProcess.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\..\Data\Shaders\Samplers.frag">
@@ -452,6 +467,15 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\..\Data\Shaders\Environment.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\SSAO.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\SSAOBlur.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Data\Shaders\AntiAliasing.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

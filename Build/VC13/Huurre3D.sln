@@ -15,6 +15,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleScene", "..\..\Demos\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Huurre3D", "Huurre3D.vcxproj", "{A1E408AE-6CC8-42D4-8B14-529169F81F73}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SSAODemo", "..\..\Demos\SSAODemo\Build\SSAODemo.vcxproj", "{015EEA32-4E30-4976-9C05-873E25AF5F70}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A1E408AE-6CC8-42D4-8B14-529169F81F73} = {A1E408AE-6CC8-42D4-8B14-529169F81F73}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -34,6 +39,10 @@ Global
 		{A1E408AE-6CC8-42D4-8B14-529169F81F73}.Debug|Win32.Build.0 = Debug|Win32
 		{A1E408AE-6CC8-42D4-8B14-529169F81F73}.Release|Win32.ActiveCfg = Release|Win32
 		{A1E408AE-6CC8-42D4-8B14-529169F81F73}.Release|Win32.Build.0 = Release|Win32
+		{015EEA32-4E30-4976-9C05-873E25AF5F70}.Debug|Win32.ActiveCfg = Debug|Win32
+		{015EEA32-4E30-4976-9C05-873E25AF5F70}.Debug|Win32.Build.0 = Debug|Win32
+		{015EEA32-4E30-4976-9C05-873E25AF5F70}.Release|Win32.ActiveCfg = Release|Win32
+		{015EEA32-4E30-4976-9C05-873E25AF5F70}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
