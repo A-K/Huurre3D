@@ -49,6 +49,7 @@ private:
     std::string currentDirectoryPath;
     const std::string include = "#include";
     const std::string version = "#version";
+    const std::string define = "#define ";
 };
 
 }

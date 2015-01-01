@@ -41,9 +41,9 @@ public:
     SceneImporter(Renderer* renderer);
     ~SceneImporter() = default;
 	
-    void importMesh(const std::string&, Mesh* destMesh);
+    void importMesh(const std::string& fileName, Mesh* destMesh);
     //Import multiple copies from one model.
-    void importMultipleMeshes(const std::string&, Vector<Mesh*>& destMeshes);
+    void importMultipleMeshes(const std::string& fileName, Vector<Mesh*>& destMeshes);
 
 private:
     void readAssimpModelIntoDescriptions(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions);

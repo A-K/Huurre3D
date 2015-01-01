@@ -95,7 +95,7 @@ void OGLShaderLoader::addDefines(std::string& line)
     std::string s;
     for(unsigned int i = 0; i < shaderDefines.size(); ++i)
     {
-        line += "\n" + shaderDefines[i].defineName + ' ' + shaderDefines[i].value + "\n";
+        line += "\n" + define + shaderDefines[i].defineName + ' ' + shaderDefines[i].value + "\n";
     }
 }
 
