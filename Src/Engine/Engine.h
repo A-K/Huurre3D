@@ -22,7 +22,6 @@
 #ifndef Engine_H
 #define Engine_H
 
-#include "Renderer/RendererDescription.h"
 #include "Util/Vector.h"
 #include "Util/Timer.h"
 
