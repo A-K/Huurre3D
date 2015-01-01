@@ -20,6 +20,10 @@
 // THE SOFTWARE.
 
 #include "Engine/Engine.h"
+#include "Renderer/DeferredStage.h"
+#include "Renderer/LightingStage.h"
+#include "Renderer/ShadowStage.h"
+#include "Renderer/PostProcessStage.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Geometry.h"
 #include "Graphics/GraphicSystem.h"
@@ -34,33 +38,42 @@
 namespace Huurre3D
 {
 
-Renderer::Renderer(const RendererDescription& rendererDescription) :
-deferredStage(this),
-shadowStage(this),
-lightingStage(this),
-postProcessStage(this),
-rendererDescription(rendererDescription)
+RENDERSTAGE_TYPE_IMPL(DeferredStage);
+RENDERSTAGE_TYPE_IMPL(ShadowStage);
+RENDERSTAGE_TYPE_IMPL(LightingStage);
+RENDERSTAGE_TYPE_IMPL(PostProcessStage);
+
+Renderer::Renderer()
 {
     graphicWindow = new GraphicWindow();
     graphicSystem = new GraphicSystem();
 }
 
-Renderer::~Renderer(void)
+Renderer::~Renderer()
 {
-    //graphicSystem->removeShaderParameterBlock(cameraShaderParameterBlock);
-    //graphicSystem->removeShaderParameterBlock(materialParameterBlock);
-    deferredStage.deInit();
+    for(unsigned int i = 0; i < renderStages.size(); ++i)
+        delete renderStages[i];
+
     materials.reset();
     geometries.reset();
     delete graphicSystem;
     delete graphicWindow;
 }
-
-bool Renderer::createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen, bool vsync)
+bool Renderer::init(const JSONValue& rendererJSON)
 {
-    bool success = graphicWindow->create(width, height, windowTitle, fullscreen, vsync);
+    auto renderWindowJSON = rendererJSON.getJSONValue("renderWindow");
+
+    if(renderWindowJSON.isNull())
+    {
+        std::cout << "Failed to create render window. The mandatory value renderWindow is missing" << std::endl;
+        return false;
+    }
+
+    bool success = createRenderWindow(renderWindowJSON);
     if(success)
     {
+        int width = graphicWindow->getWidth();
+        int height = graphicWindow->getHeight();
         cameraShaderParameterBlock = graphicSystem->createShaderParameterBlock(sp_cameraParameters);
         materialParameterBlock = graphicSystem->createShaderParameterBlock(sp_materialProperties);
         renderTargetSizeBlock = graphicSystem->createShaderParameterBlock(sp_renderTargetSize);
@@ -69,16 +82,70 @@ bool Renderer::createRenderWindow(int width, int height, const std::string& wind
 
         createFullScreenQuad();
         screenViewPort.set(0, 0, width, height);
-        deferredStage.init();
-        lightingStage.init(rendererDescription.lightingStageDescription);
 
-        if(rendererDescription.hasShadowStage)
-            shadowStage.init(rendererDescription.shadowStageDescription);
+        auto materialVertexShaderJSON = rendererJSON.getJSONValue("materialVertexShader");
+        auto materialFragmentShaderJSON = rendererJSON.getJSONValue("materialFragmentShader");
 
-        if(rendererDescription.hasPostProcessStage)
-            postProcessStage.init(rendererDescription.postProcessStageDescription);
+        if(!materialVertexShaderJSON.isNull())
+            materialVertexShader = materialVertexShaderJSON.getString();
+
+        if(!materialFragmentShaderJSON.isNull())
+            materialFragmentShader = materialFragmentShaderJSON.getString();
+
+        auto renderStagesJSON = rendererJSON.getJSONValue("renderStages");
+        if(renderStagesJSON.isNull())
+        {
+            std::cout << "Failed to init renderer. The mandatory value renderStages is missing" << std::endl;
+        }
+        else
+        {
+            for(unsigned int i = 0; i < renderStagesJSON.getSize(); ++i)
+            {
+                auto renderStageJSON = renderStagesJSON.getJSONArrayItem(i);
+                auto renderStageNameJSON = renderStageJSON.getJSONValue("name");
+                auto renderTargetImplementationJSON = renderStageJSON.getJSONValue("implementation");
+
+                if(renderStageNameJSON.isNull() || renderTargetImplementationJSON.isNull())
+                {
+                    std::cout << "Failed to create renderStage " << i << ". One of the mandatory values: name, implementation is missing" << std::endl;
+                }
+                else
+                {
+                    RenderStage* renderStage = RenderStageFactory::createRenderStage(this, renderStageNameJSON.getString());
+                    renderStage->init(renderTargetImplementationJSON);
+                    renderStages.pushBack(renderStage);
+                }
+            }
+        }
     }
+
     return success;
+}
+
+bool Renderer::createRenderWindow(const JSONValue& renderWindowJSON)
+{
+    bool success = false;
+    auto widthJSON = renderWindowJSON.getJSONValue("width");
+    auto heightJSON = renderWindowJSON.getJSONValue("height");
+    auto windowTitleJSON = renderWindowJSON.getJSONValue("title");
+    auto fullscreenJSON = renderWindowJSON.getJSONValue("fullscreen");
+    auto vsyncJSON = renderWindowJSON.getJSONValue("vsync");
+
+    if(widthJSON.isNull() || heightJSON.isNull() || windowTitleJSON.isNull())
+        std::cout << "Failed to create render window from JSON. One of the mandatory values: width, height, title is missing" << std::endl;
+    else
+    {
+        bool fullscreen = fullscreenJSON.isNull() ? false : fullscreenJSON.getBool();
+        bool vsync = vsyncJSON.isNull() ? true : vsyncJSON.getBool();
+        success = createRenderWindow(widthJSON.getInt(), heightJSON.getInt(), windowTitleJSON.getString(), fullscreen, vsync);
+    }
+
+    return success;
+}
+
+bool Renderer::createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen, bool vsync)
+{
+    return graphicWindow->create(width, height, windowTitle, fullscreen, vsync);
 }
 
 void Renderer::resizeRenderWindow(int width, int height)
@@ -88,53 +155,28 @@ void Renderer::resizeRenderWindow(int width, int height)
     renderTargetSizeBlock->clearBuffer();
     renderTargetSizeBlock->addParameter(renderTargetSizeValue);
 
-    deferredStage.resizeResources();
-    lightingStage.resizeResources();
-
-    if(rendererDescription.hasShadowStage)
-        shadowStage.resizeResources();
-
-    if(rendererDescription.hasPostProcessStage)
-        postProcessStage.resizeResources();
+    for(unsigned int i = 0; i < renderStages.size(); ++i)
+        renderStages[i]->resizeResources();
 }
 
 void Renderer::renderScene(Scene* scene, Camera* camera)
 {
     scene->update();
-
-    deferredStage.clearStage();
-    shadowStage.clearStage();
-    lightingStage.clearStage();
-
     camera->getCameraShaderParameterBlock(cameraShaderParameterBlock);
 
-    FixedArray<std::future<void>, 4> stageupdateResults;
-    stageupdateResults[0] = workQueue.submitTask([this, scene](){deferredStage.update(scene); });
-    
-    if(rendererDescription.hasShadowStage)
-        stageupdateResults[1] = workQueue.submitTask([this, scene](){shadowStage.update(scene); });
-    
-    stageupdateResults[2] = workQueue.submitTask([this, scene](){lightingStage.update(scene); });
+    for(unsigned int i = 0; i < renderStages.size(); ++i)
+        renderStages[i]->clearStage();
 
-    if(rendererDescription.hasPostProcessStage)
-        stageupdateResults[3] = workQueue.submitTask([this, scene](){postProcessStage.update(scene); });
-
-    stageupdateResults[0].wait();
-    deferredStage.execute();
-
-    if(rendererDescription.hasShadowStage)
+    for(unsigned int i = 0; i < renderStages.size(); ++i)
     {
-        stageupdateResults[1].wait();
-        shadowStage.execute();
+        RenderStage* renderStage = renderStages[i];
+        stageupdateResults[i] = workQueue.submitTask([renderStage, scene](){renderStage->update(scene); });
     }
-
-    stageupdateResults[2].wait();
-    lightingStage.execute();
-
-    if(rendererDescription.hasPostProcessStage)
+   
+    for(unsigned int i = 0; i < renderStages.size(); ++i)
     {
-        stageupdateResults[3].wait();
-        postProcessStage.execute();
+        stageupdateResults[i].wait();
+        renderStages[i]->execute();
     }
 
     graphicWindow->swapBuffers();
@@ -218,8 +260,8 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
 
     //The material has no program set, try if the shader program exist.
     Vector<std::string> shaderFileNames;
-    shaderFileNames.pushBack(rendererDescription.deferredStageDescription.vertexShader);
-    shaderFileNames.pushBack(rendererDescription.deferredStageDescription.fragmentShader);
+    shaderFileNames.pushBack(materialVertexShader);
+    shaderFileNames.pushBack(materialFragmentShader);
     Vector<ShaderDefine> materialShaderDefines = material->getShaderDefines();
 
     ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, materialShaderDefines);
@@ -227,8 +269,8 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     //If the program dont exist, create one.
     if(!program)
     {
-        Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, rendererDescription.deferredStageDescription.vertexShader);
-        Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, rendererDescription.deferredStageDescription.fragmentShader);
+        Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, materialVertexShader);
+        Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, materialFragmentShader);
         fShader->setDefines(materialShaderDefines);
         program = graphicSystem->createShaderProgram(vShader, fShader);
     }

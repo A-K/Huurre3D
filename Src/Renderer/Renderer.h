@@ -24,11 +24,7 @@
 
 #include "Graphics/GraphicWindow.h"
 #include "Graphics/GraphicSystem.h"
-#include "Renderer/RendererDescription.h"
-#include "Renderer/DeferredStage.h"
-#include "Renderer/LightingStage.h"
-#include "Renderer/ShadowStage.h"
-#include "Renderer/PostProcessStage.h"
+#include "Renderer/RenderStage.h"
 #include "Renderer/Material.h"
 #include "Renderer/TextureLoader.h"
 #include "Util/WorkQueue.h"
@@ -105,9 +101,11 @@ struct TextureCacheItem
 class Renderer
 {
 public:
-    Renderer(const RendererDescription& rendererDescription);
+    Renderer();
     ~Renderer();
 
+    bool init(const JSONValue& rendererJSON);
+    bool createRenderWindow(const JSONValue& renderWindowJSON);
     bool createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen = false, bool vsync = true);
     //Resizes all the needed graphics resources allocated by the renderstages.
     void resizeRenderWindow(int width, int height);
@@ -133,11 +131,8 @@ private:
     Texture* createMaterialTexture(const std::string& texFileName, TextureSlotIndex slotIndex);
     void createFullScreenQuad();
 
-    DeferredStage deferredStage;
-    ShadowStage shadowStage;
-    LightingStage lightingStage;
-    PostProcessStage postProcessStage;
-
+    FixedArray<std::future<void>, 4> stageupdateResults;
+    Vector<RenderStage*> renderStages;
     ViewPort screenViewPort;
     VertexData* fullScreenQuad;
     ShaderParameterBlock* cameraShaderParameterBlock;
@@ -153,7 +148,8 @@ private:
     GraphicWindow* graphicWindow;
     WorkQueue<WorkQueueSize> workQueue;
     TextureLoader textureLoader;
-    RendererDescription rendererDescription;
+    std::string materialVertexShader;
+    std::string materialFragmentShader;
 };
 
 }
