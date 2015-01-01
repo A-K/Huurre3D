@@ -24,7 +24,7 @@
 namespace Huurre3D
 {
 
-Texture::Texture(GraphicSystem* graphicSystem, TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height):
+Texture::Texture(GraphicSystem* graphicSystem, TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height) :
 targetMode(targetMode),
 wrapMode(wrapMode),
 filterMode(filterMode),
@@ -51,6 +51,13 @@ void Texture::setHeight(int height)
 void Texture::setDepth(int depth)
 {
     this->depth = depth;
+    dataDirty = true;
+}
+
+void Texture::setSize(int width, int height)
+{
+    this->width = width;
+    this->height = height;
     dataDirty = true;
 }
 
