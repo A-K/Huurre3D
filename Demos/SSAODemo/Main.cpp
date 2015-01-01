@@ -19,27 +19,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Engine/App.h"
-#include "Engine/Engine.h"
-#include "Scene/Mesh.h"
-#include "Input/Input.h"
-#include "Scene/SceneImporter.h"
+#include "SSAODemo.h"
 
-using namespace Huurre3D;
-
-class SimpleSceneDemo : public App
+int main(int argc, const char* argv[])
 {
-public:
-    SimpleSceneDemo() = default;
-    ~SimpleSceneDemo() = default;
-
-    void init() override;
-    void deinit() override {}
-    void update(float timeSinceLastUpdate) override;
-
-private:
-    Camera* camera;
-    Scene* scene;
-    Input* input;
-    SceneImporter* sceneImporter;
-};
+    Engine engine;
+    SSAODemo SSAODemoApp;
+    assert(engine.init("../../Demos/SSAODemo/SSAODemoConfig.json"));
+    engine.setApp(&SSAODemoApp);
+    engine.run();
+}

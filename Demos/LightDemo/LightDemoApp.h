@@ -56,8 +56,4 @@ private:
     float lightsMaxHeight = 300.0f;
     FixedArray<Vector3, 4> movingPointLightCorners;
     bool stopLights = false;
-
-    int height = 640;
-    int width = 720;
-    std::string title = "Light Demo";
 };

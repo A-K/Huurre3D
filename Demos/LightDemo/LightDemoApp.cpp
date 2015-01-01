@@ -20,12 +20,12 @@
 // THE SOFTWARE.
 
 #include "LightDemoApp.h"
+#include "Scene/Skybox.h"
 
 void LightDemoApp::init()
 {
     scene = engine->createScene();
     sceneImporter = engine->getSceneImporter();
-    engine->getRenderer()->createRenderWindow(width, height, title);
     input = engine->getInput();
 
     FixedArray<std::string, 6> skyBoxTextureFileNames;
@@ -44,7 +44,9 @@ void LightDemoApp::init()
     sceneImporter->importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
     sponza->scale(0.25f);
 
-    scene->getMainCamera()->setAspectRatio((float)width / (float)height);
+    float width = static_cast<float>(engine->getRenderer()->getScreenViewPort().width);
+    float height = static_cast<float>(engine->getRenderer()->getScreenViewPort().height);
+    scene->getMainCamera()->setAspectRatio(width / height);
     camera = scene->getMainCamera();
     camera->translate(Vector3(-250.0f, 350.0f, -10.0f), FrameOfReference::World);
     camera->setRotation(Quaternion(-90.0f, Vector3::UNIT_Y));

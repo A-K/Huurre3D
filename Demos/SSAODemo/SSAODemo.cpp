@@ -19,73 +19,58 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "SimpleSceneDemo.h"
+#include "SSAODemo.h"
 #include "Scene/Skybox.h"
 
-void SimpleSceneDemo::init()
+void SSAODemo::init()
 {
     scene = engine->createScene();
     sceneImporter = engine->getSceneImporter();
     input = engine->getInput();
 
     FixedArray<std::string, 6> skyBoxTextureFileNames;
-    skyBoxTextureFileNames[0] = Engine::getAssetPath() + "Textures/Skybox2/red_ft.tga";
-    skyBoxTextureFileNames[1] = Engine::getAssetPath() + "Textures/Skybox2/red_bk.tga";
-    skyBoxTextureFileNames[2] = Engine::getAssetPath() + "Textures/Skybox2/red_up.tga";
-    skyBoxTextureFileNames[3] = Engine::getAssetPath() + "Textures/Skybox2/red_dn.tga";
-    skyBoxTextureFileNames[4] = Engine::getAssetPath() + "Textures/Skybox2/red_rt.tga";
-    skyBoxTextureFileNames[5] = Engine::getAssetPath() + "Textures/Skybox2/red_lf.tga";
+    skyBoxTextureFileNames[0] = Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga";
+    skyBoxTextureFileNames[1] = Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga";
+    skyBoxTextureFileNames[2] = Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga";
+    skyBoxTextureFileNames[3] = Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga";
+    skyBoxTextureFileNames[4] = Engine::getAssetPath() + "Textures/Skybox/miramar_rt.tga";
+    skyBoxTextureFileNames[5] = Engine::getAssetPath() + "Textures/Skybox/miramar_lf.tga";
 
-    scene->setGlobalAmbientLight(Vector3(0.5f, 0.25f, 0.25f));
+    scene->setGlobalAmbientLight(Vector3(1.0f, 1.0f, 1.0f));
     SkyBox* skyBox = (SkyBox*)scene->createSceneItem("SkyBox");
     skyBox->setTextureFiles(skyBoxTextureFileNames);
 
-    Vector<Mesh*> cityTiles;
-    scene->createSceneItems<Mesh>(cityTiles, 9);
-    sceneImporter->importMultipleMeshes(Engine::getAssetPath() + "Models/TownCityTile/Street_environment_V01.obj", cityTiles);
-
-    float startX = -150.0f;
-    float startZ = -150.0f;
-    for(unsigned int i = 0; i < 3; ++i)
-    {
-        for(unsigned int j = 0; j < 3; ++j)
-            cityTiles[j + i * 3]->translate(Vector3(startX + 96.0f * float(i), 0.0f, startZ + 94.0f * float(j)), FrameOfReference::World);
-    }
+    Mesh* sponza = scene->createSceneItem<Mesh>();
+    sceneImporter->importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
+    sponza->scale(0.05f);
 
     float width = static_cast<float>(engine->getRenderer()->getScreenViewPort().width);
     float height = static_cast<float>(engine->getRenderer()->getScreenViewPort().height);
-    scene->getMainCamera()->setAspectRatio(width / height);
+    scene->getMainCamera()->setAspectRatio((float)width / (float)height);
     camera = scene->getMainCamera();
-    camera->setPosition(Vector3(15.0f, 10.0f, 0.0f));
-
-    FixedArray<float, 4> splits;
-    splits[0] = 50.0f;
-    splits[1] = 200.0f;
-    splits[2] = 500.0f;
-    splits[3] = 1000.0f;
-    Light* lightDirectional = (Light*)scene->createSceneItem("Light");
-    lightDirectional->setLightType(LightType::Directional);
-    lightDirectional->setDirection(Vector3(0.5f, -1.0f, 0.0f));
-    lightDirectional->setColor(Vector3(1.0f, 0.3f, 0.3f));
-    lightDirectional->setCastShadow(true);
-    lightDirectional->setShadowMinDistanceOffset(300.0f);
-    lightDirectional->setCascadeSplits(splits);
-    lightDirectional->setShadowBias(0.0007f);
+    camera->translate(Vector3(20.0f, 5.0f, 0.0f), FrameOfReference::World);
+    camera->setRotation(Quaternion(-90.0f, Vector3::UNIT_Y));
 }
 
-void SimpleSceneDemo::update(float timeSinceLastUpdate)
+void SSAODemo::update(float timeSinceLastUpdate)
 {
-    float moveDistance = timeSinceLastUpdate * 40.0f;
-    float moveRotation = timeSinceLastUpdate * 60.0f;
+    if(input->isMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        ssaoOn = !ssaoOn;
+        updateShaderParameters();
+    }
+    else if(input->isMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+    {
+        showSSAOTex = !showSSAOTex;
+        updateShaderParameters();
+    }
 
-    Vector3 camPos = camera->getPosition(FrameOfReference::Local);
-    Vector3 camCeil = Vector3(80.0f, 50.0f, 80.0f);
-    Vector3 camFloor = Vector3(-185.0f, 3.0f, -185.0f);
-    camera->setPosition(clamp(camPos, camFloor, camCeil));
+    float moveDistance = timeSinceLastUpdate * 20.0f;
+    float moveRotation = timeSinceLastUpdate * 60.0f;
 
     if(input->isKeyDown(KEY_LEFT))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
- 
+
     if(input->isKeyDown(KEY_RIGHT))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
 
@@ -106,4 +91,23 @@ void SimpleSceneDemo::update(float timeSinceLastUpdate)
 
     if(input->isKeyDown(KEY_D))
         camera->translate(Vector3(moveDistance, 0.0f, 0.0f), FrameOfReference::Local);
+}
+
+void SSAODemo::updateShaderParameters()
+{
+    ShaderParameterBlock* block = engine->getRenderer()->getGraphicSystem()->getShaderParameterBlockByName("u_showSSAOParameters");
+    block->clearBuffer();
+
+    FixedArray<int, 4> data;
+    data.fill(0);
+
+    if(showSSAOTex)
+    {
+        data[1] = 1;
+        ssaoOn = true;
+    }
+    if(ssaoOn)
+        data[0] = 1;
+
+    block->setParameterData(data.data(), sizeof(data));
 }

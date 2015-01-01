@@ -27,19 +27,22 @@
 
 using namespace Huurre3D;
 
-class SimpleSceneDemo : public App
+class SSAODemo : public App
 {
 public:
-    SimpleSceneDemo() = default;
-    ~SimpleSceneDemo() = default;
-
+    SSAODemo() = default;
+    ~SSAODemo() = default;
     void init() override;
     void deinit() override {}
     void update(float timeSinceLastUpdate) override;
 
 private:
+    void updateShaderParameters();
     Camera* camera;
     Scene* scene;
     Input* input;
     SceneImporter* sceneImporter;
+    bool ssaoOn = true;
+    bool showSSAOTex = false;
 };
+
