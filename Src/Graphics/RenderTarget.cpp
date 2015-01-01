@@ -20,16 +20,16 @@
 // THE SOFTWARE.
 
 #include "Graphics/RenderTarget.h"
+#include "Graphics/Texture.h"
 
 namespace Huurre3D
 {
 
-RenderTarget::RenderTarget(GraphicSystem* graphicSystem, int width, int height, bool depthBuffer, int numBuffers, int numLayers):
+RenderTarget::RenderTarget(GraphicSystem* graphicSystem, int width, int height, int numBuffers, int numLayers):
 width(width),
 height(height),
 numBuffers(numBuffers),
 numLayers(numLayers),
-depthBufferIncluded(depthBuffer),
 GraphicObject(graphicSystem)
 {
 }
@@ -56,6 +56,18 @@ void RenderTarget::setRenderLayer(int layer)
         this->layer = layer;
         dirty = true;
     }
+}
+
+void RenderTarget::setSize(int width, int height)
+{
+    this->width = width;
+    this->height = height;
+
+    for(unsigned int i = 0; i < colorBuffers.size(); ++i)
+        colorBuffers[i]->setSize(width, height);
+
+    if(depthBuffer)
+        depthBuffer->setSize(width, height);
 }
 
 }

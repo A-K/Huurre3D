@@ -49,7 +49,7 @@ public:
     unsigned int createVertexData() {return graphicResourceId++;}
     unsigned int createTexture() {return graphicResourceId++;}
     unsigned int createShaderProgram() {return graphicResourceId++;}
-    unsigned int createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers) { return graphicResourceId++; }
+    unsigned int createRenderTarget(int width, int height, int numBuffers, int numLayers) { return graphicResourceId++; }
     void removeBuffer(unsigned int bufferId) {}
     void removeVertexData(unsigned int vertexDataId) {}
     void removeTexture(unsigned int textureId) {}

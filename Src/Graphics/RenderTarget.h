@@ -33,17 +33,17 @@ class Texture;
 class RenderTarget : public GraphicObject
 {
 public:
-    RenderTarget(GraphicSystem* graphicSystem, int width, int height, bool depthBuffer, int numBuffers, int numLayers);
+    RenderTarget(GraphicSystem* graphicSystem, int width, int height, int numBuffers, int numLayers);
     ~RenderTarget() = default;
 	
     void setColorBuffer(Texture* colorBuffer);
     void setDepthBuffer(Texture* depthBuffer);
     void setRenderLayer(int layer);
+    void setSize(int width, int height);
     void setName(const std::string& name) {this->name = name;}
     const Vector<Texture*>& getColorBuffers() const {return colorBuffers;}
     Texture* getDepthTexture() const {return depthBuffer;}
     bool isLayered() const {return numLayers > 1;}
-    bool hasDepthBuffer() const {return depthBufferIncluded;}
     unsigned int getNumBuffers() const {return numBuffers;}
     int getWidth() const {return width;}
     int getHeight() const {return height;}
@@ -56,7 +56,6 @@ private:
     unsigned int numBuffers;
     int layer;
     int numLayers;
-    bool depthBufferIncluded;
     Vector<Texture*> colorBuffers;
     Texture* depthBuffer = nullptr;
     std::string name;
