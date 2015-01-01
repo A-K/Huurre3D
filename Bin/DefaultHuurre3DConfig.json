@@ -1,52 +1,551 @@
 {
     "assetPath" : "../Assets/",
-    "renderer" : {
-        "deferredStage" : {
-            "vertexShader" : "../../Data/Shaders/Gbuffer.vert",
-            "fragmentShader" : "../../Data/Shaders/Gbuffer.frag" 
+    "renderer" : 
+    {
+        "renderWindow" :
+        {
+            "width" : 720,
+            "height" : 640,
+            "title" : "Huurre3D",
+            "fullscreen" : false,
+            "vsync" : true
         },
-        "shadowStage" : {
-            "shadowDepthPass" : {
-                "vertexShader" : "../../Data/Shaders/ShadowDepth.vert",
-                "fragmentShader" : "../../Data/Shaders/ShadowDepth.frag",
-                "shadowMapSize" : 2048
-             },
-             "shadowOcclusionPass" : {
-                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
-                "fragmentShader" : "../../Data/Shaders/ShadowOcclusion.frag",
-                "maxShadowLights" : 32
-             } 
-        },
-        "lightingStage" : {
-            "SSAOPass" : {
-                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
-                "SSAOfragmentShader" : "../../Data/Shaders/SSAO.frag",
-                "SSAOBlurFragmentShader" : "../../Data/Shaders/SSAOBlur.frag",
-                "SSAORadius" : 0.55,
-                "SSAOBias" : 0.026,
-                "SSAOIntensity" : 5.0,
-                "numSAOSamples" : 11,
-                "numSAOSpiralTurns" : 9
-            },
-            "lightingPass" : {
-                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
-                "fragmentShader" : "../../Data/Shaders/TiledDeferredShading.frag",
-                "lightTileWidth" : 32,
-                "lightTileHeight" : 32,
-                "HDR" : true
-            }
-        },
-        "postProcessStage" : {
-            "environmentPass" : {
-                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
-                "fragmentShader" : "../../Data/Shaders/Environment.frag"
-            },
-            "antiAliasingPass":
+        "materialVertexShader" : "../../Data/Shaders/Gbuffer.vert",
+        "materialFragmentShader" : "../../Data/Shaders/Gbuffer.frag",
+        "renderStages" :
+        [
             {
-                "vertexShader" : "../../Data/Shaders/FullScreenQuad.vert",
-                "fragmentShader" : "../../Data/Shaders/AntiAliasing.frag",
-                "FXAAQuality" : 12
+                "name" : "DeferredStage", 
+                "implementation" :
+                {
+                    "GbufferRenderPass" :
+                    {
+                        "renderTargetLayer" : 0,
+                        "flags" : ["CLEAR_COLOR", "CLEAR_DEPTH"],
+                        "colorWrite" : true,
+                        "depthWrite" : true,
+                        "clearColor" : [0.0, 0.0, 0.0, 1.0],
+                        "renderTarget" :
+                        {
+                            "width" : 720,
+                            "height" : 640,
+                            "numLayers" : 1,
+                            "colorBuffers" : 
+                            [
+                                {
+                                    "targetMode" : "Texture2D",
+                                    "wrapMode" : "ClampEdge",
+                                    "filterMode" : "Bilinear",
+                                    "pixelFormat" : "Rgba8",
+                                    "textureSlot" : "DiffuseBuffer"
+                                },
+                                {
+                                    "targetMode" : "Texture2D",
+                                    "wrapMode" : "ClampEdge",
+                                    "filterMode" : "Bilinear",
+                                    "pixelFormat" : "Rgba8",
+                                    "textureSlot" : "SpecularBuffer"
+                                },
+                                {
+                                    "targetMode" : "Texture2D",
+                                    "wrapMode" : "ClampEdge",
+                                    "filterMode" : "Bilinear",
+                                    "pixelFormat" : "Rgba32F",
+                                    "textureSlot" : "NormalBuffer"
+                                }
+                            ],
+                            "depthBuffer" : 
+                            {
+                                "targetMode" : "Texture2D",
+                                "wrapMode" : "ClampEdge",
+                                "filterMode" : "Bilinear",
+                                "pixelFormat" : "Depth24",
+                                "textureSlot" : "Depth"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "name" : "ShadowStage",
+                "implementation" :
+                {
+                    "shadowDepthRenderPass" :
+                    {
+                        "renderTargetLayer" : 0,
+                        "flags" : ["CLEAR_DEPTH"],
+                        "colorWrite" : false,
+                        "depthWrite" : true,
+                        "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                        "viewPort" : [0.0, 0.0, 2048, 2048],
+                        "renderTarget" :
+                        {
+                            "width" : 2048,
+                            "height" : 2048,
+                            "numLayers" : 6,
+                            "depthBuffer" : 
+                            {
+                                "targetMode" : "Texture2DArray",
+                                "wrapMode" : "ClampEdge",
+                                "filterMode" : "Bilinear",
+                                "pixelFormat" : "Depth24",
+                                "textureSlot" : "ShadowDepth"
+                            }
+                        },
+                        "shaderPasses" :
+                        [
+                            {
+                                "rasterState" : 
+                                {
+                                    "compareFunction" : "Less",
+                                    "cullFace" : "Back"
+                                },
+                                "shaderProgram" :
+                                {
+                                    "vertexShader" :
+                                    {  
+                                        "sourceFile" : "../../Data/Shaders/ShadowDepth.vert"
+                                    },
+                                    "fragmentShader" :
+                                    { 
+                                        "sourceFile" : "../../Data/Shaders/ShadowDepth.frag"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "shadowOcclusionRenderPass" :
+                    {
+                        "renderTargetLayer" : 0,
+                        "flags" : ["CLEAR_COLOR"],
+                        "colorWrite" : true,
+                        "depthWrite" : false,
+                        "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                        "renderTarget" :
+                        {
+                            "width" : 720,
+                            "height" : 640,
+                            "numLayers" : 1,
+                            "colorBuffers" : 
+                            [
+                                {
+                                    "targetMode" : "Texture2D",
+                                    "wrapMode" : "ClampEdge",
+                                    "filterMode" : "Bilinear",
+                                    "pixelFormat" : "Rgba8",
+                                    "textureSlot" : "ShadowOcclusion"
+                                }
+                            ]
+                        },
+                        "shaderPasses" :
+                        [
+                            {
+                                "vertexData" : "fullScreenQuad",
+                                "rasterState" : 
+                                {
+                                    "blendFunction" : "Add"
+                                },
+                                "shaderProgram" :
+                                {
+                                    "vertexShader" :
+                                    {
+                                        "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
+                                        "defines" :
+                                        [
+                                            {
+                                                "name" : "USE_WORLD_PARAMETERS",
+                                                "value" : ""
+                                            }
+                                        ]
+                                    },
+                                    "fragmentShader" :
+                                    {
+                                        "sourceFile" : "../../Data/Shaders/ShadowOcclusion.frag",
+                                        "defines" :
+                                        [
+                                            {
+                                                "name" : "MAX_SHADOW_LIGHTS",
+                                                "value" : "32"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "shaderParameterBlocks" :
+                                [
+                                    {
+                                        "name" : "u_shadowOcclusionParameters"
+                                    },
+                                    {
+                                        "name" : "u_cameraParameters"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name" : "LightingStage",
+                "implementation" :
+                {
+                    "lightTileWidth" : 32,
+                    "lightTileHeight" : 32,
+                    "renderPasses" :
+                    [
+                        {
+                            "renderTargetLayer" : 0,
+                            "flags" : ["CLEAR_COLOR"],
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                            "renderTarget" :
+                            {
+                                "name" : "SSAORenderTarget",
+                                "width" : 720,
+                                "height" : 640,
+                                "numLayers" : 2,
+                                "colorBuffers" : 
+                                [
+                                    {
+                                        "targetMode" : "Texture2DArray",
+                                        "wrapMode" : "ClampEdge",
+                                        "filterMode" : "Bilinear",
+                                        "pixelFormat" : "Red16F",
+                                        "textureSlot" : "SSAO"
+                                    }
+                                ]
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {  
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert"
+                                        },
+                                        "fragmentShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/SSAO.frag",
+                                            "defines" :
+                                            [
+                                                {
+                                                    "name" : "SAO",
+                                                    "value" : ""
+                                                },
+                                                {
+                                                    "name" : "NUM_SAO_SAMPLES",
+                                                    "value" : "11"
+                                                },
+                                                {
+                                                    "name" : "NUM_SAO_SPIRAL_TURNS",
+                                                    "value" : "9"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_SSAOParameters",
+                                            "parameters" :
+                                            [
+                                                {
+                                                    "type" : "FloatVector4",
+                                                    "value" : [500.0, 0.55, 0.026, 5.0]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name" : "u_renderTargetParameters"
+                                        },
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "renderTargetLayer" : 1,
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "renderTarget" :
+                            {
+                                "name" : "SSAORenderTarget"
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {  
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert"
+                                        },
+                                        "fragmentShader" :
+                                        { 
+                                            "sourceFile" : "../../Data/Shaders/SSAOBlur.frag"
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_renderTargetParameters"
+                                        },
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "renderTargetLayer" : 0,
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "renderTarget" :
+                            {
+                                "name" : "SSAORenderTarget"
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert"
+                                        },
+                                        "fragmentShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/SSAOBlur.frag",
+                                            "defines" :
+                                            [
+                                                {
+                                                    "name" : "VERTICAL_BLUR",
+                                                    "value" : ""
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_renderTargetParameters"
+                                        },
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "renderTargetLayer" : 0,
+                            "flags" : ["CLEAR_COLOR"],
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                            "renderTarget" :
+                            {
+                                "name" : "lightingTarget",
+                                "width" : 720,
+                                "height" : 640,
+                                "numLayers" : 1,
+                                "colorBuffers" : 
+                                [
+                                    {
+                                        "targetMode" : "Texture2D",
+                                        "wrapMode" : "ClampEdge",
+                                        "filterMode" : "Bilinear",
+                                        "pixelFormat" : "Rgba8",
+                                        "textureSlot" : "Lighting"
+                                    }
+                                ]
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert"
+                                        },
+                                        "fragmentShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/TiledDeferredShading.frag",
+                                            "defines" :
+                                            [
+                                                {
+                                                    "name" : "MAX_NUM_LIGHTS",
+                                                    "value" : "1000"
+                                                },
+                                                {
+                                                    "name" : "MAX_NUM_MATERIALS",
+                                                    "value" : "255"
+                                                },
+                                                {
+                                                    "name" : "SSAO",
+                                                    "value" : ""
+                                                },
+                                                {
+                                                    "name" : "HDR",
+                                                    "value" : ""
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_lightParameters"
+                                        },
+                                        {
+                                            "name" : "u_lightGridParameters"
+                                        },
+                                        {
+                                            "name" : "u_materialProperties"
+                                        },
+                                        {
+                                            "name" : "u_renderTargetParameters"
+                                        },
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ],
+                                    "textures" :
+                                    [
+                                        {
+                                            "targetMode" : "Texture2D",
+                                            "wrapMode" : "ClampEdge",
+                                            "filterMode" : "Nearest",
+                                            "pixelFormat" : "Red32I",
+                                            "textureSlot" : "TileLightInfo",
+                                            "width" : 0,
+                                            "height" : 0
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name" : "PostProcessStage",
+                "implementation" :
+                {
+                    "renderPasses" :
+                    [
+                        {
+                            "renderTargetLayer" : 0,
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                            "renderTarget" :
+                            {
+                                "name" : "lightingTarget"
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "rasterState" :
+                                    {
+                                        "blendFunction" : "Add"
+                                    },
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
+                                            "defines" :
+                                            [
+                                                {
+                                                    "name" : "USE_WORLD_PARAMETERS",
+                                                    "value" : ""
+                                                }
+                                            ]
+                                        },
+                                        "fragmentShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/Environment.frag"
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ],
+                                    "textures" :
+                                    [
+                                        {
+                                            "targetMode" : "TextureCubeMap",
+                                            "wrapMode" : "ClampEdge",
+                                            "filterMode" : "Bilinear",
+                                            "pixelFormat" : "Rgb8",
+                                            "textureSlot" : "SkyBoxTex",
+                                            "width" : 0,
+                                            "height" : 0
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "renderTargetLayer" : 0,
+                            "flags" : ["CLEAR_COLOR"],
+                            "colorWrite" : true,
+                            "depthWrite" : false,
+                            "clearColor" : [0.0, 0.0, 0.0, 0.0],
+                            "renderTarget" :
+                            {
+                                "name" : "mainRenderTarget"
+                            },
+                            "shaderPasses" :
+                            [
+                                {
+                                    "vertexData" : "fullScreenQuad",
+                                    "shaderProgram" :
+                                    {
+                                        "vertexShader" :
+                                        {
+                                            "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert"
+                                        },
+                                        "fragmentShader" :
+                                        { 
+                                            "sourceFile" : "../../Data/Shaders/AntiAliasing.frag",
+                                            "defines" :
+                                            [
+                                                {
+                                                    "name" : "FXAA_QUALITY__PRESET",
+                                                    "value" : "12"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "shaderParameterBlocks" :
+                                    [
+                                        {
+                                            "name" : "u_renderTargetParameters"
+                                        },
+                                        {
+                                            "name" : "u_cameraParameters"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
-        }
+        ]
     }
 }
