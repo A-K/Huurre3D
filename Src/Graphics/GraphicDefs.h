@@ -37,7 +37,7 @@ DECLARE_ENUM_CLASS(CompareFunction, Always, Equal, NotEqual, Less, LessEqual, Gr
 DECLARE_ENUM_CLASS(CullFace, Front, Back, FrontAndBack);
 DECLARE_ENUM_CLASS(ShaderType, Vertex, Fragment);
 DECLARE_ENUM_CLASS(ShaderParameterType, Float, FloatVector2, FloatVector3, FloatVector4, Int, IntVector2, IntVector3, IntVector4, FloatMatrix2, FloatMatrix3, FloatMatrix4, NumTypes);
-DECLARE_ENUM_CLASS(TextureSlotIndex, Diffuse, Specular, NormalMap, Alpha, DiffuseBuffer, SpecularBuffer, NormalBuffer, TileLightInfo, ShadowDepth, ShadowOcclusion, SSAO, Lighting, SkyBox, NumSlots);
+DECLARE_ENUM_CLASS(TextureSlotIndex, Depth, Diffuse, Specular, NormalMap, Alpha, DiffuseBuffer, SpecularBuffer, NormalBuffer, TileLightInfo, ShadowDepth, ShadowOcclusion, SSAO, Lighting, SkyBoxTex, NumSlots);
 DECLARE_ENUM_CLASS(TextureWrapMode, Repeat, Mirror, ClampEdge, ClampBorder);
 DECLARE_ENUM_CLASS(TextureFilterMode, Nearest, Bilinear, Trilinear);
 DECLARE_ENUM_CLASS(TexturePixelFormat, Rgb8, Rgba8, Rgba32F, Rgba16F, Rgba32I, Red16F, Red32F, Red16I, Red32I, Depth, Depth24, DXT1, DXT3, DXT5);
@@ -89,17 +89,6 @@ static const std::string sd_diffuseTexture = "DIFFUSE_TEXTURE";
 static const std::string sd_specularTexture = "SPECULAR_TEXTURE";
 static const std::string sd_alphaMask = "ALPHA_MASK";
 static const std::string sd_normalTexture = "NORMAL_TEXTURE";
-static const std::string sd_maxNumMaterials = "MAX_NUM_MATERIALS";
-static const std::string sd_maxNumLights = "MAX_NUM_LIGHTS";
-static const std::string sd_maxNumShadowLights = "MAX_SHADOW_LIGHTS";
-static const std::string sd_useWorldSpaceParameters = "USE_WORLD_PARAMETERS";
-static const std::string sd_fxaaQuality = "FXAA_QUALITY__PRESET";
-static const std::string sd_HDR = "HDR";
-static const std::string sd_SSAO = "SSAO";
-static const std::string sd_SAO = "SAO";
-static const std::string sd_numSAOSamples = "NUM_SAO_SAMPLES";
-static const std::string sd_numSAOSpiralTurns = "NUM_SAO_SPIRAL_TURNS";
-static const std::string sd_verticalBlur = "VERTICAL_BLUR";
 
 }
 
