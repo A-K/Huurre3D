@@ -25,8 +25,8 @@
 #include "Scene/Camera.h"
 #include "Renderer/RenderItem.h"
 #include "Renderer/RenderPasses.h"
-#include "Renderer/RendererDescription.h"
-#include "Renderer/RendererDefs.h"
+#include "Renderer/RenderStageFactory.h"
+#include "Util/JSONValue.h"
 
 namespace Huurre3D
 {
@@ -42,9 +42,14 @@ class RenderStage
 public:
     RenderStage(Renderer* renderer);
     virtual ~RenderStage() = default;
-    void execute() const {drawRenderPasses(renderPasses);}
+    virtual void init(const JSONValue& renderStageJSON);
+    virtual void resizeResources();
+    virtual void clearStage() {}
+    virtual void update(const Scene* scene) {}
+    virtual void execute() const { drawRenderPasses(renderPasses); }
 
 protected:
+    RenderPass createRenderPassFromJson(const JSONValue& renderPassJSON);
     void drawRenderPasses(const Vector<RenderPass>& renderPasses) const;
     Renderer* renderer;
     Vector<RenderPass> renderPasses;
