@@ -28,20 +28,15 @@
 namespace Huurre3D
 {
 
-struct PostProcessParameterValue
-{
-    Vector2 renderTargetSize;
-};
-
 class PostProcessStage : public RenderStage
 {
+    RENDERSTAGE_TYPE(PostProcessStage)
+
 public:
     PostProcessStage(Renderer* renderer);
     ~PostProcessStage() = default;
-    
-    void init(const PostProcessStageDescription& postProcessStageDescription);
-    void resizeResources();
-    void update(const Scene* scene);
+
+    void update(const Scene* scene) override;
 
 private:
     SkyBox* currentSkyBox = nullptr;

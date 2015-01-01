@@ -34,13 +34,15 @@ class Camera;
 
 class ShadowStage : public RenderStage
 {
+    RENDERSTAGE_TYPE(ShadowStage)
+
 public:
     ShadowStage(Renderer* renderer);
     ~ShadowStage() = default;
-    void clearStage();
-    void init(const ShadowStageDescription& shadowStageDescription);
-    void resizeResources();
-    void update(const Scene* scene);
+    void clearStage() override;
+    void init(const JSONValue& shadowStageJSON) override;
+    void resizeResources() override;
+    void update(const Scene* scene) override;
 
 private:
     void calculateShadowCameraViewProjections(const Vector<Light*>& lights, Camera* camera);
@@ -48,11 +50,8 @@ private:
     void createLightShadowPasses(const Vector<RenderItem>& renderItems);
     Vector<Light*> shadowLights;
     Vector<RenderItem> shadowRenderItems;
-    ViewPort shadowDepthViewPort;
-    ShaderProgram* shadowDepthProgram;
-    RenderTarget* shadowDepthRenderTarget;
-    RenderTarget* shadowOcclusionRenderTarget;
-    ShaderPass shadowOcllusionShaderPass;
+    RenderPass shadowOcllusionRenderPass;
+    RenderPass shadowDepthRenderPass;
     ShadowProjector shadowProjector;
     Vector<RenderItem> itemsInShadowfrustum;
     Vector<ShadowDepthData> shadowDepthData;

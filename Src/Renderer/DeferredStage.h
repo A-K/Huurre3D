@@ -23,25 +23,23 @@
 #define DeferredStage_H
 
 #include "Renderer/RenderStage.h"
-#include "Renderer/GBuffer.h"
 
 namespace Huurre3D
 {
 
 class DeferredStage : public RenderStage
 {
+    RENDERSTAGE_TYPE(DeferredStage);
+
 public:
     DeferredStage(Renderer* renderer);
     ~DeferredStage() = default;
     
-    void init();
-    void deInit();
-    void resizeResources();
-    void clearStage();
-    void update(const Scene* scene);
+    void init(const JSONValue& deferredgStageJSON) override;
+    void clearStage() override;
+    void update(const Scene* scene) override;
 
 private:
-    GBuffer* gBuffer = nullptr;
     Vector<RenderItem> deferredRenderItems;
 };
 

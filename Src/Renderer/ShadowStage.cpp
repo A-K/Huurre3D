@@ -36,52 +36,29 @@ RenderStage(renderer)
 {
 }
 
-void ShadowStage::init(const ShadowStageDescription& shadowStageDescription)
+void ShadowStage::init(const JSONValue& shadowStageJSON)
 {
-    ViewPort screenViewPort = renderer->getScreenViewPort();
+    auto shadowDepthRenderPassJSON = shadowStageJSON.getJSONValue("shadowDepthRenderPass");
+    auto shadowOcclusionRenderPassJSON = shadowStageJSON.getJSONValue("shadowOcclusionRenderPass");
 
-    //Create the render target, shader program and viewport for shadow depth pass.
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    Shader* shadowDepthVert = graphicSystem->createShader(ShaderType::Vertex, shadowStageDescription.shadowDepthPass.vertexShader);
-    Shader* shadowDepthFrag = graphicSystem->createShader(ShaderType::Fragment, shadowStageDescription.shadowDepthPass.fragmentShader);
-    shadowDepthProgram = graphicSystem->createShaderProgram(shadowDepthVert, shadowDepthFrag);
+    if(!shadowDepthRenderPassJSON.isNull())
+    {
+        shadowDepthRenderPass = createRenderPassFromJson(shadowDepthRenderPassJSON);
+        shadowProjector.setShadowMapSize(static_cast<float>(shadowDepthRenderPass.renderTarget->getWidth()));
+    }
 
-    int shadowMapSize = shadowStageDescription.shadowDepthPass.ShadowMapSize;
-    shadowDepthRenderTarget = graphicSystem->createRenderTarget(shadowMapSize, shadowMapSize, false, 1, NumCubeMapFaces);
-    Texture* shadowDepth = graphicSystem->createTexture(TextureTargetMode::Texture2DArray, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Depth24, shadowMapSize, shadowMapSize);
-    shadowDepth->setDepth(NumCubeMapFaces);
-    shadowDepth->setSlotIndex(TextureSlotIndex::ShadowDepth);
-    shadowDepthRenderTarget->setDepthBuffer(shadowDepth);
-    shadowDepthViewPort.set(0, 0, shadowMapSize, shadowMapSize);
-
-    //Create the shadow occlusion pass.
-    shadowOcclusionRenderTarget = graphicSystem->createRenderTarget(screenViewPort.width, screenViewPort.height, false);
-    Texture* shadowOcclusionTexture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::ClampEdge, TextureFilterMode::Bilinear, TexturePixelFormat::Rgba8, screenViewPort.width, screenViewPort.height);
-    shadowOcclusionTexture->setSlotIndex(TextureSlotIndex::ShadowOcclusion);
-    shadowOcclusionRenderTarget->setColorBuffer(shadowOcclusionTexture);
-
-    shadowOcllusionShaderPass.rasterState = RasterState(BlendState(true, BlendFunction::Add), CompareState(false, CompareFunction::Never), CullState(false, CullFace::Back));
-    Shader* shadowOcclusionVert = graphicSystem->createShader(ShaderType::Vertex, shadowStageDescription.shadowOcclusionPass.vertexShader);
-    Shader* shadowOcclusionFrag = graphicSystem->createShader(ShaderType::Fragment, shadowStageDescription.shadowOcclusionPass.fragmentShader);
-    shadowOcclusionVert->setDefine(sd_useWorldSpaceParameters);
-    shadowOcclusionFrag->setDefine(sd_maxNumShadowLights, shadowStageDescription.shadowOcclusionPass.maxNumShadowLights);
-    shadowOcllusionShaderPass.program = graphicSystem->createShaderProgram(shadowOcclusionVert, shadowOcclusionFrag);
-
-    shadowOcllusionShaderPass.vertexData = renderer->getFullScreenQuad();
-
-    shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->createShaderParameterBlock(sp_shadowOcclusionParameters));
-    shadowOcllusionShaderPass.shaderParameterBlocks.pushBack(graphicSystem->getShaderParameterBlockByName(sp_cameraParameters));
-    shadowOcllusionShaderPass.shaderParameters.pushBack(ShaderParameter(sp_shadowOcclusionParameterIndex, 0));
-
-    shadowProjector.setShadowMapSize(static_cast<float>(shadowMapSize));
+    if(!shadowOcclusionRenderPassJSON.isNull())
+    {
+        shadowOcllusionRenderPass = createRenderPassFromJson(shadowOcclusionRenderPassJSON);
+        shadowOcllusionRenderPass.shaderPasses[0].shaderParameters.pushBack(ShaderParameter(sp_shadowOcclusionParameterIndex, 0));
+    }
 }
 
 void ShadowStage::resizeResources()
 {
     ViewPort screenViewPort = renderer->getScreenViewPort();
-    Texture* shadowOcclusionTexture = shadowOcclusionRenderTarget->getColorBuffers()[0];
-    shadowOcclusionTexture->setWidth(screenViewPort.width);
-    shadowOcclusionTexture->setHeight(screenViewPort.height);
+    shadowOcllusionRenderPass.viewPort = screenViewPort;
+    shadowOcllusionRenderPass.renderTarget->setSize(screenViewPort.width, screenViewPort.height);
 }
 
 void ShadowStage::update(const Scene* scene)
@@ -103,8 +80,7 @@ void ShadowStage::update(const Scene* scene)
 
         calculateShadowCameraViewProjections(shadowLights, camera);
         createLightShadowPasses(shadowRenderItems);
-        shadowOcllusionShaderPass.shaderParameterBlocks[0]->clearBuffer();
-        shadowOcllusionShaderPass.shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getData(), shadowOcclusionData.getSizeInBytes());
+        shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getData(), shadowOcclusionData.getSizeInBytes());
     }
 }
 
@@ -115,6 +91,7 @@ void ShadowStage::clearStage()
     renderPasses.clear();
     shadowDepthData.clear();
     shadowOcclusionData.clear();
+    shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->clearBuffer();
 }
 
 void ShadowStage::calculateShadowCameraViewProjections(const Vector<Light*>& lights, Camera* camera)
@@ -140,10 +117,8 @@ void ShadowStage::calculateShadowCameraViewProjections(const Vector<Light*>& lig
 
 void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
 {
-    ViewPort screenViewPort = renderer->getScreenViewPort();
     Frustum shadowFrustum;
-    RasterState depthPassRasterState = RasterState(BlendState(false, BlendFunction::Add), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back));
-
+    
     for(unsigned int i = 0; i < shadowDepthData.size(); ++i)
     {
         for(int j = 0; j < shadowDepthData[i].numSplits; ++j)
@@ -153,40 +128,23 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
             shadowFrustum.set(shadowDepthData[i].shadowViewProjectionMatrices[j].transpose());
             cullRenderItems(renderItems, itemsInShadowfrustum, shadowFrustum);
 
-            //Construct the shadow depth pass with shaser pass for each render item.
-            RenderPass depthPass;
-            depthPass.renderTargetLayer = j;
-            depthPass.flags = CLEAR_DEPTH;
-            depthPass.colorWrite = false;
-            depthPass.depthWrite = true;
-            depthPass.viewPort = shadowDepthViewPort;
-            depthPass.renderTarget = shadowDepthRenderTarget;
-			 
+            shadowDepthRenderPass.renderTargetLayer = j;
+            renderPasses.pushBack(shadowDepthRenderPass);
+            renderPasses.back().shaderPasses.clear();
             for(unsigned int k = 0; k < itemsInShadowfrustum.size(); ++k)
             {
-                ShaderPass depthShaderPass;
-                depthShaderPass.rasterState = depthPassRasterState;
+                ShaderPass depthShaderPass(shadowDepthRenderPass.shaderPasses[0]);
                 depthShaderPass.vertexData = itemsInShadowfrustum[k].geometry->getVertexData();
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_worldTransform, itemsInShadowfrustum[k].geometry->getWorldTransform()));
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_lightViewProjectionMatrix, shadowDepthData[i].shadowViewProjectionMatrices[j]));
-                depthShaderPass.program = shadowDepthProgram;
-                depthPass.shaderPasses.pushBack(depthShaderPass);
+                renderPasses.back().shaderPasses.pushBack(depthShaderPass);
             }
-
-            renderPasses.pushBack(depthPass);
         }
 
         //Construct the shadow occlusion pass.
-        RenderPass shadowOcclusionPass;
-        shadowOcclusionPass.colorWrite = true;
-        shadowOcclusionPass.depthWrite = false;
-        shadowOcclusionPass.renderTargetLayer = 0;
-        shadowOcclusionPass.renderTarget = shadowOcclusionRenderTarget;
-        shadowOcclusionPass.flags = (i==0) ? CLEAR_COLOR : 0;
-        shadowOcclusionPass.viewPort = screenViewPort;
-        shadowOcllusionShaderPass.shaderParameters[0] = ShaderParameter(sp_shadowOcclusionParameterIndex, i);
-        shadowOcclusionPass.shaderPasses.pushBack(shadowOcllusionShaderPass);
-        renderPasses.pushBack(shadowOcclusionPass);
+        shadowOcllusionRenderPass.flags = (i == 0) ? CLEAR_COLOR : 0;
+        shadowOcllusionRenderPass.shaderPasses[0].shaderParameters[0] = ShaderParameter(sp_shadowOcclusionParameterIndex, i);
+        renderPasses.pushBack(shadowOcllusionRenderPass);
     }
 }
 

@@ -31,24 +31,18 @@ namespace Huurre3D
 class Light;
 class Camera;
 
-/*
-struct LightStageParameterValue
-{
-    FixedArray<int, 4> gridDimensions;
-    Vector4 SAOParameters;
-};*/
-
-
 class LightingStage : public RenderStage
 {
+    RENDERSTAGE_TYPE(LightingStage)
+
 public:
     LightingStage(Renderer* renderer);
     ~LightingStage() = default;
     
-    void init(const LightingStageDescription& lightingStageDescription);
-    void resizeResources();
-    void clearStage();
-    void update(const Scene* scene);
+    void init(const JSONValue& lightingStageJSON) override;
+    void resizeResources() override;
+    void clearStage() override;
+    void update(const Scene* scene) override;
 
 private:
     LightTileGrid tileGrid;

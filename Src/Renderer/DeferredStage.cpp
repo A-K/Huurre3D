@@ -32,37 +32,11 @@ RenderStage(renderer)
 {
 }
 
-void DeferredStage::init()
+void DeferredStage::init(const JSONValue& deferredgStageJSON)
 {
-    ViewPort screenViewPort = renderer->getScreenViewPort();
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    gBuffer = new GBuffer(graphicSystem, screenViewPort.width, screenViewPort.height);
-
-    RenderPass renderPass;
-    renderPass.colorWrite = true;
-    renderPass.depthWrite = true;
-    renderPass.flags = (CLEAR_COLOR | CLEAR_DEPTH);
-    renderPass.clearColor = Vector4::UNIT_W;
-    renderPass.renderTargetLayer = 0;
-    renderPass.renderTarget = gBuffer->renderTarget;
-    renderPass.viewPort = screenViewPort;
-    renderPasses.pushBack(renderPass);
-}
-
-void DeferredStage::deInit()
-{
-    delete gBuffer;
-}
-
-void DeferredStage::resizeResources()
-{
-    delete gBuffer;
-
-    ViewPort screenViewPort = renderer->getScreenViewPort();
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    gBuffer = new GBuffer(graphicSystem, screenViewPort.width, screenViewPort.height);
-    renderPasses[0].viewPort = screenViewPort;
-    renderPasses[0].renderTarget = gBuffer->renderTarget;
+    auto gbufferRenderPassJSON = deferredgStageJSON.getJSONValue("GbufferRenderPass");
+    if(!gbufferRenderPassJSON.isNull())
+        renderPasses.pushBack(createRenderPassFromJson(gbufferRenderPassJSON));
 }
 
 void DeferredStage::clearStage()
