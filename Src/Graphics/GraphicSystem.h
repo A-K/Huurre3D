@@ -30,6 +30,7 @@
 #include "Graphics/Rasterization.h"
 #include "Graphics/RenderTarget.h"
 #include "Math/Rect.h"
+#include "Util/JSONValue.h"
 
 #ifdef USE_OGL
 #include "Graphics/OGLGraphicsBackEnd/OGLGraphicSystemBackEnd.h"
@@ -54,10 +55,15 @@ public:
     VertexStream* createVertexStream(int numVertices, bool interleaved);
     IndexBuffer* createIndexBuffer(IndexType indexType, int numIndices, bool dynamic);
     Shader* createShader(ShaderType shaderType, const std::string& sourceFileName);
+    Shader* createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<ShaderDefine>& shaderDefines);
     ShaderProgram* createShaderProgram(Shader* vertexShader, Shader* fragmentShader);
+    ShaderProgram* createShaderProgram(const JSONValue& shaderProgramJSON);
     Texture* createTexture(TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height);
-    RenderTarget* createRenderTarget(int width, int height, bool depthBuffer, int numBuffers = 1, int numLayers = 1);
+    Texture* createTexture(const JSONValue& textureJSON);
+    RenderTarget* createRenderTarget(int width, int height, int numBuffers = 1, int numLayers = 1);
+    RenderTarget* createRenderTarget(const JSONValue& renderTargetJSON);
     ShaderParameterBlock* createShaderParameterBlock(const std::string& name);
+    ShaderParameterBlock* createShaderParameterBlock(const JSONValue& parameterBlockJSON);
     void setVertexData(VertexData* vertexData);
     void setShaderProgram(ShaderProgram* program);
     void setShaderParameter(const ShaderParameter& shaderParameter);

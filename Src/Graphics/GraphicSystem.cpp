@@ -89,6 +89,14 @@ Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& so
     return shader;
 }
 
+Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<ShaderDefine>& shaderDefines)
+{
+    Shader* shader = new Shader(this, shaderType, sourceFileName.c_str());
+    shader->setDefines(shaderDefines);
+    shaders.pushBack(shader);
+    return shader;
+}
+
 ShaderProgram* GraphicSystem::createShaderProgram(Shader* vertexShader, Shader* fragmentShader)
 {
     ShaderProgram* shaderProgram = new ShaderProgram(this, vertexShader, fragmentShader);
@@ -105,6 +113,55 @@ ShaderProgram* GraphicSystem::createShaderProgram(Shader* vertexShader, Shader* 
     return shaderProgram;
 }
 
+ShaderProgram* GraphicSystem::createShaderProgram(const JSONValue& shaderProgramJSON)
+{
+    ShaderProgram* shaderProgram = nullptr;
+
+    auto vertexShaderJSON = shaderProgramJSON.getJSONValue("vertexShader");
+    auto fragmentShaderJSON = shaderProgramJSON.getJSONValue("fragmentShader");
+
+    if(fragmentShaderJSON.isNull() || vertexShaderJSON.isNull())
+        std::cout << "Failed to create shader program from JSON. One of the mandatory values: fragmentShader, vertexShader is missing" << std::endl;
+    else
+    {
+        auto vertextShaderSourceFileJSON = vertexShaderJSON.getJSONValue("sourceFile");
+        auto fragmentShaderSourceFileJSON = fragmentShaderJSON.getJSONValue("sourceFile");
+
+        if(fragmentShaderSourceFileJSON.isNull() || vertextShaderSourceFileJSON.isNull())
+            std::cout << "Failed to create shader program from JSON. The mandatory value sourceFilen is missing from fragmentShader, vertexShader" << std::endl;
+        else
+        {
+            auto vertexShaderDefinesJSON = vertexShaderJSON.getJSONValue("defines");
+            auto fragmentShaderDefinesJSON = fragmentShaderJSON.getJSONValue("defines");
+            Vector<ShaderDefine> fragmentShaderDefines;
+            Vector<ShaderDefine> vertexShaderDefines;
+
+            auto setDefines = [](Vector<ShaderDefine>& shaderDefines, const JSONValue& definesJSON)
+            {
+                for(unsigned int i = 0; i < definesJSON.getSize(); ++i)
+                {
+                    auto defineJSON = definesJSON.getJSONArrayItem(i);
+                    auto defineNameJSON = defineJSON.getJSONValue("name");
+                    auto defineValueJSON = defineJSON.getJSONValue("value");
+                    if(!defineNameJSON.isNull() && !defineValueJSON.isNull())
+                        shaderDefines.pushBack(ShaderDefine(defineNameJSON.getString(), defineValueJSON.getString()));
+                }
+            };
+
+            if(!vertexShaderDefinesJSON.isNull())
+                setDefines(vertexShaderDefines, vertexShaderDefinesJSON);
+            if(!fragmentShaderDefinesJSON.isNull())
+                setDefines(fragmentShaderDefines, fragmentShaderDefinesJSON);
+
+            Shader* vertexShader = createShader(ShaderType::Vertex, vertextShaderSourceFileJSON.getString(), vertexShaderDefines);
+            Shader* fragmentShader = createShader(ShaderType::Fragment, fragmentShaderSourceFileJSON.getString(), fragmentShaderDefines);
+            shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+        }
+    }
+
+    return shaderProgram;
+}
+
 Texture* GraphicSystem::createTexture(TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height)
 {
     Texture* texture = new Texture(this, targetMode, wrapMode, filterMode, pixelFormat, width, height);
@@ -114,12 +171,105 @@ Texture* GraphicSystem::createTexture(TextureTargetMode targetMode, TextureWrapM
     return texture;
 }
 
-RenderTarget* GraphicSystem::createRenderTarget(int width, int height, bool depthBuffer, int numBuffers, int numLayers)
+Texture* GraphicSystem::createTexture(const JSONValue& textureJSON)
 {
-    RenderTarget* renderTarget = new RenderTarget(this, width, height, depthBuffer, numBuffers, numLayers);
-    unsigned int id = graphicSystemBackEnd->createRenderTarget(width, height, depthBuffer, numBuffers, numLayers);
+    Texture* texture = nullptr;
+    auto targetModeJSON = textureJSON.getJSONValue("targetMode");
+    auto wrapModeJSON = textureJSON.getJSONValue("wrapMode");
+    auto filterModeJSON = textureJSON.getJSONValue("filterMode");
+    auto pixelFormatJSON = textureJSON.getJSONValue("pixelFormat");
+    auto slotIndexJSON = textureJSON.getJSONValue("textureSlot");
+    auto widthJSON = textureJSON.getJSONValue("width");
+    auto heightJSON = textureJSON.getJSONValue("height");
+
+    if(targetModeJSON.isNull() || wrapModeJSON.isNull() || filterModeJSON.isNull() || pixelFormatJSON.isNull() || slotIndexJSON.isNull() || widthJSON.isNull() || heightJSON.isNull())
+        std::cout << "Failed to create texture from JSON. One of the mandatory values: targetMode, wrapMode, filterMode, pixelFormat, textureSlot, width, height is missing" << std::endl;
+    else
+    {
+        auto targetMode = enumFromString<TextureTargetMode>(targetModeJSON.getString());
+        auto wrapMode = enumFromString<TextureWrapMode>(wrapModeJSON.getString());
+        auto filterMode = enumFromString<TextureFilterMode>(filterModeJSON.getString());
+        auto pixelFormat = enumFromString<TexturePixelFormat>(pixelFormatJSON.getString());
+        auto slotIndex = enumFromString<TextureSlotIndex>(slotIndexJSON.getString());
+        texture = createTexture(targetMode, wrapMode, filterMode, pixelFormat, widthJSON.getInt(), heightJSON.getInt());
+        texture->setSlotIndex(slotIndex);
+    }
+
+    return texture;
+}
+
+RenderTarget* GraphicSystem::createRenderTarget(int width, int height, int numBuffers, int numLayers)
+{
+    RenderTarget* renderTarget = new RenderTarget(this, width, height, numBuffers, numLayers);
+    unsigned int id = graphicSystemBackEnd->createRenderTarget(width, height, numBuffers, numLayers);
     renderTargets.pushBack(renderTarget);
     renderTarget->setId(id);
+    return renderTarget;
+}
+
+RenderTarget* GraphicSystem::createRenderTarget(const JSONValue& renderTargetJSON)
+{
+    RenderTarget* renderTarget = nullptr;
+    auto nameJSON = renderTargetJSON.getJSONValue("name");
+
+    if(!nameJSON.isNull())
+    {
+        renderTarget = getRenderTargetByName(nameJSON.getString());
+        if(renderTarget)
+            return renderTarget;
+        if(nameJSON.getString().compare("mainRenderTarget") == 0)
+            return nullptr;
+    }
+
+    auto widthJSON = renderTargetJSON.getJSONValue("width");
+    auto heightJSON = renderTargetJSON.getJSONValue("height");
+
+    if(widthJSON.isNull() || heightJSON.isNull())
+        std::cout << "Failed to create renderTarget from JSON. One of the mandatory values: width, height is missing" << std::endl;
+    else
+    {
+        auto colorBuffersJSON = renderTargetJSON.getJSONValue("colorBuffers");
+        auto numLayersJSON = renderTargetJSON.getJSONValue("numLayers");
+        int numLayers = numLayersJSON.isNull() ? 1 : numLayersJSON.getInt();
+        int numBuffers = colorBuffersJSON.isNull() ? 0 : colorBuffersJSON.getSize();
+        renderTarget = createRenderTarget(widthJSON.getInt(), heightJSON.getInt(), numBuffers, numLayers);
+        
+        if(!nameJSON.isNull())
+            renderTarget->setName(nameJSON.getString());
+
+        //Create and set all color buffers.
+        if(!colorBuffersJSON.isNull())
+        {
+            for(unsigned int i = 0; i < numBuffers; ++i)
+            {
+                JSONValue colorBufferJSON = colorBuffersJSON.getJSONArrayItem(i);
+                colorBufferJSON.setJSONValue(widthJSON);
+                colorBufferJSON.setJSONValue(heightJSON);
+
+                Texture* colorBuffer = createTexture(colorBufferJSON);
+                if(colorBuffer)
+                {
+                    colorBuffer->setDepth(numLayers);
+                    renderTarget->setColorBuffer(colorBuffer);
+                }
+            }
+        }
+        //Create and set depth buffer.
+        auto depthBufferJSON = renderTargetJSON.getJSONValue("depthBuffer");
+        if(!depthBufferJSON.isNull())
+        {
+            depthBufferJSON.setJSONValue(widthJSON);
+            depthBufferJSON.setJSONValue(heightJSON);
+
+            Texture* depthBuffer = createTexture(depthBufferJSON);
+            if(depthBuffer)
+            {
+                depthBuffer->setDepth(numLayers);
+                renderTarget->setDepthBuffer(depthBuffer);
+            }
+        }
+    }
+
     return renderTarget;
 }
 
@@ -129,6 +279,74 @@ ShaderParameterBlock* GraphicSystem::createShaderParameterBlock(const std::strin
     unsigned int id = graphicSystemBackEnd->createShaderParameterBlock(name);
     shaderParameterBlocks.pushBack(shaderParameterBlock);
     shaderParameterBlock->setId(id);
+    return shaderParameterBlock;
+}
+
+ShaderParameterBlock* GraphicSystem::createShaderParameterBlock(const JSONValue& parameterBlockJSON)
+{
+    ShaderParameterBlock* shaderParameterBlock = nullptr;
+    auto nameJSON = parameterBlockJSON.getJSONValue("name");
+
+    if(nameJSON.isNull())
+        std::cout << "Failed to create shader parameter block. Mandatory value name is missing" << std::endl;
+    else
+    {
+        shaderParameterBlock = getShaderParameterBlockByName(nameJSON.getString());
+        if(shaderParameterBlock)
+            return shaderParameterBlock;
+        else
+        {
+            shaderParameterBlock = createShaderParameterBlock(nameJSON.getString());
+            auto parametersJSON = parameterBlockJSON.getJSONValue("parameters");
+
+            if(!parametersJSON.isNull())
+            {
+                for(unsigned int i = 0; i < parametersJSON.getSize(); ++i)
+                {
+                    auto paramJSON = parametersJSON.getJSONArrayItem(i);
+                    auto typeJSON = paramJSON.getJSONValue("type");
+                    auto valueJSON = paramJSON.getJSONValue("value");
+                    if(typeJSON.isNull() || valueJSON.isNull())
+                        std::cout << "Failed to set " <<i<<". parameter. One of the mandatory values name, type is missing" << std::endl;
+                    else
+                    {
+                        auto type = enumFromString<ShaderParameterType>(typeJSON.getString());
+                        switch(type)
+                        {
+                            case ShaderParameterType::Float:
+                                shaderParameterBlock->addParameter(valueJSON.getFloat());
+                                break;
+                            case ShaderParameterType::FloatVector2:
+                                shaderParameterBlock->addParameter(valueJSON.getVector2());
+                                break;
+                            case ShaderParameterType::FloatVector3:
+                                shaderParameterBlock->addParameter(valueJSON.getVector3());
+                                break;
+                            case ShaderParameterType::FloatVector4:
+                                shaderParameterBlock->addParameter(valueJSON.getVector4());
+                                break;
+                            case ShaderParameterType::Int:
+                                shaderParameterBlock->addParameter(valueJSON.getInt());
+                                break;
+                            case ShaderParameterType::IntVector2:
+                                shaderParameterBlock->addParameter(valueJSON.getInt2());
+                                break;
+                            case ShaderParameterType::IntVector3:
+                                shaderParameterBlock->addParameter(valueJSON.getInt3());
+                                break;
+                            case ShaderParameterType::IntVector4:
+                                shaderParameterBlock->addParameter(valueJSON.getInt4());
+                                break;
+                            case ShaderParameterType::FloatMatrix4:
+                                shaderParameterBlock->addParameter(valueJSON.getMatrix4x4());
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     return shaderParameterBlock;
 }
 
