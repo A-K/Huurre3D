@@ -54,7 +54,6 @@ void main()
     vec4 ambient = vec4(materialProperties.u_ambientColor.rgb * diffuse.rgb * globalAmbient, 1.0f);
     vec4 lighting = processFragment(f_texCoord0, position, normal.rgb, diffuse.rgb, specular.rgb, roughness, reflectance);
 
-#ifdef SSAO
     vec4 finalColor;
 
     if(u_ssaoOn.x == 1)
@@ -68,16 +67,9 @@ void main()
     }
     else
         finalColor = lighting + ambient + vec4(materialProperties.u_emissiveColor.rgb, 1.0f);
-#else
-    vec4 finalColor = lighting + ambient + vec4(materialProperties.u_emissiveColor.rgb, 1.0f);
-#endif
 
-#ifdef HDR
-    //Tone mapping
-    //finalColor.rgb = uncharted2Tonemap(finalColor.rgb);
     //Gamma correction.
     finalColor.rgb = toSrgb(finalColor.rgb);
-#endif
 
     //Calculate Luma for FXAA.
     finalColor.a = dot(finalColor.rgb, vec3(0.299f, 0.587f, 0.114f));

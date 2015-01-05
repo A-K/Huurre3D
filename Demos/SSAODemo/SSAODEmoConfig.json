@@ -271,14 +271,6 @@
                                                 {
                                                     "name" : "MAX_NUM_MATERIALS",
                                                     "value" : "255"
-                                                },
-                                                {
-                                                    "name" : "SSAO",
-                                                    "value" : ""
-                                                },
-                                                {
-                                                    "name" : "HDR",
-                                                    "value" : ""
                                                 }
                                             ]
                                         }
