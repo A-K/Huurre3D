@@ -54,12 +54,12 @@ void SSAODemo::init()
 
 void SSAODemo::update(float timeSinceLastUpdate)
 {
-    if(input->isMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    if(input->isKeyPressed(KEY_R))
     {
         ssaoOn = !ssaoOn;
         updateShaderParameters();
     }
-    else if(input->isMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+    else if(input->isKeyPressed(KEY_T))
     {
         showSSAOTex = !showSSAOTex;
         updateShaderParameters();
