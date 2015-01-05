@@ -112,8 +112,13 @@ bool Renderer::init(const JSONValue& rendererJSON)
                 else
                 {
                     RenderStage* renderStage = RenderStageFactory::createRenderStage(this, renderStageNameJSON.getString());
-                    renderStage->init(renderTargetImplementationJSON);
-                    renderStages.pushBack(renderStage);
+                    if(renderStage)
+                    {
+                        renderStage->init(renderTargetImplementationJSON);
+                        renderStages.pushBack(renderStage);
+                    }
+                    else
+                        std::cout << "RenderStage " << renderStageNameJSON.getString()<<" have not been registered." << std::endl;
                 }
             }
         }
