@@ -65,14 +65,7 @@ void LightDemoApp::update(float timeSinceLastUpdate)
 {
 
     moveCamera(timeSinceLastUpdate);
-
-    if(!stopLights)
-        moveLights(timeSinceLastUpdate);
-
-    if(input->isMouseButtonPressed(MOUSE_BUTTON_LEFT))
-        stopLights = true;
-    else if(input->isMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-        stopLights = false;
+    moveLights(timeSinceLastUpdate);
 }
 
 void LightDemoApp::moveCamera(float timeSinceLastUpdate)

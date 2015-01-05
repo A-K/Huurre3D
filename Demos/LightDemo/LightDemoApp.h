@@ -55,5 +55,4 @@ private:
     float lightsMinHeight = 10.0f;
     float lightsMaxHeight = 300.0f;
     FixedArray<Vector3, 4> movingPointLightCorners;
-    bool stopLights = false;
 };
