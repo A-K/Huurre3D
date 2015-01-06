@@ -152,10 +152,7 @@
                                         "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
                                         "defines" :
                                         [
-                                            {
-                                                "name" : "USE_WORLD_PARAMETERS",
-                                                "value" : ""
-                                            }
+                                            "USE_WORLD_PARAMETERS"
                                         ]
                                     },
                                     "fragmentShader" :
@@ -163,10 +160,7 @@
                                         "sourceFile" : "../../Data/Shaders/ShadowOcclusion.frag",
                                         "defines" :
                                         [
-                                            {
-                                                "name" : "MAX_SHADOW_LIGHTS",
-                                                "value" : "32"
-                                            }
+                                            "MAX_SHADOW_LIGHTS 32"
                                         ]
                                     }
                                 },
@@ -230,18 +224,9 @@
                                             "sourceFile" : "../../Data/Shaders/TiledDeferredShading.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "MAX_NUM_LIGHTS",
-                                                    "value" : "1000"
-                                                },
-                                                {
-                                                    "name" : "MAX_NUM_MATERIALS",
-                                                    "value" : "255"
-                                                },
-                                                {
-                                                    "name" : "HDR",
-                                                    "value" : ""
-                                                }
+                                                "MAX_NUM_LIGHTS 1000",
+                                                "MAX_NUM_MATERIALS 255",
+                                                "HDR"
                                             ]
                                         }
                                     },
@@ -311,10 +296,7 @@
                                             "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "USE_WORLD_PARAMETERS",
-                                                    "value" : ""
-                                                }
+                                                "USE_WORLD_PARAMETERS"
                                             ]
                                         },
                                         "fragmentShader" :
@@ -368,10 +350,7 @@
                                             "sourceFile" : "../../Data/Shaders/AntiAliasing.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "FXAA_QUALITY__PRESET",
-                                                    "value" : "12"
-                                                }
+                                                "FXAA_QUALITY__PRESET 12"
                                             ]
                                         }
                                     },

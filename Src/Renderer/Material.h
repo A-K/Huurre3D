@@ -71,7 +71,7 @@ public:
     float getRoughness() const {return parameters[0].w;}
     float getReflectance() const {return parameters[2].w;}
     unsigned int getCurrentShaderCombinationTag() const {return currentShaderCombinationTag;}
-    const Vector<ShaderDefine>& getShaderDefines() const {return shaderDefines;}
+    const Vector<std::string>& getShaderDefines() const {return shaderDefines;}
     RasterState getRasterState() const {return rasterState;}
     const Matrix4x4& getParameters() const {return parameters;}
     bool isTransparent() const {return parameters[3].w < 1.0f;}
@@ -89,7 +89,7 @@ private:
     Texture* specularTexture = nullptr;
     Texture* normalMap = nullptr;
     Texture* alphaTexture = nullptr;
-    Vector<ShaderDefine> shaderDefines;
+    Vector<std::string> shaderDefines;
     bool parametersDirty = true;
     unsigned int parameterId = 0;
 };

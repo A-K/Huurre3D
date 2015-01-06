@@ -31,21 +31,15 @@ GraphicObject(graphicSystem)
 {
 }
 
-void Shader::setDefine(const std::string& defineName)
+void Shader::setDefine(const std::string& define)
 {
-    shaderDefines.pushBack(ShaderDefine(defineName, ""));
+    shaderDefines.pushBack(define);
     dirty = true;
 }
 
-void Shader::setDefine(ShaderDefine shaderDefine)
+void Shader::setDefines(const Vector<std::string>& defines)
 {
-    shaderDefines.pushBack(shaderDefine);
-    dirty = true;
-}
-
-void Shader::setDefines(const Vector<ShaderDefine>& shaderDefines)
-{
-    this->shaderDefines.pushBack(shaderDefines);
+    shaderDefines.pushBack(defines);
     dirty = true;
 }
 

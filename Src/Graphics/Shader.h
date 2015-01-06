@@ -25,24 +25,9 @@
 #include "Graphics/GraphicObject.h"
 #include "Util/Vector.h"
 #include <string>
-#include <sstream>
 
 namespace Huurre3D
 {
-
-struct ShaderDefine
-{
-    std::string defineName;
-    std::string value;
-
-    ShaderDefine() = default;
-
-    ShaderDefine(const std::string& defineName, const std::string& value) :
-    defineName(defineName),
-    value(value)
-    {
-    }
-};
 
 class Shader : public GraphicObject
 {
@@ -51,29 +36,21 @@ public:
     ~Shader() = default;
 
     void setCompiled(bool compiled) {this->compiled = compiled;}
-    template<typename T> void setDefine(const std::string& defineName, const T& value)
-    {
-        std::ostringstream oss; 
-        oss << value; 
-        shaderDefines.pushBack(ShaderDefine(defineName, oss.str()));
-        dirty = true;
-    }
-    void setDefine(const std::string& defineName);
-    void setDefine(ShaderDefine shaderDefine);
-    void setDefines(const Vector<ShaderDefine>& shaderDefines);
+    void setDefine(const std::string& define);
+    void setDefines(const Vector<std::string>& shaderDefines);
     void setSource(const std::string& source);
     ShaderType getShaderType() const {return shaderType;}
     bool isCompiled() const {return compiled;}
     std::string& getSource() {return source;}
     const std::string& getSourceFileName() const {return sourceFileName;}
-    const Vector<ShaderDefine>& getDefines() const {return shaderDefines;}
+    const Vector<std::string>& getDefines() const { return shaderDefines; }
 
 private:
     ShaderType shaderType;
     std::string sourceFileName;
     std::string source;
     bool compiled = false;
-    Vector<ShaderDefine> shaderDefines;
+    Vector<std::string> shaderDefines;
 };
 
 }

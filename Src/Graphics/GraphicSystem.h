@@ -55,7 +55,7 @@ public:
     VertexStream* createVertexStream(int numVertices, bool interleaved);
     IndexBuffer* createIndexBuffer(IndexType indexType, int numIndices, bool dynamic);
     Shader* createShader(ShaderType shaderType, const std::string& sourceFileName);
-    Shader* createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<ShaderDefine>& shaderDefines);
+    Shader* createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<std::string>& shaderDefines);
     ShaderProgram* createShaderProgram(Shader* vertexShader, Shader* fragmentShader);
     ShaderProgram* createShaderProgram(const JSONValue& shaderProgramJSON);
     Texture* createTexture(TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height);
@@ -98,14 +98,14 @@ public:
     void clearRenderTargets();
     void clearShaderParameterBlocks();
     ShaderProgram* getShaderCombination(unsigned int shaderCombinationTag);
-    ShaderProgram* getShaderCombination(const Vector<std::string>& shaderFileNames, const Vector<ShaderDefine>& shaderDefines);
+    ShaderProgram* getShaderCombination(const Vector<std::string>& shaderFileNames, const Vector<std::string>& shaderDefines);
     Texture* getTextureBySlotIndex(TextureSlotIndex index);
     ShaderParameterBlock* getShaderParameterBlockByName(const std::string& name);
     RenderTarget* getRenderTargetByName(const std::string& name);
 
 private:
     unsigned int generateShaderCombinationTag(const Vector<Shader*>& shaders);
-    unsigned int generateShaderCombinationTag(const Vector<std::string>& shaderFileNames, const Vector<ShaderDefine>& shaderDefines);
+    unsigned int generateShaderCombinationTag(const Vector<std::string>& shaderFileNames, const Vector<std::string>& shaderDefines);
     
     GraphicSystemBackEnd* graphicSystemBackEnd;
     Vector<AttributeBuffer*> attributeBuffers;

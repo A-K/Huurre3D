@@ -91,11 +91,10 @@ void OGLShaderLoader::processInclude(std::string& line)
 
 void OGLShaderLoader::addDefines(std::string& line)
 {
-    Vector<ShaderDefine> shaderDefines = shaderInProcess->getDefines();
-    std::string s;
+    Vector<std::string> shaderDefines = shaderInProcess->getDefines();
     for(unsigned int i = 0; i < shaderDefines.size(); ++i)
     {
-        line += "\n" + define + shaderDefines[i].defineName + ' ' + shaderDefines[i].value + "\n";
+        line += "\n" + define + shaderDefines[i] + "\n";
     }
 }
 

@@ -267,7 +267,7 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     Vector<std::string> shaderFileNames;
     shaderFileNames.pushBack(materialVertexShader);
     shaderFileNames.pushBack(materialFragmentShader);
-    Vector<ShaderDefine> materialShaderDefines = material->getShaderDefines();
+    Vector<std::string> materialShaderDefines = material->getShaderDefines();
 
     ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, materialShaderDefines);
 

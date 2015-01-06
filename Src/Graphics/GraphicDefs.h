@@ -84,12 +84,6 @@ static const std::string sp_shadowOcclusionParameterIndex = "u_shadowOcclusionPa
 static const std::string sp_SSAOParameters = "u_SSAOParameters";
 static const std::string sp_renderTargetSize = "u_renderTargetParameters";
 
-//Shader defines.
-static const std::string sd_diffuseTexture = "DIFFUSE_TEXTURE";
-static const std::string sd_specularTexture = "SPECULAR_TEXTURE";
-static const std::string sd_alphaMask = "ALPHA_MASK";
-static const std::string sd_normalTexture = "NORMAL_TEXTURE";
-
 }
 
 #endif

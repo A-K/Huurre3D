@@ -152,10 +152,7 @@
                                         "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
                                         "defines" :
                                         [
-                                            {
-                                                "name" : "USE_WORLD_PARAMETERS",
-                                                "value" : ""
-                                            }
+                                            "USE_WORLD_PARAMETERS"
                                         ]
                                     },
                                     "fragmentShader" :
@@ -163,10 +160,7 @@
                                         "sourceFile" : "../../Data/Shaders/ShadowOcclusion.frag",
                                         "defines" :
                                         [
-                                            {
-                                                "name" : "MAX_SHADOW_LIGHTS",
-                                                "value" : "32"
-                                            }
+                                            "MAX_SHADOW_LIGHTS 32"
                                         ]
                                     }
                                 },
@@ -230,18 +224,9 @@
                                             "sourceFile" : "../../Data/Shaders/SSAO.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "SAO",
-                                                    "value" : ""
-                                                },
-                                                {
-                                                    "name" : "NUM_SAO_SAMPLES",
-                                                    "value" : "11"
-                                                },
-                                                {
-                                                    "name" : "NUM_SAO_SPIRAL_TURNS",
-                                                    "value" : "9"
-                                                }
+                                                "SAO",
+                                                "NUM_SAO_SAMPLES 11",
+                                                "NUM_SAO_SPIRAL_TURNS 9"
                                             ]
                                         }
                                     },
@@ -325,10 +310,7 @@
                                             "sourceFile" : "../../Data/Shaders/SSAOBlur.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "VERTICAL_BLUR",
-                                                    "value" : ""
-                                                }
+                                                "VERTICAL_BLUR"
                                             ]
                                         }
                                     },
@@ -382,22 +364,10 @@
                                             "sourceFile" : "../../Data/Shaders/TiledDeferredShading.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "MAX_NUM_LIGHTS",
-                                                    "value" : "1000"
-                                                },
-                                                {
-                                                    "name" : "MAX_NUM_MATERIALS",
-                                                    "value" : "255"
-                                                },
-                                                {
-                                                    "name" : "SSAO",
-                                                    "value" : ""
-                                                },
-                                                {
-                                                    "name" : "HDR",
-                                                    "value" : ""
-                                                }
+                                                "MAX_NUM_LIGHTS 1000",
+                                                "MAX_NUM_MATERIALS 255",
+                                                "SSAO",
+                                                "HDR"
                                             ]
                                         }
                                     },
@@ -467,10 +437,7 @@
                                             "sourceFile" : "../../Data/Shaders/FullScreenQuad.vert",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "USE_WORLD_PARAMETERS",
-                                                    "value" : ""
-                                                }
+                                                "USE_WORLD_PARAMETERS"
                                             ]
                                         },
                                         "fragmentShader" :
@@ -524,10 +491,7 @@
                                             "sourceFile" : "../../Data/Shaders/AntiAliasing.frag",
                                             "defines" :
                                             [
-                                                {
-                                                    "name" : "FXAA_QUALITY__PRESET",
-                                                    "value" : "12"
-                                                }
+                                                "FXAA_QUALITY__PRESET 12"
                                             ]
                                         }
                                     },

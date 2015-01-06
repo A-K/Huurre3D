@@ -89,7 +89,7 @@ Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& so
     return shader;
 }
 
-Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<ShaderDefine>& shaderDefines)
+Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<std::string>& shaderDefines)
 {
     Shader* shader = new Shader(this, shaderType, sourceFileName.c_str());
     shader->setDefines(shaderDefines);
@@ -133,19 +133,13 @@ ShaderProgram* GraphicSystem::createShaderProgram(const JSONValue& shaderProgram
         {
             auto vertexShaderDefinesJSON = vertexShaderJSON.getJSONValue("defines");
             auto fragmentShaderDefinesJSON = fragmentShaderJSON.getJSONValue("defines");
-            Vector<ShaderDefine> fragmentShaderDefines;
-            Vector<ShaderDefine> vertexShaderDefines;
+            Vector<std::string> fragmentShaderDefines;
+            Vector<std::string> vertexShaderDefines;
 
-            auto setDefines = [](Vector<ShaderDefine>& shaderDefines, const JSONValue& definesJSON)
+            auto setDefines = [](Vector<std::string>& shaderDefines, const JSONValue& definesJSON)
             {
                 for(unsigned int i = 0; i < definesJSON.getSize(); ++i)
-                {
-                    auto defineJSON = definesJSON.getJSONArrayItem(i);
-                    auto defineNameJSON = defineJSON.getJSONValue("name");
-                    auto defineValueJSON = defineJSON.getJSONValue("value");
-                    if(!defineNameJSON.isNull() && !defineValueJSON.isNull())
-                        shaderDefines.pushBack(ShaderDefine(defineNameJSON.getString(), defineValueJSON.getString()));
-                }
+                    shaderDefines.pushBack(definesJSON.getJSONArrayItem(i).getString());
             };
 
             if(!vertexShaderDefinesJSON.isNull())
@@ -694,7 +688,7 @@ ShaderProgram* GraphicSystem::getShaderCombination(unsigned int shaderCombinatio
     return shaderPrograms.findItem([shaderCombinationTag](const ShaderProgram* program){return program->getShaderCombinationTag() == shaderCombinationTag;}, result) ? result : nullptr;
 }
 
-ShaderProgram* GraphicSystem::getShaderCombination(const Vector<std::string>& shaderFileNames, const Vector<ShaderDefine>& shaderDefines)
+ShaderProgram* GraphicSystem::getShaderCombination(const Vector<std::string>& shaderFileNames, const Vector<std::string>& shaderDefines)
 {
     int combinationTag = generateShaderCombinationTag(shaderFileNames, shaderDefines);
     ShaderProgram* program = getShaderCombination(combinationTag);
@@ -705,7 +699,7 @@ ShaderProgram* GraphicSystem::getShaderCombination(const Vector<std::string>& sh
 unsigned int GraphicSystem::generateShaderCombinationTag(const Vector<Shader*>& shaders)
 {
     Vector<std::string> shaderFileNames;
-    Vector<ShaderDefine> shaderDefines;
+    Vector<std::string> shaderDefines;
 
     for(unsigned int i = 0; i < shaders.size(); ++i)
     {
@@ -718,14 +712,14 @@ unsigned int GraphicSystem::generateShaderCombinationTag(const Vector<Shader*>& 
     return generateShaderCombinationTag(shaderFileNames, shaderDefines);
 }
 
-unsigned int GraphicSystem::generateShaderCombinationTag(const Vector<std::string>& shaderFileNames, const Vector<ShaderDefine>& shaderDefines)
+unsigned int GraphicSystem::generateShaderCombinationTag(const Vector<std::string>& shaderFileNames, const Vector<std::string>& shaderDefines)
 {
     std::string id = "";
     for(unsigned int i = 0; i < shaderFileNames.size(); ++i)
         id.append(shaderFileNames[i]); 
 
     for(unsigned int i = 0; i < shaderDefines.size(); ++i)
-        id.append(shaderDefines[i].defineName);
+        id.append(shaderDefines[i]);
  
     return generateHash((unsigned char*)id.c_str(), id.size()); 
 }
