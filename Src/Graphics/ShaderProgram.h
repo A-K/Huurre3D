@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@
 #define ShaderProgram_H
 
 #include "Graphics/Shader.h"
-//#include "Graphics/ShaderParameter.h"
 #include "Util/Vector.h"
 #include "Math/MathFunctions.h"
 
@@ -67,7 +66,7 @@ struct ShaderParameterBlockDescription
 class ShaderProgram : public GraphicObject
 {
 public:
-    ShaderProgram(GraphicSystem* graphicSystem, Shader* vertexShader, Shader* fragmentShader);
+    ShaderProgram(Shader* vertexShader, Shader* fragmentShader);
     ~ShaderProgram() = default;
 
     void setLinked(bool linked) {this->linked = linked;}

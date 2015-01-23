@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,12 @@
 namespace Huurre3D
 {
 
-VertexData::VertexData(GraphicSystem* graphicSystem, PrimitiveType primitiveType, int numVertices):
+VertexData::VertexData(PrimitiveType primitiveType, int numVertices, VertexStream* dynamicVertexStream, VertexStream* staticVertexStream) :
 primitiveType(primitiveType),
 numVertices(numVertices),
-GraphicObject(graphicSystem)
+dynamicVertexStream(dynamicVertexStream),
+staticVertexStream(staticVertexStream)
 {
-    dynamicVertexStream = graphicSystem->createVertexStream(numVertices, false);
-    staticVertexStream = graphicSystem->createVertexStream(numVertices, true);
-}
-
-VertexData::~VertexData()
-{
-    graphicSystem->removeVertexStream(dynamicVertexStream);
-    graphicSystem->removeVertexStream(staticVertexStream);
 }
 
 void VertexData::setIndexBuffer(IndexBuffer* indexBuffer)

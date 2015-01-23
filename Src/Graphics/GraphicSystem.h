@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -102,6 +102,21 @@ public:
     Texture* getTextureBySlotIndex(TextureSlotIndex index);
     ShaderParameterBlock* getShaderParameterBlockByName(const std::string& name);
     RenderTarget* getRenderTargetByName(const std::string& name);
+    template<typename T> void setIndicesToVertexData(VertexData* vertexData, IndexType indexType, int numIndices, const T* indices, bool dynamic = false)
+    {
+        IndexBuffer* indexBuffer = createIndexBuffer(indexType, numIndices, dynamic);
+        indexBuffer->setIndices(indices);
+        vertexData->setIndexBuffer(indexBuffer);
+    }
+    //If the attribute buffer is not dynamic it will be interleaved with other non dynamic buffers into a one buffer in gpu.
+    //All dynamic attribute buffers will have a own buffer in gpu.
+    template<typename T> void setAttributesToVertexData(VertexData* vertexData, AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, int bufferLength, const T* attributeData, bool normalized = false, bool dynamic = true)
+    {
+        AttributeBuffer* attributeBuffer = createAttributeBuffer(type, semantic, numComponentsPerVertex, normalized, dynamic);
+        int bufferSize = bufferLength * attributeSize[static_cast<int>(type)];
+        attributeBuffer->setAttributes(attributeData, bufferSize);
+        vertexData->setAttributeBuffer(attributeBuffer);
+    }
 
 private:
     unsigned int generateShaderCombinationTag(const Vector<Shader*>& shaders);

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ class Texture;
 class RenderTarget : public GraphicObject
 {
 public:
-    RenderTarget(GraphicSystem* graphicSystem, int width, int height, int numBuffers, int numLayers);
+    RenderTarget(int width, int height, int numBuffers, int numLayers);
     ~RenderTarget() = default;
 	
     void setColorBuffer(Texture* colorBuffer);

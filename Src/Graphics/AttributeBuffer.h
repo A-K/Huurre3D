@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,13 @@ namespace Huurre3D
 class AttributeBuffer : public GraphicObject, public GraphicDataContainer
 {
 public:
-    AttributeBuffer(GraphicSystem* graphicSystem, AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic):
+    AttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic):
     type(type),
     semantic(semantic),
     stride(0),
     numComponents(numComponentsPerVertex),
     normalized(normalized),
     dynamic(dynamic),
-    GraphicObject(graphicSystem),
     GraphicDataContainer(true)
     {
         stride = numComponentsPerVertex * attributeSize[static_cast<int>(type)];

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ namespace Huurre3D
 class ShaderParameterBlock : public GraphicObject, public GraphicDataContainer
 {
 public:
-    ShaderParameterBlock(GraphicSystem* graphicSystem, const std::string& name);
+    ShaderParameterBlock(const std::string& name);
     ~ShaderParameterBlock() = default;
 	
     void setBindingIndex(unsigned int bindingIndex);

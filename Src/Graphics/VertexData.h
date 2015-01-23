@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@ namespace Huurre3D
 class VertexData : public GraphicObject
 {
 public:
-    VertexData(GraphicSystem* graphicSystem, PrimitiveType primitiveType, int numVertices);
-    ~VertexData();
+    VertexData(PrimitiveType primitiveType, int numVertices, VertexStream* dynamicVertexStream, VertexStream* staticVertexStream);
+    ~VertexData() = default;
 	
     void setIndexBuffer(IndexBuffer* indexBuffer);
     void setAttributeBuffer(AttributeBuffer* attributeBuffer);
@@ -43,22 +43,6 @@ public:
     VertexStream* getStaticVertexStream() const {return staticVertexStream;}
     IndexBuffer* getIndexBuffer() const {return indexBuffer;}
     int getNumVertices() const {return numVertices;}
-
-    template<typename T> void setIndexBuffer(IndexType indexType, int numIndices, const T* indices, bool dynamic = false)
-    {
-        indexBuffer = graphicSystem->createIndexBuffer(indexType, numIndices, dynamic);
-        indexBuffer->setIndices(indices);
-        indexed = true;
-    }
-    //If the attribute buffer is not dynamic it will be interleaved with other non dynamic buffers into a one buffer in gpu.
-    //All dynamic attribute buffers will have a own buffer in gpu.
-    template<typename T> void setAttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, int bufferLength, const T* attributeData, bool normalized = false, bool dynamic = true)
-    {
-        AttributeBuffer* attributeBuffer = graphicSystem->createAttributeBuffer(type, semantic, numComponentsPerVertex, normalized, dynamic);
-        int bufferSize = bufferLength * attributeSize[static_cast<int>(type)];
-        attributeBuffer->setAttributes(attributeData, bufferSize);
-        setAttributeBuffer(attributeBuffer);
-    }
 
 private:
     PrimitiveType primitiveType;

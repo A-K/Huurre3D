@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,10 @@ namespace Huurre3D
 class IndexBuffer : public GraphicObject, public GraphicDataContainer
 {
 public:
-    IndexBuffer(GraphicSystem* graphicSystem, IndexType indexType, int numIndices, bool dynamic):
+    IndexBuffer(IndexType indexType, int numIndices, bool dynamic):
     indexType(indexType),
     numIndices(numIndices),
     dynamic(dynamic),
-    GraphicObject(graphicSystem),
     GraphicDataContainer(true)
     {}
     ~IndexBuffer() = default;

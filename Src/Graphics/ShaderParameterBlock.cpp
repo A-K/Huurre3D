@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,8 @@
 namespace Huurre3D
 {
 
-ShaderParameterBlock::ShaderParameterBlock(GraphicSystem* graphicSystem, const std::string& name):
+ShaderParameterBlock::ShaderParameterBlock(const std::string& name):
 name(name),
-GraphicObject(graphicSystem),
 GraphicDataContainer(false)
 {
     nameHash = generateHash((unsigned char*)name.c_str(), name.size());

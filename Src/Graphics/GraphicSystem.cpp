@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ GraphicSystem::~GraphicSystem()
 
 VertexData* GraphicSystem::createVertexData(PrimitiveType primitiveType, int numVertices)
 {
-    VertexData* vertexData = new VertexData(this, primitiveType, numVertices);
+    VertexData* vertexData = new VertexData(primitiveType, numVertices, createVertexStream(numVertices, false), createVertexStream(numVertices, true));
     unsigned int id = graphicSystemBackEnd->createVertexData();
     vertexDataComponents.pushBack(vertexData);
     vertexData->setId(id);
@@ -55,7 +55,7 @@ VertexData* GraphicSystem::createVertexData(PrimitiveType primitiveType, int num
 
 AttributeBuffer* GraphicSystem::createAttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic)
 {
-    AttributeBuffer* attributeBuffer = new AttributeBuffer(this, type, semantic, numComponentsPerVertex, normalized, dynamic);
+    AttributeBuffer* attributeBuffer = new AttributeBuffer(type, semantic, numComponentsPerVertex, normalized, dynamic);
     unsigned int id;
     dynamic ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
     attributeBuffers.pushBack(attributeBuffer);
@@ -65,7 +65,7 @@ AttributeBuffer* GraphicSystem::createAttributeBuffer(AttributeType type, Attrib
 
 VertexStream* GraphicSystem::createVertexStream(int numVertices, bool interleaved)
 {
-    VertexStream* vertexStream = new VertexStream(this, numVertices);
+    VertexStream* vertexStream = new VertexStream(numVertices);
     unsigned int id;
     interleaved ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
     vertexStreams.pushBack(vertexStream);
@@ -75,7 +75,7 @@ VertexStream* GraphicSystem::createVertexStream(int numVertices, bool interleave
 
 IndexBuffer* GraphicSystem::createIndexBuffer(IndexType indexType, int numIndices, bool dynamic)
 {
-    IndexBuffer* indexBuffer = new IndexBuffer(this, indexType, numIndices, dynamic);
+    IndexBuffer* indexBuffer = new IndexBuffer(indexType, numIndices, dynamic);
     unsigned int id = graphicSystemBackEnd->createIndexBuffer();
     indexBuffers.pushBack(indexBuffer);
     indexBuffer->setId(id);
@@ -84,14 +84,14 @@ IndexBuffer* GraphicSystem::createIndexBuffer(IndexType indexType, int numIndice
 
 Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& sourceFileName)
 {
-    Shader* shader = new Shader(this, shaderType, sourceFileName.c_str());
+    Shader* shader = new Shader(shaderType, sourceFileName.c_str());
     shaders.pushBack(shader);
     return shader;
 }
 
 Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<std::string>& shaderDefines)
 {
-    Shader* shader = new Shader(this, shaderType, sourceFileName.c_str());
+    Shader* shader = new Shader(shaderType, sourceFileName.c_str());
     shader->setDefines(shaderDefines);
     shaders.pushBack(shader);
     return shader;
@@ -99,7 +99,7 @@ Shader* GraphicSystem::createShader(ShaderType shaderType, const std::string& so
 
 ShaderProgram* GraphicSystem::createShaderProgram(Shader* vertexShader, Shader* fragmentShader)
 {
-    ShaderProgram* shaderProgram = new ShaderProgram(this, vertexShader, fragmentShader);
+    ShaderProgram* shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
     unsigned int id = graphicSystemBackEnd->createShaderProgram();
     shaderPrograms.pushBack(shaderProgram);
     shaderProgram->setId(id);
@@ -158,7 +158,7 @@ ShaderProgram* GraphicSystem::createShaderProgram(const JSONValue& shaderProgram
 
 Texture* GraphicSystem::createTexture(TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height)
 {
-    Texture* texture = new Texture(this, targetMode, wrapMode, filterMode, pixelFormat, width, height);
+    Texture* texture = new Texture(targetMode, wrapMode, filterMode, pixelFormat, width, height);
     unsigned int id = graphicSystemBackEnd->createTexture();
     textures.pushBack(texture);
     texture->setId(id);
@@ -194,7 +194,7 @@ Texture* GraphicSystem::createTexture(const JSONValue& textureJSON)
 
 RenderTarget* GraphicSystem::createRenderTarget(int width, int height, int numBuffers, int numLayers)
 {
-    RenderTarget* renderTarget = new RenderTarget(this, width, height, numBuffers, numLayers);
+    RenderTarget* renderTarget = new RenderTarget(width, height, numBuffers, numLayers);
     unsigned int id = graphicSystemBackEnd->createRenderTarget(width, height, numBuffers, numLayers);
     renderTargets.pushBack(renderTarget);
     renderTarget->setId(id);
@@ -269,7 +269,7 @@ RenderTarget* GraphicSystem::createRenderTarget(const JSONValue& renderTargetJSO
 
 ShaderParameterBlock* GraphicSystem::createShaderParameterBlock(const std::string& name)
 {
-    ShaderParameterBlock* shaderParameterBlock = new ShaderParameterBlock(this, name);
+    ShaderParameterBlock* shaderParameterBlock = new ShaderParameterBlock(name);
     unsigned int id = graphicSystemBackEnd->createShaderParameterBlock(name);
     shaderParameterBlocks.pushBack(shaderParameterBlock);
     shaderParameterBlock->setId(id);
@@ -478,6 +478,8 @@ void GraphicSystem::removeVertexData(VertexData* vertexData)
 {
     if(vertexData)
     {
+        removeVertexStream(vertexData->getDynamicVertexStream());
+        removeVertexStream(vertexData->getStaticVertexStream());
         vertexDataComponents.eraseUnordered(vertexData);
         graphicSystemBackEnd->removeVertexData(vertexData->getId());
         delete vertexData;
