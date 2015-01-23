@@ -1,6 +1,6 @@
 //#version 330
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
 
 in vec3 i_position;
 in vec3 i_normal;
-in vec2 i_texcoord0;
 in vec3 i_tangent;
 in vec3 i_bitangent;
+in vec4 i_jointIndices;
+in vec4 i_jointWeights;
+in vec2 i_texcoord0;

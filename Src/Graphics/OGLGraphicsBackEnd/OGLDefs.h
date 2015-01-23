@@ -191,9 +191,10 @@ static const GLchar* glAttributeName[] =
 {
     "i_position",
     "i_normal",
-    "i_color",
     "i_tangent",
     "i_bitangent",
+    "i_jointIndices",
+    "i_jointWeights",
     "i_texcoord0",
     "i_texcoord1",
     "i_texcoord2",

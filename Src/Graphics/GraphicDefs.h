@@ -30,7 +30,7 @@ namespace Huurre3D
 
 DECLARE_ENUM_CLASS(PrimitiveType, Points, Lines, Triangles, TriangleStrip);
 DECLARE_ENUM_CLASS(AttributeType, Byte, Short, Int, Float);
-DECLARE_ENUM_CLASS(AttributeSemantic, Position, Normal, Color, Tangent, BiTanget, TexCoord0, TexCoord1, TexCoord2, TexCoord3, NumSemantics);
+DECLARE_ENUM_CLASS(AttributeSemantic, Position, Normal, Tangent, BiTanget, JointIndices, JointWeights, TexCoord0, TexCoord1, TexCoord2, TexCoord3, NumSemantics);
 DECLARE_ENUM_CLASS(IndexType, Short, Int);
 DECLARE_ENUM_CLASS(BlendFunction, Replace, Add, Alpha, AddAlpha, Modulate);
 DECLARE_ENUM_CLASS(CompareFunction, Always, Equal, NotEqual, Less, LessEqual, Greater, GreaterEqual, Never);
@@ -83,6 +83,7 @@ static const std::string sp_shadowOcclusionParameters = "u_shadowOcclusionParame
 static const std::string sp_shadowOcclusionParameterIndex = "u_shadowOcclusionParameterIndex";
 static const std::string sp_SSAOParameters = "u_SSAOParameters";
 static const std::string sp_renderTargetSize = "u_renderTargetParameters";
+static const std::string sp_skinMatrixArray = "u_skinMatrixArray";
 
 }
 

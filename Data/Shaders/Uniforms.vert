@@ -1,6 +1,6 @@
 //#version 330
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,12 @@ layout(std140) uniform u_cameraParameters
     mat4 u_frustumFarPlaneCorners;
     float u_nearClip;
     float u_farClip;
+};
+
+//TODO: Remove the hardcoded size.
+layout(std140) uniform u_skinMatrixArray
+{
+    mat4 u_skinMatrices[1000];
 };
 
 uniform mat4 u_worldTransform;

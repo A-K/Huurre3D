@@ -1,6 +1,6 @@
 #version 330
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +25,16 @@
 
 void main()
 {
-    gl_Position = u_lightViewProjectionMatrix * u_worldTransform * vec4(i_position, 1.0f); 
+    vec4 position = vec4(i_position, 1.0f);
+
+#ifdef SKINNED
+    ivec4 jointIndex = ivec4(i_jointIndices);
+    mat4 skinnedTransform = u_skinMatrices[jointIndex.x] * i_jointWeights.x;
+    skinnedTransform += u_skinMatrices[jointIndex.y] * i_jointWeights.y;
+    skinnedTransform += u_skinMatrices[jointIndex.z] * i_jointWeights.z;
+    skinnedTransform += u_skinMatrices[jointIndex.w] * i_jointWeights.w;
+    position = skinnedTransform * position;
+#endif
+
+    gl_Position = u_lightViewProjectionMatrix * u_worldTransform * position;
 }

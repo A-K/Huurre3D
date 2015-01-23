@@ -1,6 +1,6 @@
 #version 330
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ out	vec3 f_bitangent;
 out	vec2 f_texCoord0;
 out float f_linear_depth;
 
+
 //Get the normals in view space.
 mat3 getNormalMatrix(in mat4 matrix)
 {
@@ -37,9 +38,22 @@ mat3 getNormalMatrix(in mat4 matrix)
 
 void main()
 {	
-    mat4 worldView = u_viewMatrix * u_worldTransform;
     vec4 position = vec4(i_position, 1.0f);
-    mat3 normalMatrix = getNormalMatrix(worldView);
+    mat4 worldView = u_viewMatrix * u_worldTransform;
+    mat3 normalMatrix;
+
+#ifdef SKINNED
+    ivec4 jointIndex = ivec4(i_jointIndices);
+    mat4 skinnedTransform = u_skinMatrices[jointIndex.x] * i_jointWeights.x;
+    skinnedTransform += u_skinMatrices[jointIndex.y] * i_jointWeights.y;
+    skinnedTransform += u_skinMatrices[jointIndex.z] * i_jointWeights.z;
+    skinnedTransform += u_skinMatrices[jointIndex.w] * i_jointWeights.w;
+    position = skinnedTransform * position;
+    normalMatrix = getNormalMatrix(worldView * skinnedTransform);
+#else
+    normalMatrix = getNormalMatrix(worldView);
+#endif
+
     f_normal = normalize(normalMatrix * i_normal);
     f_tangent = normalize(normalMatrix * i_tangent);
     f_bitangent = normalize(normalMatrix * i_bitangent);
