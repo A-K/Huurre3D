@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -251,6 +251,36 @@ Quaternion Quaternion::inverse() const
     }
     else
         return IDENTITY;
+}
+
+Quaternion Quaternion::slerp(const Quaternion& target, float t) const
+{
+    float cosAngle = w * target.w + x * target.x + y * target.y + target.z * z;
+    float sign = 1.0f;
+
+    if(cosAngle < 0.0f)
+    {
+        cosAngle = -cosAngle;
+        sign = -1.0f;
+    }
+
+    float start, end;
+    //If the angle is small, use linear interpolation otherwise use slerp.
+    if(cosAngle < 0.95f)
+    {
+        float theta = acos(cosAngle);
+        float invSinAngle = 1.0f / sin(theta);
+
+        start = sin((1.0f - t) * theta) * invSinAngle;
+        end = sin(t * theta) * invSinAngle;
+    }
+    else
+    {
+        start = 1.0f - t;
+        end = t;
+    }
+
+    return *this * start + target * sign * end;
 }
 
 }
