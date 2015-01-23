@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 #include "Scene/Scene.h"
 #include "Scene/Mesh.h"
 #include "Scene/Light.h"
+#include "Scene/Joint.h"
 #include "Math/Quaternion.h"
 #include "Math/Vector3.h"
 #include "Renderer/Material.h"
@@ -33,90 +34,144 @@
 namespace Huurre3D
 {
 
-SceneImporter::SceneImporter(Renderer* renderer):
-renderer(renderer)
+SceneImporter::SceneImporter(Renderer* renderer, Animation* animation) :
+renderer(renderer),
+animation(animation)
 {
 }
 
 void SceneImporter::importMultipleMeshes(const std::string& fileName, Vector<Mesh*>& destMeshes)
 {
-    if(isAssimpFileType(fileName.c_str()))
+    const char* ext = ext = strrchr(fileName.c_str(), '.');
+    Assimp::Importer assimpImporter;
+    if(assimpImporter.IsExtensionSupported(ext))
     {
-        if(importAssimpFile(fileName.c_str()))
+        assimpScene = assimpImporter.ReadFile(fileName,
+            aiProcess_CalcTangentSpace |
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_ImproveCacheLocality |
+            aiProcess_RemoveRedundantMaterials |
+            aiProcess_SortByPType |
+            //aiProcess_FixInfacingNormals |
+            aiProcess_FindInvalidData |
+            aiProcess_LimitBoneWeights |
+            aiProcess_SplitByBoneCount |
+            aiProcess_GenUVCoords |
+            aiProcess_TransformUVCoords |
+            aiProcess_OptimizeMeshes);
+
+        if(!assimpScene)
         {
-            Vector<MaterialDescription> materialDescriptions;
-            Vector<GeometryDescription> geometryDescriptions;
-            const aiNode* rootNode = assimpScene->mRootNode;
-            readAssimpModelIntoDescriptions(rootNode, materialDescriptions, geometryDescriptions);
-
-            Vector3 position, scale;
-            Quaternion rotation;
-            getTransfrom(rootNode->mTransformation, position, rotation, scale);
-
-            Vector<Vector<RenderItem>> renderItems;
-            renderer->createRenderItems(materialDescriptions, geometryDescriptions, renderItems, destMeshes.size());
-
-            for(unsigned int i = 0; i < destMeshes.size(); ++i)
-                destMeshes[i]->addRenderItems(renderItems[i]);
-
-            for(unsigned int i = 0; i < geometryDescriptions.size(); ++i)
-                geometryDescriptions[i].releaseData();
-
+            std::cout << "Failed to import file: " << fileName << ". Error: " << assimpImporter.GetErrorString() << std::endl;
+            return;
         }
+
+        if(!assimpScene->mRootNode)
+        {
+            std::cout << "Failed to find rootNode: " << fileName << ". Error: " << assimpImporter.GetErrorString() << std::endl;
+            return;
+        }
+
+        Vector<MaterialDescription> materialDescriptions;
+        Vector<GeometryDescription> geometryDescriptions;
+        AssimpSkeletonData assimpSkeletonData;
+        const aiNode* rootNode = assimpScene->mRootNode;
+        extractDataFromAssimpScene(rootNode, materialDescriptions, geometryDescriptions, assimpSkeletonData);
+
+        Vector3 position, scale;
+        Quaternion rotation;
+        getTransfrom(rootNode->mTransformation, position, rotation, scale);
+
+        Vector<Joint*> skeleton;
+        unsigned int numJoints = destMeshes[0]->getScene()->getNumSceneItemsByType("Joint");
+        destMeshes[0]->getScene()->createSceneItems<Joint>(skeleton, assimpSkeletonData.boneNodes.size());
+        readSkeleton(assimpSkeletonData, skeleton);
+        readJointWeights(assimpSkeletonData, skeleton, geometryDescriptions, numJoints);
+        Vector<AnimationClip*> animationClips;
+        readSkeletalAnimations(animationClips, skeleton);
+
+        Vector<Vector<RenderItem>> renderItems;
+        renderer->createRenderItems(materialDescriptions, geometryDescriptions, renderItems, destMeshes.size());
+
+        for(unsigned int i = 0; i < destMeshes.size(); ++i)
+        {
+            destMeshes[i]->setTransform(position, rotation, scale);
+            if(assimpSkeletonData.bones.size() != 0)
+            {
+                destMeshes[i]->setSkeleton(skeleton);
+                destMeshes[i]->setAnimationClips(animationClips);
+            }
+            destMeshes[i]->addRenderItems(renderItems[i]);
+        }
+
+        for(unsigned int i = 0; i < geometryDescriptions.size(); ++i)
+            geometryDescriptions[i].releaseData();
+    }
+    else
+    {
+        std::cout << "Failed to import file: " << fileName << ", unsupported format." << std::endl;
+        return;
     }
 }
 
 void SceneImporter::importMesh(const std::string& fileName, Mesh* destMesh)
 {
-    if(isAssimpFileType(fileName.c_str()))
-    {
-        if(importAssimpFile(fileName.c_str()))
-        {
-            Vector<MaterialDescription> materialDescriptions;
-            Vector<GeometryDescription> geometryDescriptions;
-            const aiNode* rootNode = assimpScene->mRootNode;
-            readAssimpModelIntoDescriptions(rootNode, materialDescriptions, geometryDescriptions);
-
-            Vector3 position, scale;
-            Quaternion rotation;
-            getTransfrom(rootNode->mTransformation, position, rotation, scale);
-            destMesh->setTransform(position, rotation, scale);
-
-            Vector<RenderItem> renderItems;
-            renderer->createRenderItems(materialDescriptions, geometryDescriptions, renderItems);
-            destMesh->addRenderItems(renderItems);
-
-            for(unsigned int i = 0; i < geometryDescriptions.size(); ++i)
-                geometryDescriptions[i].releaseData();
-
-        }
-    }
+    Vector<Mesh*> meshes;
+    meshes.pushBack(destMesh);
+    importMultipleMeshes(fileName, meshes);
 }
 
-void SceneImporter::readAssimpModelIntoDescriptions(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions,
-    Vector<GeometryDescription>& geometryDescriptions)
+void SceneImporter::extractDataFromAssimpScene(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions,
+    AssimpSkeletonData& assimpSkeletonData)
 {
     if(assimpNode->mNumMeshes > 0)
     {
         for(unsigned int i = 0; i < assimpNode->mNumMeshes; ++i)
         {
-            const aiMesh* assimpMesh = assimpScene->mMeshes[assimpNode->mMeshes[i]];
-            const aiMaterial* assimpMaterial = assimpScene->mMaterials[assimpMesh->mMaterialIndex];
+            aiMesh* assimpMesh = assimpScene->mMeshes[assimpNode->mMeshes[i]];
+            aiMaterial* assimpMaterial = assimpScene->mMaterials[assimpMesh->mMaterialIndex];
 
-            GeometryDescription description;
-            description.primitiveType = PrimitiveType::Triangles;
-            readIndices(assimpMesh, description);
-            readVertexAttributes(assimpMesh, description);
+            GeometryDescription geometryDescription;
+            geometryDescription.primitiveType = PrimitiveType::Triangles;
+            readIndices(assimpMesh, geometryDescription);
+            readVertexAttributes(assimpMesh, geometryDescription);
 
-            materialDescriptions.pushBack(createMaterialDescription(assimpMaterial));
-            geometryDescriptions.pushBack(description);
+            MaterialDescription materialDescription = createMaterialDescription(assimpMaterial);
+            
+            if(assimpMesh->HasBones())
+            {
+                materialDescription.skinned = true;
+                assimpSkeletonData.boneMeshes.pushBack(assimpMesh);
+                assimpSkeletonData.meshIndices.pushBack(i);
+            }
+
+            materialDescriptions.pushBack(materialDescription);
+            geometryDescriptions.pushBack(geometryDescription);
+
+            //Add new bones and bone nodes into the assimpSkeletonData struct.
+            for(unsigned int j = 0; j < assimpScene->mMeshes[i]->mNumBones; ++j)
+            {
+                assimpSkeletonData.bones.pushBack(assimpScene->mMeshes[i]->mBones[j]);
+                aiNode* boneNode = assimpScene->mRootNode->FindNode(assimpScene->mMeshes[i]->mBones[j]->mName);
+
+                if(boneNode)
+                {
+                    while(boneNode && boneNode != assimpNode && boneNode != assimpNode->mParent)
+                    {
+                        assimpSkeletonData.boneNodes.insert(boneNode);                            
+                        boneNode = boneNode->mParent;
+                    }
+                }
+            }
         }
     }
 
     //TODO: bake the child transforms into the attributes.
     for(unsigned int i = 0; i < assimpNode->mNumChildren; ++i)
     {
-        readAssimpModelIntoDescriptions(assimpNode->mChildren[i], materialDescriptions, geometryDescriptions);
+        extractDataFromAssimpScene(assimpNode->mChildren[i], materialDescriptions, geometryDescriptions, assimpSkeletonData);
     }
 }
 
@@ -302,35 +357,177 @@ void SceneImporter::readVertexAttributes(const aiMesh* assimpMesh, GeometryDescr
     }
 }
 
-bool SceneImporter::importAssimpFile(const char* fileName)
+void SceneImporter::readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<GeometryDescription>& geometryDescriptions, unsigned int jointStartIndex)
 {
-    assimpScene = assimpImporter.ReadFile(fileName,
-        aiProcess_CalcTangentSpace |
-        aiProcess_JoinIdenticalVertices |
-        aiProcess_Triangulate |
-        aiProcess_GenSmoothNormals |
-        aiProcess_ImproveCacheLocality |
-        aiProcess_RemoveRedundantMaterials |
-        aiProcess_SortByPType |
-        //aiProcess_FixInfacingNormals |
-        aiProcess_FindInvalidData |
-        aiProcess_GenUVCoords |
-        aiProcess_TransformUVCoords |
-        aiProcess_OptimizeMeshes);
-
-    if(!assimpScene)
+    for(unsigned int i = 0; i < assimpSkeletonData.boneMeshes.size(); ++i)
     {
-        std::cout << "Failed to import file: " << fileName << ". Error: " <<assimpImporter.GetErrorString() << std::endl;
-        return false;
+        geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointIndices = new float[assimpSkeletonData.boneMeshes[i]->mNumVertices * 4]();
+        geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointWeights = new float[assimpSkeletonData.boneMeshes[i]->mNumVertices * 4]();
+
+        std::string boneName;
+        //vertexIDTable keeps track that how many jointIndices and weights a vertex in given index has. 
+        int* vertexIDtable = new int[assimpSkeletonData.boneMeshes[i]->mNumVertices]();
+        for(unsigned int j = 0; j < assimpSkeletonData.boneMeshes[i]->mNumBones; ++j)
+        {
+            boneName = assimpSkeletonData.boneMeshes[i]->mBones[j]->mName.C_Str();
+            unsigned int jointIndex = jointStartIndex;
+            jointIndex += skeleton.getIndexToItem([boneName](const Joint* joint){return joint->getName().compare(boneName) == 0; });
+
+            for(unsigned int k = 0; k < assimpSkeletonData.boneMeshes[i]->mBones[j]->mNumWeights; ++k)
+            {
+                unsigned int vertexIndex = assimpSkeletonData.boneMeshes[i]->mBones[j]->mWeights[k].mVertexId;
+                geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointIndices[vertexIndex * 4 + vertexIDtable[vertexIndex]] = static_cast<float>(jointIndex);
+                geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointWeights[vertexIndex * 4 + vertexIDtable[vertexIndex]] = assimpSkeletonData.boneMeshes[i]->mBones[j]->mWeights[k].mWeight;
+                vertexIDtable[vertexIndex] = vertexIDtable[vertexIndex] + 1;
+            }
+        }
+        delete[] vertexIDtable;
+    }
+}
+
+void SceneImporter::readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton)
+{
+    //Find the skeleton root Node. Node that is closest to the scene root node is the skeleton root node.
+    aiNode* boneRoot = nullptr;
+    unsigned int distanceToRoot = 0;
+    unsigned int shortestDistToRoot = 10000;
+    for(auto &bn : assimpSkeletonData.boneNodes)
+    {
+        distanceToRoot = 0;
+        aiNode* tempNode = bn;
+        while(tempNode != assimpScene->mRootNode)
+        {
+            tempNode = tempNode->mParent;
+            distanceToRoot++;
+        }
+
+        if(distanceToRoot < shortestDistToRoot)
+        {
+            boneRoot = bn;
+            shortestDistToRoot = distanceToRoot;
+        }
+    }
+    unsigned int jointId = 0;
+    buildSkeleton(boneRoot, assimpSkeletonData.bones, assimpSkeletonData.boneNodes, skeleton, jointId);
+}
+
+void SceneImporter::buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId)
+{
+    if(!boneNode)
+        return;
+
+    //Set the name, local transform and offset matrix to the joint.
+    Vector3 position, scale;
+    Quaternion rotation;
+    getTransfrom(boneNode->mTransformation, position, rotation, scale);
+    skeleton[jointId]->setTransform(position, rotation, scale);
+
+    aiBone* bone;
+    aiString boneName = boneNode->mName;
+    Joint* curJoint = skeleton[jointId];
+    curJoint->setName(boneName.C_Str());
+
+    if(bones.findItem([boneName](aiBone* bone){return bone->mName == boneName; }, bone))
+    {
+        aiMatrix4x4 offsetMatrix = bone->mOffsetMatrix;
+        getTransfrom(offsetMatrix, position, rotation, scale);
+        curJoint->setOffsetMatrix(position, rotation, scale);
     }
 
-    if(!assimpScene->mRootNode)
+    for(unsigned int i = 0; i < boneNode->mNumChildren; ++i)
     {
-        std::cout << "Failed to find rootNode: " << fileName << ". Error: " <<assimpImporter.GetErrorString() << std::endl;
-        return false;
+        //On some occcasion the bone node might have children nodes which don't have bones and have no effect on the skeleton.
+        //Don't add them to the skeleton hierarchy.
+        if(boneNodes.find(boneNode->mChildren[i]) != boneNodes.end())
+        {
+            jointId++;
+            curJoint->addChild(skeleton[jointId]);
+            buildSkeleton(boneNode->mChildren[i], bones, boneNodes, skeleton, jointId);
+        }
     }
+}
 
-    return true;
+
+void SceneImporter::readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton)
+{
+    for(unsigned int i = 0; i < assimpScene->mNumAnimations; ++i)
+    {
+        std::string name = std::string(assimpScene->mAnimations[i]->mName.data, assimpScene->mAnimations[i]->mName.length);
+        if(name.size() == 0)
+            name = "Animation" + std::to_string(i);
+        
+        float ticksPerSecond = static_cast<float>(assimpScene->mAnimations[i]->mTicksPerSecond);
+        ticksPerSecond = ticksPerSecond != 0.0f ? ticksPerSecond : 60.0f;
+        float invTicksperSecond = (1.0f / ticksPerSecond);
+        float animationLenght = static_cast<float>(assimpScene->mAnimations[i]->mDuration) * invTicksperSecond;
+
+        int tracknum = 0;
+        Vector<Track> tracks;
+        for(unsigned int j = 0; j < assimpScene->mAnimations[i]->mNumChannels; ++j)
+        {
+            aiNodeAnim* channel = assimpScene->mAnimations[i]->mChannels[j];
+            std::string channelName(channel->mNodeName.C_Str());
+
+            //Last key frame values are needed because the aiProcess_FindInvalidData flags removes redundant keyframe values from animation channel. 
+            //This leads to differing amounts of position, rotation and scaling keys. 
+            //If only one of those values per keyFrame is setted and others are left to they default values, 
+            //it causes incorrect transformations between the joints during the animation.
+            Vector3 lastKeyFramePosition;
+            Quaternion lastKeyFrameRotation;
+            Vector3 lastKeyFrameScale;
+            
+            unsigned int numKeys = channel->mNumPositionKeys;
+            if(channel->mNumPositionKeys != channel->mNumRotationKeys || channel->mNumPositionKeys != channel->mNumScalingKeys || channel->mNumRotationKeys != channel->mNumScalingKeys)
+                numKeys = max((int)numKeys, max((int)channel->mNumRotationKeys, (int)channel->mNumScalingKeys));
+
+            Joint* jointToModify;
+            if(skeleton.findItem([channelName](Joint* joint){return joint->getName().compare(channelName) == 0; }, jointToModify))
+            {
+                Track track(*jointToModify);
+                for(unsigned int k = 0; k < numKeys; ++k)
+                {
+                    KeyFrame keyFrame;
+                    if(channel->mNumPositionKeys > k)
+                    {
+                        keyFrame.time = static_cast<float>(channel->mPositionKeys[k].mTime) * invTicksperSecond;
+                        keyFrame.position = Vector3(channel->mPositionKeys[k].mValue.x, channel->mPositionKeys[k].mValue.y, channel->mPositionKeys[k].mValue.z);
+                        lastKeyFramePosition = keyFrame.position;
+                    }
+                    else
+                        keyFrame.position = lastKeyFramePosition;
+
+                    if(channel->mNumRotationKeys > k)
+                    {
+                        keyFrame.time = static_cast<float>(channel->mRotationKeys[k].mTime) * invTicksperSecond;
+                        keyFrame.rotation = Quaternion(channel->mRotationKeys[k].mValue.w, channel->mRotationKeys[k].mValue.x, channel->mRotationKeys[k].mValue.y, channel->mRotationKeys[k].mValue.z);
+                        lastKeyFrameRotation = keyFrame.rotation;
+                    }
+                    else
+                        keyFrame.rotation = lastKeyFrameRotation;
+
+                    if(channel->mNumScalingKeys > k)
+                    {
+                        keyFrame.time = static_cast<float>(channel->mScalingKeys[k].mTime) * invTicksperSecond;
+                        keyFrame.scale = Vector3(channel->mScalingKeys[k].mValue.x, channel->mScalingKeys[k].mValue.y, channel->mScalingKeys[k].mValue.z);
+                        lastKeyFrameScale = keyFrame.scale;
+                    }
+                    else
+                        keyFrame.scale = lastKeyFrameScale;
+
+                    track.keyFrames.pushBack(keyFrame);
+                }
+                tracks.pushBack(track);
+                tracknum++;
+            }
+            else
+            {
+                std::cout << "Channel " << channelName << " not included into the animation, because it has no effect on the skeleton" << std::endl;
+            }
+        }
+
+        AnimationClip* animationClip = animation->createAnimationClip(name, animationLenght, true, tracks);
+        animationClips.pushBack(animationClip);
+    }
 }
 
 void SceneImporter::getTransfrom(const aiMatrix4x4& transform, Vector3& pos, Quaternion& rot, Vector3& scale)
@@ -342,12 +539,6 @@ void SceneImporter::getTransfrom(const aiMatrix4x4& transform, Vector3& pos, Qua
     pos = Vector3(aiPos.x, aiPos.y, aiPos.z);
     rot = Quaternion(aiRot.w, aiRot.x, aiRot.y, aiRot.z);
     scale = Vector3(aiScale.x, aiScale.y, aiScale.z);
-}
-
-bool SceneImporter::isAssimpFileType(const char* fileName)
-{
-    const char* ext = ext = strrchr(fileName, '.');
-    return assimpImporter.IsExtensionSupported(ext); 
 }
 
 }
