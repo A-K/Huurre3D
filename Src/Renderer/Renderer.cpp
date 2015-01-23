@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include "Scene/Camera.h"
 #include "Scene/Light.h"
 #include "Scene/Mesh.h"
+#include "Scene/Joint.h"
 #include "Scene/SkyBox.h"
 #include "Math/Frustum.h"
 #include <iostream>
@@ -77,6 +78,7 @@ bool Renderer::init(const JSONValue& rendererJSON)
         cameraShaderParameterBlock = graphicSystem->createShaderParameterBlock(sp_cameraParameters);
         materialParameterBlock = graphicSystem->createShaderParameterBlock(sp_materialProperties);
         renderTargetSizeBlock = graphicSystem->createShaderParameterBlock(sp_renderTargetSize);
+        skinMatrixArray = graphicSystem->createShaderParameterBlock(sp_skinMatrixArray);
         Vector4 renderTargetSizeValue = Vector4(float(width), float(height), (1.0f / float(width)), (1.0f / float(height)));
         renderTargetSizeBlock->addParameter(renderTargetSizeValue);
 
@@ -168,6 +170,16 @@ void Renderer::renderScene(Scene* scene, Camera* camera)
 {
     scene->update();
     camera->getCameraShaderParameterBlock(cameraShaderParameterBlock);
+    skinMatrixArray->clearBuffer();
+
+    Vector<Joint*> joints;
+    scene->getSceneItemsByType<Joint>(joints);
+
+    for(unsigned int i = 0; i < joints.size(); ++i)
+    {
+        Matrix4x4 skinMatrix = joints[i]->getSkinMatrix();
+        skinMatrixArray->addParameter(skinMatrix);
+    }
 
     for(unsigned int i = 0; i < renderStages.size(); ++i)
         renderStages[i]->clearStage();
@@ -236,7 +248,7 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
                          Vector4(materialDescription.emissiveColor, materialDescription.reflectance),
                          Vector4(materialDescription.ambientColor, materialDescription.alpha));
 
-    Material* material = new Material(parameters, materialDescription.rasterState);
+    Material* material = new Material(parameters, materialDescription.rasterState, materialDescription.skinned);
 
     if(!materialDescription.diffuseTextureFile.empty())
         material->setDiffuseTexture(createMaterialTexture(materialDescription.diffuseTextureFile, TextureSlotIndex::Diffuse));
@@ -267,16 +279,20 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     Vector<std::string> shaderFileNames;
     shaderFileNames.pushBack(materialVertexShader);
     shaderFileNames.pushBack(materialFragmentShader);
-    Vector<std::string> materialShaderDefines = material->getShaderDefines();
+    Vector<std::string> fragmentShaderDefines = material->getShaderDefines(ShaderType::Fragment);
+    Vector<std::string> vertexShaderDefines = material->getShaderDefines(ShaderType::Vertex);
+    Vector<std::string> combinedDefines = vertexShaderDefines;
+    combinedDefines.pushBack(fragmentShaderDefines);
 
-    ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, materialShaderDefines);
+    ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, combinedDefines);
 
     //If the program dont exist, create one.
     if(!program)
     {
         Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, materialVertexShader);
         Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, materialFragmentShader);
-        fShader->setDefines(materialShaderDefines);
+        vShader->setDefines(vertexShaderDefines);
+        fShader->setDefines(fragmentShaderDefines);
         program = graphicSystem->createShaderProgram(vShader, fShader);
     }
 
@@ -308,16 +324,22 @@ Geometry* Renderer::createGeometry(const GeometryDescription& geometryDescriptio
     if(geometryDescription.vertices)
     {
         boundingBox.mergePoints(geometryDescription.vertices, geometryDescription.numVertices);
-        vd->setAttributeBuffer(AttributeType::Float, AttributeSemantic::Position, 3, geometryDescription.numVertices * 3, geometryDescription.vertices, false, false);
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Position, 3, geometryDescription.numVertices * 3, geometryDescription.vertices, false, false);
     }
     if(geometryDescription.normals)
-        vd->setAttributeBuffer(AttributeType::Float, AttributeSemantic::Normal, 3, geometryDescription.numVertices * 3, geometryDescription.normals, false, false);
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Normal, 3, geometryDescription.numVertices * 3, geometryDescription.normals, false, false);
 
     if(geometryDescription.tangents)
-        vd->setAttributeBuffer(AttributeType::Float, AttributeSemantic::Tangent, 3, geometryDescription.numVertices * 3, geometryDescription.tangents, false, false);
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Tangent, 3, geometryDescription.numVertices * 3, geometryDescription.tangents, false, false);
 
     if(geometryDescription.bitTangents)
-        vd->setAttributeBuffer(AttributeType::Float, AttributeSemantic::BiTanget, 3, geometryDescription.numVertices * 3, geometryDescription.bitTangents, false, false);
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::BiTanget, 3, geometryDescription.numVertices * 3, geometryDescription.bitTangents, false, false);
+
+    if(geometryDescription.jointIndices)
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::JointIndices, 4, geometryDescription.numVertices * 4, geometryDescription.jointIndices, false, false);
+    
+    if(geometryDescription.jointWeights)
+        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::JointWeights, 4, geometryDescription.numVertices * 4, geometryDescription.jointWeights, false, false);
 
     for(int i = 0; i < geometryDescription.numUVChanels; ++i)
     {
@@ -325,14 +347,14 @@ Geometry* Renderer::createGeometry(const GeometryDescription& geometryDescriptio
         {
             int numComp = geometryDescription.numComp[i];
             AttributeSemantic semantic = static_cast<AttributeSemantic>(int(AttributeSemantic::TexCoord0) + i);
-            vd->setAttributeBuffer(AttributeType::Float, semantic, numComp, geometryDescription.numVertices * numComp, geometryDescription.texCoords[i], false, false);
+            graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, semantic, numComp, geometryDescription.numVertices * numComp, geometryDescription.texCoords[i], false, false);
         }
     }
 
     if(geometryDescription.indices16)
-        vd->setIndexBuffer(IndexType::Short, geometryDescription.numIndices, geometryDescription.indices16, false);
+        graphicSystem->setIndicesToVertexData(vd, IndexType::Short, geometryDescription.numIndices, geometryDescription.indices16, false);
     else if(geometryDescription.indices32)
-        vd->setIndexBuffer(IndexType::Int, geometryDescription.numIndices, geometryDescription.indices32, false);
+        graphicSystem->setIndicesToVertexData(vd, IndexType::Int, geometryDescription.numIndices, geometryDescription.indices32, false);
 
     geometry->setBoundingBox(boundingBox);
     geometry->setVertexData(vd);
@@ -411,7 +433,7 @@ void Renderer::createFullScreenQuad()
 {
     float vertices[] = { -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
     fullScreenQuad = graphicSystem->createVertexData(PrimitiveType::TriangleStrip, 4);
-    fullScreenQuad->setAttributeBuffer(AttributeType::Float, AttributeSemantic::Position, 3, 12, vertices);
+    graphicSystem->setAttributesToVertexData(fullScreenQuad, AttributeType::Float, AttributeSemantic::Position, 3, 12, vertices);
 }
 
 }

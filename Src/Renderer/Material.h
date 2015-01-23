@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ class Material
 {
 public:
     Material();
-    Material(const Matrix4x4& parameters, const RasterState& rasterState);
+    Material(const Matrix4x4& parameters, const RasterState& rasterState, bool skinned);
     ~Material() = default;
 	
     void setAmbientColor(const Vector3& ambient);
@@ -62,8 +62,10 @@ public:
     void setNormalMap(Texture* texture);
     void setAlphaTexture(Texture* texture);
     void setCurrentShaderCombinationTag(unsigned int shaderCombinationTag);
+    void addShaderDefines(const Vector<std::string>& shaderDefines, ShaderType shaderType);
     void getTextures(Vector<Texture*>& texturesOut);
     unsigned int getParameterId();
+    const Vector<std::string>& getShaderDefines(ShaderType shaderType) const;
     Vector3 getAmbientColor() const {return parameters[3].xyz();}
     Vector3 getSpecularColor() const {return parameters[1].xyz();}
     Vector3 getDiffuseColor() const {return parameters[0].xyz();}
@@ -71,10 +73,10 @@ public:
     float getRoughness() const {return parameters[0].w;}
     float getReflectance() const {return parameters[2].w;}
     unsigned int getCurrentShaderCombinationTag() const {return currentShaderCombinationTag;}
-    const Vector<std::string>& getShaderDefines() const {return shaderDefines;}
     RasterState getRasterState() const {return rasterState;}
     const Matrix4x4& getParameters() const {return parameters;}
     bool isTransparent() const {return parameters[3].w < 1.0f;}
+    bool isSkinned() const {return skinned;}
 
 private:
     unsigned int generateParameterId();
@@ -89,8 +91,10 @@ private:
     Texture* specularTexture = nullptr;
     Texture* normalMap = nullptr;
     Texture* alphaTexture = nullptr;
-    Vector<std::string> shaderDefines;
+    Vector<std::string> vertexShaderDefines;
+    Vector<std::string> fragmentShaderDefines;
     bool parametersDirty = true;
+    bool skinned = false;
     unsigned int parameterId = 0;
 };
 

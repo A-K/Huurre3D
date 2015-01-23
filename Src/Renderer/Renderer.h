@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ struct MaterialDescription
     float roughness = DefaultRoughness;
     float reflectance = DefaultReflectance;
     float alpha = DefaultAlpha;
-
+    bool skinned = false;
     std::string diffuseTextureFile;
     std::string specularTextureFile;
     std::string normalMapTextureFile;
@@ -70,6 +70,8 @@ struct GeometryDescription
     float* normals = nullptr;
     float* tangents = nullptr;
     float* bitTangents = nullptr;
+    float* jointIndices = nullptr;
+    float* jointWeights = nullptr;
     float** texCoords = nullptr;
     FixedArray<int, 4> numComp;
     int numUVChanels = 0;
@@ -138,6 +140,7 @@ private:
     ShaderParameterBlock* cameraShaderParameterBlock;
     ShaderParameterBlock* materialParameterBlock;
     ShaderParameterBlock* renderTargetSizeBlock;
+    ShaderParameterBlock* skinMatrixArray;
 
     Vector<Material*> materials;
     Vector<Geometry*> geometries;

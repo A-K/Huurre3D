@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,17 @@ namespace Huurre3D
 
 Material::Material():
 Material(Matrix4x4(Vector4(DefaultColor, DefaultRoughness), Vector4(DefaultColor, DefaultSpecularPower), Vector4(Vector3::ZERO, DefaultReflectance), Vector4(DefaultColor, DefaultAlpha)), 
-         RasterState(BlendState(false, BlendFunction::Replace), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back)))
+         RasterState(BlendState(false, BlendFunction::Replace), CompareState(true, CompareFunction::Less), CullState(true, CullFace::Back)), false)
 {
 }
 
-Material::Material(const Matrix4x4& parameters, const RasterState& rasterState):
+Material::Material(const Matrix4x4& parameters, const RasterState& rasterState, bool skinned) :
 parameters(parameters),
-rasterState(rasterState)
+rasterState(rasterState),
+skinned(skinned)
 {
+    if(skinned)
+        vertexShaderDefines.pushBack("SKINNED");
 }
 
 void Material::setAmbientColor(const Vector3& ambient)
@@ -117,25 +120,25 @@ void Material::setReflectance(float reflectance)
 void Material::setDiffuseTexture(Texture* texture)
 {
     diffuseTexture = texture;
-    shaderDefines.pushBack("DIFFUSE_TEXTURE");
+    fragmentShaderDefines.pushBack("DIFFUSE_TEXTURE");
 }
 
 void Material::setSpecularTexture(Texture* texture)
 {
     specularTexture = texture;
-    shaderDefines.pushBack("SPECULAR_TEXTURE");
+    fragmentShaderDefines.pushBack("SPECULAR_TEXTURE");
 }
 
 void Material::setNormalMap(Texture* texture)
 {
     normalMap = texture;
-    shaderDefines.pushBack("NORMAL_TEXTURE");
+    fragmentShaderDefines.pushBack("NORMAL_TEXTURE");
 }
 
 void Material::setAlphaTexture(Texture* texture)
 {
     alphaTexture = texture;
-    shaderDefines.pushBack("ALPHA_MASK");
+    fragmentShaderDefines.pushBack("ALPHA_MASK");
 }
 
 void Material::setCurrentShaderCombinationTag(unsigned int shaderCombinationTag)
@@ -146,6 +149,11 @@ void Material::setCurrentShaderCombinationTag(unsigned int shaderCombinationTag)
 void Material::setRasterState(const RasterState& state)
 {
     rasterState = state;
+}
+
+void Material::addShaderDefines(const Vector<std::string>& shaderDefines, ShaderType shaderType)
+{
+    shaderType == ShaderType::Vertex ? vertexShaderDefines.pushBack(shaderDefines) : fragmentShaderDefines.pushBack(shaderDefines);
 }
 
 void Material::getTextures(Vector<Texture*>& texturesOut)
@@ -169,6 +177,11 @@ unsigned int Material::generateParameterId()
 {
     parameterId = generateHash((unsigned char*)parameters.toArray(), 64);
     return parameterId;
+}
+
+const Vector<std::string>& Material::getShaderDefines(ShaderType shaderType) const
+{
+    return (shaderType == ShaderType::Vertex) ? vertexShaderDefines : fragmentShaderDefines;
 }
 
 }

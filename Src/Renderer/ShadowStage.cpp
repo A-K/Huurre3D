@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -131,9 +131,14 @@ void ShadowStage::createLightShadowPasses(const Vector<RenderItem>& renderItems)
             shadowDepthRenderPass.renderTargetLayer = j;
             renderPasses.pushBack(shadowDepthRenderPass);
             renderPasses.back().shaderPasses.clear();
+            ShaderPass depthShaderPass;
             for(unsigned int k = 0; k < itemsInShadowfrustum.size(); ++k)
             {
-                ShaderPass depthShaderPass(shadowDepthRenderPass.shaderPasses[0]);
+                if(!itemsInShadowfrustum[k].material->isSkinned())
+                    depthShaderPass = shadowDepthRenderPass.shaderPasses[0];
+                else
+                    depthShaderPass = shadowDepthRenderPass.shaderPasses[1];
+
                 depthShaderPass.vertexData = itemsInShadowfrustum[k].geometry->getVertexData();
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_worldTransform, itemsInShadowfrustum[k].geometry->getWorldTransform()));
                 depthShaderPass.shaderParameters.pushBack(ShaderParameter(sp_lightViewProjectionMatrix, shadowDepthData[i].shadowViewProjectionMatrices[j]));

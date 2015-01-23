@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Material.h"
 #include "Renderer/Geometry.h"
+#include "Scene/Mesh.h"
 
 namespace Huurre3D
 {
@@ -53,6 +54,7 @@ void DeferredStage::update(const Scene* scene)
     Vector<unsigned int> materialBufferIndicies = renderer->getMaterialBufferIndicies();
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
     ShaderParameterBlock* cameraShaderParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_cameraParameters);
+    ShaderParameterBlock* skinMatrixShaderParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_skinMatrixArray);
 
     //Create a shader pass for each material.
     for(unsigned int i = 0; i < deferredRenderItems.size(); ++i)
@@ -67,6 +69,7 @@ void DeferredStage::update(const Scene* scene)
         int materialBufferIndex = materialBufferIndicies.getIndexToItem(materialParameterId);
         materialPass.shaderParameters.pushBack(ShaderParameter(sp_materialParameterIndex, materialBufferIndex));
         materialPass.shaderParameterBlocks.pushBack(cameraShaderParameterBlock);
+        materialPass.shaderParameterBlocks.pushBack(skinMatrixShaderParameterBlock);
 
         materialPass.program = graphicSystem->getShaderCombination(deferredRenderItems[i].material->getCurrentShaderCombinationTag());
         renderPasses[0].shaderPasses.pushBack(materialPass);
