@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,13 @@
 #include "Renderer/RenderItem.h"
 #include "Math/BoundingBox.h"
 #include "Scene/SpatialSceneItem.h"
+#include <memory>
 
 namespace Huurre3D
 {
+
+class Joint;
+class AnimationClip;
 
 class Mesh : public SpatialSceneItem
 {
@@ -36,20 +40,25 @@ class Mesh : public SpatialSceneItem
 
 public:
     Mesh() = default;
-    ~Mesh() = default;
+    ~Mesh();
 	
     void addRenderItem(const RenderItem& renderItem);
     void addRenderItems(const Vector<RenderItem>& renderItems);
     void addRenderItem(Geometry *geometry, Material* material);
     void updateItem() override;
     void setMaterial(Material* material, unsigned int itemIndex = 0);
+    void setSkeleton(const Vector<Joint*>& skeleton);
+    void setAnimationClips(const Vector<AnimationClip*>& animationClips);
     Material* getMaterial(unsigned int itemIndex = 0) const;
+    AnimationClip* getAnimationClip(unsigned int index) const;
     const Vector<RenderItem>& getRenderItems() const {return renderItems;}
     const BoundingBox& getBoundingBox() const {return boundingBox;}
 
 private:
     Vector<RenderItem> renderItems;
     BoundingBox boundingBox;
+    Vector<Joint*> skeleton;
+    Vector<AnimationClip*> animationClips;
 };
 
 }

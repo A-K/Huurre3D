@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,18 @@
 // THE SOFTWARE.
 
 #include "Scene/Mesh.h"
+#include "Scene/Joint.h"
 #include "Renderer/Geometry.h"
 
 namespace Huurre3D
 {
 
 SCENEITEM_TYPE_IMPL(Mesh);
+
+Mesh::~Mesh()
+{
+//    scene->removeSceneItems(skeleton);
+}
 
 void Mesh::addRenderItem(const RenderItem& renderItem)
 {
@@ -76,9 +82,24 @@ void Mesh::setMaterial(Material* material, unsigned int itemIndex)
         renderItems[itemIndex].material = material;
 }
 
+void Mesh::setSkeleton(const Vector<Joint*>& skeleton)
+{
+    this->skeleton = skeleton;
+}
+
+void Mesh::setAnimationClips(const Vector<AnimationClip*>& animationClips)
+{
+    this->animationClips = animationClips;
+}
+
 Material* Mesh::getMaterial(unsigned int itemIndex) const 
 {
     return itemIndex < renderItems.size() ? renderItems[itemIndex].material : nullptr;
+}
+
+AnimationClip* Mesh::getAnimationClip(unsigned int index) const
+{ 
+    return index < animationClips.size() ? animationClips[index] : nullptr;
 }
 
 }
