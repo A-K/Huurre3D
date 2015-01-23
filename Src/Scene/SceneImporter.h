@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,13 @@
 #ifndef SceneImporterImporter_H
 #define SceneImporterImporter_H
 
+#include "Animation/Animation.h"
 #include "Renderer/Renderer.h"
 #include "Util/Vector.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <set>
 
 namespace Huurre3D
 {
@@ -35,26 +37,38 @@ class Mesh;
 class Vector3;
 class Quaternion;
 
+struct AssimpSkeletonData
+{
+    Vector<unsigned int> meshIndices;
+    Vector<aiNode*> meshNodes;
+    Vector<aiMesh*> boneMeshes;
+    std::set<aiNode*> boneNodes;
+    Vector<aiBone*> bones;
+};
+
 class SceneImporter
 {
 public:
-    SceneImporter(Renderer* renderer);
+    SceneImporter(Renderer* renderer, Animation* animation);
     ~SceneImporter() = default;
 	
     void importMesh(const std::string& fileName, Mesh* destMesh);
-    //Import multiple copies from one model.
+    //Import multiple copies from one model. If the model has animations all meshes share same skeleton and animation clips.
     void importMultipleMeshes(const std::string& fileName, Vector<Mesh*>& destMeshes);
 
 private:
-    void readAssimpModelIntoDescriptions(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions);
+    void extractDataFromAssimpScene(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions,
+        AssimpSkeletonData& assimpSkeletonData);
     MaterialDescription createMaterialDescription(const aiMaterial* assimpMaterial);
     void readIndices(const aiMesh* assimpMesh, GeometryDescription& geometryDescription);
     void readVertexAttributes(const aiMesh* assimpMesh, GeometryDescription& geometryDescription);
-    bool importAssimpFile(const char* fileName);
-    bool isAssimpFileType(const char* fileName);
+    void readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<GeometryDescription>& geometryDescriptions, unsigned int jointStartIndex);
+    void readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton);
+    void buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId);
+    void readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton);
     void getTransfrom(const aiMatrix4x4& assimpTransform, Vector3& pos, Quaternion& rot, Vector3& scale);
     Renderer* renderer;
-    Assimp::Importer assimpImporter;
+    Animation* animation;
     const aiScene* assimpScene;
 };
 
