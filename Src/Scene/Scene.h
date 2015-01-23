@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,8 @@ public:
     void getSceneItemsByType(const std::string& sceneItemType, Vector<SceneItem*>& itemsOut) const;
     void getAllRenderItems(Vector<RenderItem>& renderItemsOut) const;
     void setGlobalAmbientLight(const Vector3& ambientLight);
+    unsigned int getNumSceneItemsByType(const std::string& sceneItemType) const;
+    void removeSceneItem(SceneItem* sceneItem);
     void setSceneItemForUpdate(SceneItem* sceneItem) {dirtySceneItems.pushBack(sceneItem);}
     Camera* getMainCamera() const {return mainCamera;}
     const Vector3& getGlobalAmbientLight() const {return globalAmbientLight;}
@@ -58,6 +60,7 @@ public:
         for(unsigned int i = 0; i < numItems; ++i)
             itemsOut.pushBack(static_cast<T*>(createSceneItem(T::getSceneItemTypeStatic())));
     }
+
     template<class T> void getSceneItemsByType(Vector<T*>& itemsOut) const
     {
         Vector<SceneItem*> items;
@@ -65,6 +68,19 @@ public:
 
         for(unsigned int i = 0; i < items.size(); ++i)
             itemsOut.pushBack(static_cast<T*>(items[i]));
+    }
+
+    template<class T> void removeSceneItems(Vector<T*>& sceneItems)
+    {
+        for(unsigned int i = 0; i < sceneItems.size(); ++i)
+        {
+            if(sceneItems[i])
+            {
+                sceneItems.eraseUnordered(sceneItems[i]);
+                delete sceneItems[i];
+                sceneItems[i] = nullptr;
+            }
+        }
     }
 
 private:

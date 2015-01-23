@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-    sceneItems.reset();
+    removeSceneItems(sceneItems);
 }
 
 void Scene::update()
@@ -50,10 +50,13 @@ SceneItem* Scene::createSceneItem(const std::string& sceneItemType)
 {
     unsigned int id = getUniqueId();
     SceneItem* sceneItem = SceneItemFactory::createSceneItem(sceneItemType);
-    sceneItem->setId(id);
-    sceneItem->setScene(this);
-    sceneItem->setSceneItemType(sceneItemType);
-    sceneItems.pushBack(sceneItem);
+    if(sceneItem)
+    {
+        sceneItem->setId(id);
+        sceneItem->setScene(this);
+        sceneItem->setSceneItemType(sceneItemType);
+        sceneItems.pushBack(sceneItem);
+    }
     return sceneItem;
 }
 
@@ -89,9 +92,31 @@ void Scene::getAllRenderItems(Vector<RenderItem>& renderItemsOut) const
         renderItemsOut.pushBack(meshes[i]->getRenderItems());
 }
 
+unsigned int Scene::getNumSceneItemsByType(const std::string& sceneItemType) const
+{
+    unsigned int numItems = 0;
+
+    for(unsigned int i = 0; i < sceneItems.size(); ++i)
+    {
+        if(sceneItems[i]->getSceneItemType().compare(sceneItemType) == 0)
+            numItems++;
+    }
+
+    return numItems;
+}
+
 void Scene::setGlobalAmbientLight(const Vector3& ambientLight)
 {
     globalAmbientLight = ambientLight;
+}
+
+void Scene::removeSceneItem(SceneItem* sceneItem)
+{
+    if(sceneItem)
+    {
+        sceneItems.eraseUnordered(sceneItem);
+        delete sceneItem;
+    }
 }
 
 }
