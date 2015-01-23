@@ -41,6 +41,7 @@ public:
     unsigned int getId() {return id;}
     const unsigned int getId() const {return id;}
     std::string& getSceneItemType() {return SceneItemType;}
+    Scene* getScene() {return scene;}
 
 protected:
     void setDirty();

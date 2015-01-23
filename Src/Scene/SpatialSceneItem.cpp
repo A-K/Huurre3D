@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -139,23 +139,26 @@ void SpatialSceneItem::lookAt(const Vector3& target, const Vector3& upVector, Fr
 
 void SpatialSceneItem::updateWorldTransform()
 {
-    if(!parent)
+    if(transformDirty)
     {
-        worldPosition = localPosition;
-        worldRotation = localRotation;
-        worldScale = localScale;
-    }
-    else
-    {
-        parent->updateWorldTransform();
-        worldPosition = parent->worldPosition + (parent->worldRotation.rotate(parent->worldScale * localPosition));
-        worldRotation = parent->worldRotation * localRotation;
-        worldScale = parent->worldScale * localScale;
-    }
+        if(!parent)
+        {
+            worldPosition = localPosition;
+            worldRotation = localRotation;
+            worldScale = localScale;
+        }
+        else
+        {
+            parent->updateWorldTransform();
+            worldPosition = parent->worldPosition + (parent->worldRotation.rotate(parent->worldScale * localPosition));
+            worldRotation = parent->worldRotation * localRotation;
+            worldScale = parent->worldScale * localScale;
+        }
 
-    worldTransform.setTransform(worldPosition, worldRotation, worldScale);
-    inverseWorldTransform.setInverseTransform(worldPosition, worldRotation, worldScale);
-    transformDirty = false;
+        worldTransform.setTransform(worldPosition, worldRotation, worldScale);
+        inverseWorldTransform.setInverseTransform(worldPosition, worldRotation, worldScale);
+        transformDirty = false;
+    }
 }
 
 void SpatialSceneItem::addChild(SpatialSceneItem* child)
