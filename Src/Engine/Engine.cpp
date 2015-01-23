@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,7 @@ void Engine::update()
     float currentFrame = timer.getElapsedTime();
     float timeSinceLastUpdate = max(0.0f, (currentFrame - lastFrame));
     lastFrame = currentFrame;
+    animation->update(timeSinceLastUpdate);
 
     for(unsigned int i = 0; i < apps.size(); ++i)
         apps[i]->update(timeSinceLastUpdate);
@@ -124,7 +125,8 @@ bool Engine::init(const std::string& engineConfigFile)
     if(!renderer->init(rendererJSON))
         return false;
 
-    sceneImporter = new SceneImporter(renderer);
+    animation = new Animation();
+    sceneImporter = new SceneImporter(renderer, animation);
     input = new Input(renderer->getGraphicWindow());
     timer.start();
 

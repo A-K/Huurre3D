@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 namespace Huurre3D
 {
 
+class Animation;
 class Scene;
 class Renderer;
 class SceneImporter;
@@ -50,12 +51,14 @@ public:
     Scene* getScene(unsigned int id = 0) const {return scenes[id];}
     SceneImporter* getSceneImporter() const {return sceneImporter;}
     Renderer* getRenderer() const {return renderer;}
+    Animation* getAnimation() const {return animation;}
     Input* getInput() const {return input;}
     static std::string& getAssetPath() {return assetPath;}
 
 private:
     void deInit();
     void update();
+    Animation* animation = nullptr;
     Renderer* renderer = nullptr;
     Vector<Scene*> scenes;
     Vector<App*> apps;
