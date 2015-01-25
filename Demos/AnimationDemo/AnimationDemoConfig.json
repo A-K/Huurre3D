@@ -11,7 +11,7 @@
             "vsync" : true
         },
         "materialVertexShader" : "../../Data/Shaders/Gbuffer.vert",
-        "materialFragmentShader" : "../../Demos/SimpleScene/GbufferDiffuseAlphaDiscard.frag",
+        "materialFragmentShader" : "../../Demos/AnimationDemo/GbufferDiffuseAlphaDiscard.frag",
         "renderStages" :
         [
             {
@@ -111,6 +111,34 @@
                                         "sourceFile" : "../../Data/Shaders/ShadowDepth.frag"
                                     }
                                 }
+                            },
+                            {
+                                "rasterState" : 
+                                {
+                                    "compareFunction" : "Less",
+                                    "cullFace" : "Back"
+                                },
+                                "shaderProgram" :
+                                {
+                                    "vertexShader" :
+                                    {  
+                                        "sourceFile" : "../../Data/Shaders/ShadowDepth.vert",
+                                        "defines" :
+                                        [
+                                            "SKINNED"
+                                        ]
+                                    },
+                                    "fragmentShader" :
+                                    { 
+                                        "sourceFile" : "../../Data/Shaders/ShadowDepth.frag"
+                                    }
+                                },
+                                "shaderParameterBlocks" :
+                                [
+                                    {
+                                        "name" : "u_skinMatrixArray"
+                                    }
+                                ]
                             }
                         ]
                     },

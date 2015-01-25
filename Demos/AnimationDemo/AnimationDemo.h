@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +19,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "SimpleSceneDemo.h"
+#include "Engine/App.h"
+#include "Engine/Engine.h"
 
-int main(int argc, const char* argv[])
+#include "Input/Input.h"
+#include "Scene/SceneImporter.h"
+#include "NinjaEntity.h"
+
+using namespace Huurre3D;
+
+class AnimationDemo : public App
 {
-    Engine engine;
-    SimpleSceneDemo simpleSceneDemoApp;
-    assert(engine.init("../../Demos/SimpleScene/SimpleSceneConfig.json"));
-    engine.setApp(&simpleSceneDemoApp);
-    engine.run();
-}
+public:
+    AnimationDemo() = default;
+    ~AnimationDemo() = default;
+
+    void init() override;
+    void deinit() override {}
+    void update(float timeSinceLastUpdate) override;
+
+private:
+    void createScene();
+    void createNinjas();
+    Camera* camera;
+    Scene* scene;
+    Input* input;
+    SceneImporter* sceneImporter;
+    NinjaEntity mainNinja;
+    Vector<NinjaEntity> ninjas;
+    const unsigned int numNinjas = 100;
+    Vector3 ninjaScale = Vector3(0.25f, 0.25f, 0.25f);
+    AnimationClip* ninjaMovements;
+    float ninjaMovementStartToEndPosTime = 40.0f;
+};

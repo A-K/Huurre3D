@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,27 +19,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Engine/App.h"
-#include "Engine/Engine.h"
-#include "Scene/Mesh.h"
-#include "Input/Input.h"
-#include "Scene/SceneImporter.h"
+#include "AnimationDemo.h"
 
-using namespace Huurre3D;
-
-class SimpleSceneDemo : public App
+int main(int argc, const char* argv[])
 {
-public:
-    SimpleSceneDemo() = default;
-    ~SimpleSceneDemo() = default;
-
-    void init() override;
-    void deinit() override {}
-    void update(float timeSinceLastUpdate) override;
-
-private:
-    Camera* camera;
-    Scene* scene;
-    Input* input;
-    SceneImporter* sceneImporter;
-};
+    Engine engine;
+    AnimationDemo animationDemoApp;
+    assert(engine.init("../../Demos/AnimationDemo/AnimationDemoConfig.json"));
+    engine.setApp(&animationDemoApp);
+    engine.run();
+}

@@ -10,16 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Main.cpp" />
-    <ClCompile Include="..\SimpleSceneDemo.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\SimpleSceneDemo.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5D02F0E8-E555-4464-B667-944F22EDB9DF}</ProjectGuid>
-    <RootNamespace>SimpleScene</RootNamespace>
+    <ProjectGuid>{77212D1F-39EE-4F77-9846-7443BBA8DB06}</ProjectGuid>
+    <RootNamespace>AnimationDemo</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,12 +38,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\..\Bin\Windows\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>..\..\..\Bin\Windows\</OutDir>
     <TargetName>$(ProjectName)-debug</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\..\Bin\Windows\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -73,8 +66,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\..\Src\;..\..\..\External\Assimp\include\;..\..\..\External\glew-1.9.0\include\;..\..\..\External\glfw-3.0.1.bin.WIN32\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\..\..\Src\;..\..\..\External\Assimp\include\;..\..\..\External\glew-1.9.0\include\;..\..\..\External\glfw-3.0.1.bin.WIN32\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>USE_OGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -85,6 +78,15 @@
       <AdditionalDependencies>Huurre3D.lib;opengl32.lib;glfw3.lib;assimp.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AnimationDemo.cpp" />
+    <ClCompile Include="..\Main.cpp" />
+    <ClCompile Include="..\NinjaEntity.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AnimationDemo.h" />
+    <ClInclude Include="..\NinjaEntity.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
