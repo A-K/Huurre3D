@@ -10,9 +10,12 @@ Huurre3D is a deferred rendering engine/framework with the following features:
 * Scalable Ambient Occlusion.
 * FXAA Anti-aliasing.
 * Data-driven rendering pipeline, defined in json file.
+* Skeletal Animation.
 * Component based scene model. 
 
 Currently has OpenGL 3.3 graphics back-end an depends on GLEW, GLFW for window handling, and Assimp for model loading.
+
+[Animation demo video](https://www.youtube.com/watch?v=v46BOmgigBY)
 
 [Light demo video](https://www.youtube.com/watch?v=lxE2gDSGtRc )
 
