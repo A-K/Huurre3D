@@ -151,6 +151,15 @@
     <ClCompile Include="..\..\Src\Renderer\RenderStageFactory.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Src\Scene\Joint.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Animation\Animation.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Src\Animation\AnimationClip.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Src\Engine\App.h">
@@ -372,6 +381,15 @@
     <ClInclude Include="..\..\Src\Renderer\RenderStageFactory.h">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Src\Scene\Joint.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Animation\Animation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Src\Animation\AnimationClip.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -409,6 +427,9 @@
     </Filter>
     <Filter Include="ThirdParty\cJSON">
       <UniqueIdentifier>{3a8f92f8-e7f9-48fd-944d-a09dc8d94c3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{90bb1c90-f909-45a7-8c17-b1f2fd4b608c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

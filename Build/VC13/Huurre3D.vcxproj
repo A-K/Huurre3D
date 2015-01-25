@@ -86,6 +86,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Src\Animation\Animation.cpp" />
+    <ClCompile Include="..\..\Src\Animation\AnimationClip.cpp" />
     <ClCompile Include="..\..\Src\Engine\Engine.cpp" />
     <ClCompile Include="..\..\Src\Graphics\GraphicSystem.cpp" />
     <ClCompile Include="..\..\Src\Graphics\GraphicWindow.cpp" />
@@ -124,6 +126,7 @@
     <ClCompile Include="..\..\Src\Renderer\ShadowStage.cpp" />
     <ClCompile Include="..\..\Src\Renderer\TextureLoader.cpp" />
     <ClCompile Include="..\..\Src\Scene\Camera.cpp" />
+    <ClCompile Include="..\..\Src\Scene\Joint.cpp" />
     <ClCompile Include="..\..\Src\Scene\Light.cpp" />
     <ClCompile Include="..\..\Src\Scene\Mesh.cpp" />
     <ClCompile Include="..\..\Src\Scene\Scene.cpp" />
@@ -138,6 +141,8 @@
     <ClCompile Include="..\..\Src\Util\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Src\Animation\Animation.h" />
+    <ClInclude Include="..\..\Src\Animation\AnimationClip.h" />
     <ClInclude Include="..\..\Src\Engine\App.h" />
     <ClInclude Include="..\..\Src\Engine\Engine.h" />
     <ClInclude Include="..\..\Src\Graphics\AttributeBuffer.h" />
@@ -192,6 +197,7 @@
     <ClInclude Include="..\..\Src\Renderer\ShadowStage.h" />
     <ClInclude Include="..\..\Src\Renderer\TextureLoader.h" />
     <ClInclude Include="..\..\Src\Scene\Camera.h" />
+    <ClInclude Include="..\..\Src\Scene\Joint.h" />
     <ClInclude Include="..\..\Src\Scene\Light.h" />
     <ClInclude Include="..\..\Src\Scene\Mesh.h" />
     <ClInclude Include="..\..\Src\Scene\Scene.h" />
