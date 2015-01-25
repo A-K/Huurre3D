@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #include "Util/MemoryBuffer.h"
 #include <type_traits>
+#include <initializer_list>
 
 namespace Huurre3D
 {
@@ -49,6 +50,18 @@ public:
     {
         clear();
         pushBack(vector);
+    }
+
+    Vector(std::initializer_list<T> list) :
+    pod(std::is_pod<T>::value),
+    count(0)
+    {
+        const T* iter = list.begin();
+        while(iter != list.end())
+        {
+            pushBack(*iter);
+            ++iter;
+        }
     }
 
     ~Vector()
@@ -265,7 +278,7 @@ private:
         unsigned int newCapacity = numItems * sizeof(T);
 
         if(newCapacity < sizeInBytes)
-            newCapacity = size;
+            newCapacity = sizeInBytes;
         
         if(newCapacity != capacity)
         {
