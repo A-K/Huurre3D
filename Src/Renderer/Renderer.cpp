@@ -295,6 +295,7 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
         vShader->setDefines(vertexShaderDefines);
         fShader->setDefines(fragmentShaderDefines);
         program = graphicSystem->createShaderProgram(vShader, fShader);
+        graphicSystem->setShaderProgram(program);
     }
 
     material->setCurrentShaderCombinationTag(program->getShaderCombinationTag());
@@ -357,6 +358,7 @@ Geometry* Renderer::createGeometry(const GeometryDescription& geometryDescriptio
     else if(geometryDescription.indices32)
         graphicSystem->setIndicesToVertexData(vd, IndexType::Int, geometryDescription.numIndices, geometryDescription.indices32, false);
 
+    graphicSystem->setVertexData(vd);
     geometry->setBoundingBox(boundingBox);
     geometry->setVertexData(vd);
 
@@ -417,6 +419,7 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
             cacheItem.fileNameHash = fileNameHash;
             cacheItem.texture = texture;
             materialTextureCache.pushBack(cacheItem);
+            graphicSystem->setTexture(texture);
             std::cout << "Loaded Texture: " << texFileName << std::endl;
         }
         else
