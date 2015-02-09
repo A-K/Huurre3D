@@ -23,7 +23,6 @@
 #define Texture_H
 
 #include "Graphics/GraphicObject.h"
-#include "Graphics/GraphicDataContainer.h"
 #include "Renderer/TextureLoader.h"
 #include "Util/FixedArray.h"
 #include <iostream>
@@ -31,7 +30,7 @@
 namespace Huurre3D
 {
 
-class Texture : public GraphicObject, public GraphicDataContainer
+class Texture : public GraphicObject
 {
 public:
     Texture(TextureTargetMode targetMode, TextureWrapMode wrapMode, TextureFilterMode filterMode, TexturePixelFormat pixelFormat, int width, int height);
@@ -59,14 +58,14 @@ public:
     bool isCompressed() const { return pixelFormat == TexturePixelFormat::DXT1 || pixelFormat == TexturePixelFormat::DXT3 || pixelFormat == TexturePixelFormat::DXT5; }
     void unDirtyParams() {paramsDirty = false;}
     void unDirtyData() {dataDirty = false;}
-    const unsigned char* getCubeMapFaceData(CubeMapFace face) const {return cubeMapFaceData[static_cast<int>(face)];}
+    const unsigned char* getCubeMapFaceData(CubeMapFace face) const {return &graphicData.getData()[static_cast<int>(face) * width * height * pixelFormatSizeInBytes[static_cast<int>(pixelFormat)]]; }
     template<typename T> void setPixelData(T* pixelData, int dataSize)
     {
         if(!pixelData || !dataSize || dataSize == 0)
             return;
 
-        bufferData(pixelData, dataSize);
-        if(!this->data)
+        graphicData.bufferData(pixelData, dataSize);
+        if(graphicData.isNull())
         {
             std::cout <<"Failed to set pixelData" <<std::endl;
         }
@@ -85,7 +84,6 @@ private:
     int numMipMaps = 0;
     bool paramsDirty = true;
     bool dataDirty = true;
-    FixedArray<unsigned char*, NumCubeMapFaces> cubeMapFaceData;
 };
 
 }

@@ -39,54 +39,13 @@ public:
     unsigned int getNumVertices() const {return numVertices;}
     unsigned int getVertexSize() const {return vertexSize;}
     unsigned int getNumAttributeBuffers() const {return numBuffers;}
+    const unsigned char* getInterleavedAttributeData();
 
 private:
     unsigned int numVertices;
     unsigned int vertexSize = 0;
     unsigned int numBuffers = 0;
     Vector<AttributeBuffer*> attributes;
-};
-
-class VertexStreamInterleaver : public GraphicDataContainer
-{
-public:
-    VertexStreamInterleaver():
-    GraphicDataContainer(true)
-    {}
-    ~VertexStreamInterleaver() {}
-    
-    unsigned char* interleaveAttributeData(VertexStream* vertexStream)
-    {
-        auto attributes = vertexStream->getAttributeBuffers();
-        unsigned int vertexSize = vertexStream->getVertexSize();
-        unsigned int numVertices = vertexStream->getNumVertices();
-        reserve(vertexSize * numVertices);
-
-        unsigned char* chunk;
-        unsigned int numBuffers = attributes.size();
-        unsigned int* strides = new unsigned int[numBuffers];
-        unsigned char** buffers = new unsigned char*[numBuffers];
-
-        for(unsigned int i = 0; i < numBuffers; ++i)
-        {
-            strides[i] = attributes[i]->getStride();
-            buffers[i] = attributes[i]->getData();
-        }
-
-        //Interleave the attribute buffers.
-        for(unsigned int i = 0; i < numVertices; ++i)
-        {
-            for(unsigned int j = 0; j < numBuffers; ++j)
-            {
-                chunk = &buffers[j][i * strides[j]];
-                append(chunk, strides[j]);
-            }
-        }
-
-        delete[] strides;
-        delete[] buffers;
-        return data;
-    }
 };
 
 }

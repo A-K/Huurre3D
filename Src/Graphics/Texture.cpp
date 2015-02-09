@@ -30,8 +30,7 @@ wrapMode(wrapMode),
 filterMode(filterMode),
 pixelFormat(pixelFormat),
 width(width),
-height(height),
-GraphicDataContainer(true)
+height(height)
 {
 }
 
@@ -87,11 +86,7 @@ void Texture::setData(const TextureLoadResult& resultData)
         {
             //Copy the data from each cube map face into the buffer.
             for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-                append(resultData.pixelData[i], resultData.pixelDataSize);
-
-            //Get the pointers to the data of each face.
-            for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-                cubeMapFaceData[i] = &data[i * resultData.pixelDataSize];
+                graphicData.append(resultData.pixelData[i], resultData.pixelDataSize);
         }
     }
     else

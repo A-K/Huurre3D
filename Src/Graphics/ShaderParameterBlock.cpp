@@ -26,8 +26,7 @@ namespace Huurre3D
 {
 
 ShaderParameterBlock::ShaderParameterBlock(const std::string& name):
-name(name),
-GraphicDataContainer(false)
+name(name)
 {
     nameHash = generateHash((unsigned char*)name.c_str(), name.size());
 }
@@ -85,13 +84,13 @@ void ShaderParameterBlock::addParameter(const Matrix4x4& parameter)
 
 void ShaderParameterBlock::appendParameterBlock(const float* parameter, unsigned int size)
 {
-    append(parameter, size);
+    graphicData.append(parameter, size);
     dirty = true;
 }
 
 void ShaderParameterBlock::appendParameterBlock(const int* parameter, unsigned int size)
 {
-    append(parameter, size);
+    graphicData.append(parameter, size);
     dirty = true;
 }
 

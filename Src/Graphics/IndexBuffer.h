@@ -22,34 +22,30 @@
 #ifndef IndexBuffer_H
 #define IndexBuffer_H
 
-#include "Util/Vector.h"
 #include "Graphics/GraphicObject.h"
-#include "Graphics/GraphicDataContainer.h"
 
 namespace Huurre3D
 {
 
-class IndexBuffer : public GraphicObject, public GraphicDataContainer
+class IndexBuffer : public GraphicObject
 {
 public:
     IndexBuffer(IndexType indexType, int numIndices, bool dynamic):
     indexType(indexType),
     numIndices(numIndices),
-    dynamic(dynamic),
-    GraphicDataContainer(true)
+    dynamic(dynamic)
     {}
     ~IndexBuffer() = default;
 
     IndexType getIndexType() const {return indexType;}
     int getNumIndices() const {return numIndices;}
     bool isDynamic() const {return dynamic;}
-
     template<typename T> void setIndices(const T* indices)
     {
         int bufferSize = numIndices * indexSize[static_cast<int>(indexType)];
-        bufferData(indices, bufferSize);
+        graphicData.bufferData(indices, bufferSize);
 
-        if(!this->data)
+        if(graphicData.isNull())
             std::cout <<"Could not set indices" <<std::endl;
 
         dirty = true;

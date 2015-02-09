@@ -23,14 +23,13 @@
 #define ShaderParameterBlock_H
 
 #include "Graphics/GraphicObject.h"
-#include "Graphics/GraphicDataContainer.h"
 #include "Math/Matrix4x4.h"
 #include "Util/FixedArray.h"
 
 namespace Huurre3D
 {
 
-class ShaderParameterBlock : public GraphicObject, public GraphicDataContainer
+class ShaderParameterBlock : public GraphicObject
 {
 public:
     ShaderParameterBlock(const std::string& name);
@@ -50,13 +49,20 @@ public:
     const unsigned int getNameHash() const {return nameHash;}
     int getBindingIndex() const {return bindingIndex;}
     bool hasBindingIndex() const {return binded;}
-
+    void clearParameters() {graphicData.clearBuffer();}
+    unsigned int getSizeInBytes() const {return graphicData.getSizeInBytes();}
     template<typename T> void setParameterData(T* parameterData, int dataSize)
     {
         if(!parameterData || !dataSize || dataSize == 0)
             return;
 
-        bufferData(parameterData, dataSize);
+        graphicData.bufferData(parameterData, dataSize);
+
+        if(graphicData.isNull())
+        {
+            std::cout << "Failed to set parameter data" << std::endl;
+        }
+
         dirty = true;
     }
 

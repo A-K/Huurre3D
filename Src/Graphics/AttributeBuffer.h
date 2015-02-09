@@ -23,13 +23,11 @@
 #define AttributeBuffer_H
 
 #include "Graphics/GraphicObject.h"
-#include "Graphics/GraphicDataContainer.h"
-#include <iostream>
 
 namespace Huurre3D
 {
 
-class AttributeBuffer : public GraphicObject, public GraphicDataContainer
+class AttributeBuffer : public GraphicObject
 {
 public:
     AttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic):
@@ -38,8 +36,7 @@ public:
     stride(0),
     numComponents(numComponentsPerVertex),
     normalized(normalized),
-    dynamic(dynamic),
-    GraphicDataContainer(true)
+    dynamic(dynamic)
     {
         stride = numComponentsPerVertex * attributeSize[static_cast<int>(type)];
     }
@@ -51,12 +48,11 @@ public:
     int getNumComponents() const {return numComponents;}
     bool isNormalized() const {return normalized;}
     bool isDynamic() const {return dynamic;}
-
     template<typename T> void setAttributes(const T* attributeData, int dataSize)
     {
-        bufferData(attributeData, dataSize);
+        graphicData.bufferData(attributeData, dataSize);
 
-        if(!this->data)
+        if(graphicData.isNull())
             std::cout <<"Could not set attributes" <<std::endl;
 
         dirty = true;

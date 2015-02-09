@@ -38,4 +38,33 @@ void VertexStream::setAttributeBuffer(AttributeBuffer* attributeBuffer)
     dirty = true;
 }
 
+const unsigned char* VertexStream::getInterleavedAttributeData()
+{
+    graphicData.reserve(vertexSize * numVertices);
+
+    const unsigned char* chunk;
+    unsigned int* strides = new unsigned int[numBuffers];
+    unsigned char** buffers = new unsigned char*[numBuffers];
+
+    for(unsigned int i = 0; i < numBuffers; ++i)
+    {
+        strides[i] = attributes[i]->getStride();
+        buffers[i] = attributes[i]->getGraphicData();
+    }
+
+    //Interleave the attribute buffers.
+    for(unsigned int i = 0; i < numVertices; ++i)
+    {
+        for(unsigned int j = 0; j < numBuffers; ++j)
+        {
+            chunk = &buffers[j][i * strides[j]];
+            graphicData.append(chunk, strides[j]);
+        }
+    }
+
+    delete[] strides;
+    delete[] buffers;
+    return graphicData.getData();
+}
+
 }
