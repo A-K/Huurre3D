@@ -32,17 +32,18 @@ class GraphicSystem;
 class GraphicObject
 {
 public:
-    GraphicObject()
-    {
-    }
+    GraphicObject() = default;
     virtual ~GraphicObject() = default;
 
     void setId(unsigned int id) {this->id = id;}
     unsigned int getId() const {return id;}
     bool isDirty() const {return dirty;}
     void unDirty() {dirty = false;}
+    void discardData() {graphicData.resetBuffer();}
+    unsigned char* getGraphicData() const {return graphicData.getData();}
 
 protected:
+    MemoryBuffer graphicData;
     unsigned int id = 0;
     bool dirty = false;
 };
