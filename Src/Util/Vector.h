@@ -29,7 +29,7 @@
 namespace Huurre3D
 {
 
-template<class T> class Vector : public MemoryBuffer
+template<class T> class Vector
 {
 public:
     Vector():
@@ -41,7 +41,9 @@ public:
     pod(std::is_pod<T>::value),
     count(numItems)
     {
-        !pod ? reserveAndConstruct(numItems) : reserve(numItems * sizeof(T));
+        data.reserve(numItems * sizeof(T));
+        if(!pod)
+            constructItems(items(), count);
     }
 
     Vector(const Vector<T>& vector):
@@ -80,7 +82,7 @@ public:
 
     void pushBack(const T& item) 
     {
-        pod ? append(&item, sizeof(T)) : appendAndConstruct(&item, 1);
+        pod ? data.append(&item, sizeof(T)) : appendAndConstruct(&item, 1);
         ++count;
     }
 
@@ -88,7 +90,7 @@ public:
     {
         if(!vector.empty())
         {
-            pod ? append(vector.items(), vector.getSizeInBytes()) : appendAndConstruct(vector.items(), vector.size());
+            pod ? data.append(vector.items(), vector.data.getSizeInBytes()) : appendAndConstruct(vector.items(), vector.size());
             count += vector.size();
         }
     }
@@ -97,7 +99,7 @@ public:
     {
         if(!empty())
         {
-            sizeInBytes -= sizeof(T);
+            data.resize(data.getSizeInBytes() - sizeof(T));
             if(!pod)
                 destructItems(end() - 1, 1);
 
@@ -229,7 +231,7 @@ public:
         if(!pod)
             destructItems(items(), count);
 		
-        clearBuffer();
+        data.clearBuffer();
         count = 0;
     }
 
@@ -240,7 +242,7 @@ public:
         if(!pod)
             destructItems(items(), count);
 
-        resetBuffer();
+        data.resetBuffer();
         count = 0;
     }
 
@@ -257,70 +259,33 @@ public:
     const T& front() const {return items()[0];}
     T& back() {return items()[count - 1];}
     const T& back() const {return items()[count - 1];}
+    T* getData() const {return items();}
+    unsigned int getSizeInBytes() const {return data.getSizeInBytes();}
 
 private:
     unsigned int count;
     bool pod;
-    T* items() const {return reinterpret_cast<T*>(data);}
+    MemoryBuffer data;
+    T* items() const { return reinterpret_cast<T*>(data.getData()); }
 
     //Used for not POD types, calls constructors/destructors.
-    void appendAndConstruct(const T* data, unsigned int numItems)
+    void appendAndConstruct(const T* itemData, unsigned int numItems)
     {
-        unsigned int dataSize = numItems * sizeof(T);
-        (sizeInBytes + dataSize) < capacity ? sizeInBytes += dataSize : resizeAndConstruct(sizeInBytes + dataSize);
-        //Initialize the new copied elements
-        copyConstructItems(end(), data, numItems);
-    }
+        unsigned int dataCapacityInbytes = data.getCapacity();
+        unsigned int newDataSizeInBytes = data.getSizeInBytes() + numItems * sizeof(T);
 
-    //Used for not POD types, calls constructors/destructors.
-    void reserveAndConstruct(unsigned int numItems)
-    {
-        unsigned int newCapacity = numItems * sizeof(T);
-
-        if(newCapacity < sizeInBytes)
-            newCapacity = sizeInBytes;
-        
-        if(newCapacity != capacity)
+        if(newDataSizeInBytes > dataCapacityInbytes)
         {
-            unsigned char* newData = nullptr;
-            capacity = newCapacity;
-
-            if(capacity)
-            {
-                newData = allocate(capacity);
-                //Move the data into the new buffer
-                constructItems(reinterpret_cast<T*>(newData), count);
-            }
-
-            data = newData;
+            MemoryBuffer newData;
+            dataCapacityInbytes == 0 ? newData.reserve(newDataSizeInBytes * 2) : newData.reserve(dataCapacityInbytes * 2);
+            //TODO: create a moveConstructItems and use it, but first add a move constuctor to all classes.
+            copyConstructItems(reinterpret_cast<T*>(newData.getData()), items(), count);
+            destructItems(items(), count);
+            data = std::move(newData);
         }
-    }
-
-    //Used for not POD types, calls constructors/destructors.
-    void resizeAndConstruct(unsigned int newSize)
-    {
-        if(newSize > capacity)
-        {
-            if(capacity)
-            {
-                while(capacity < newSize)
-                    capacity += capacity;
-            }
-            else
-                capacity = newSize;
-
-            unsigned char* newData = allocate(capacity);
-            //Move data into the new buffer and construct each item. 
-            //Destruct and delete old items.
-            if(data)
-            {
-                copyConstructItems(reinterpret_cast<T*>(newData), items(), count);
-                destructItems(items(), count);
-                delete[] data;
-            }
-            data = newData;
-        }
-        sizeInBytes = newSize;
+        //Set current size and construct new items.
+        data.resize(newDataSizeInBytes);
+        copyConstructItems(end(), itemData, numItems);
     }
 
     void constructItems(T* items, unsigned int numItems)
