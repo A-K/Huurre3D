@@ -153,10 +153,9 @@ void OGLGraphicSystemBackEnd::updateVertexStream(VertexStream* stream)
         if(attrBuf->isDirty())
         {
             glBindBuffer(GL_ARRAY_BUFFER, attrBuf->getId());
-            glBufferData(GL_ARRAY_BUFFER, attrBuf->getStride() * numVertices , attrBuf->getData(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, attrBuf->getStride() * numVertices, attrBuf->getGraphicData(), GL_DYNAMIC_DRAW);
             attrBuf->unDirty();
-
-            attrBuf->discardDataWhenCommittedToGPU() ? attrBuf->discardData() : attrBuf->setDataSizeInGPUIsDataSizeInCPU();
+            attrBuf->discardData();
         }
     }
     enableAttributes(stream);
@@ -167,20 +166,19 @@ void OGLGraphicSystemBackEnd::updateInterleavedVertexStream(VertexStream* stream
 {
     GLint numVertices = stream->getNumVertices();
     GLint vertexSize = stream->getVertexSize();
-    VertexStreamInterleaver vertexStreamInterleaver;
-    unsigned char* interleavedBuffer = vertexStreamInterleaver.interleaveAttributeData(stream);
 
     glBindBuffer(GL_ARRAY_BUFFER, stream->getId());
-    glBufferData(GL_ARRAY_BUFFER, vertexSize * numVertices , interleavedBuffer, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexSize * numVertices , stream->getInterleavedAttributeData(), GL_STATIC_DRAW);
     enableInterleavedAttributes(stream);
     stream->unDirty();
+    stream->discardData();
 
     Vector<AttributeBuffer*> attributeBuffers = stream->getAttributeBuffers();
     for(unsigned int i = 0; i < attributeBuffers.size(); ++i)
     {
         AttributeBuffer* attrBuf = attributeBuffers[i];
         attrBuf->unDirty();
-        attrBuf->discardDataWhenCommittedToGPU() ? attrBuf->discardData() : attrBuf->setDataSizeInGPUIsDataSizeInCPU();
+        attrBuf->discardData();
     }
 }
 
@@ -189,10 +187,9 @@ void OGLGraphicSystemBackEnd::updateIndexBuffer(IndexBuffer* buffer)
     GLint indexSize = glIndexSize[static_cast<int>(buffer->getIndexType())];
     GLenum usage = buffer->isDynamic() ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->getId());
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize * buffer->getNumIndices(), buffer->getData(), usage);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize * buffer->getNumIndices(), buffer->getGraphicData(), usage);
     buffer->unDirty();
-
-    buffer->discardDataWhenCommittedToGPU() ? buffer->discardData() : buffer->setDataSizeInGPUIsDataSizeInCPU();
+    buffer->discardData();
 }
 
 void OGLGraphicSystemBackEnd::enableAttributes(VertexStream* vertexStream)
@@ -321,11 +318,11 @@ void OGLGraphicSystemBackEnd::updateTextureData(Texture* texture)
     switch(target) 
     {
         case GL_TEXTURE_2D:
-            glTexImage2D(target, 0, internalFormat, width, height, 0, format, pixelType, texture->getData());
+            glTexImage2D(target, 0, internalFormat, width, height, 0, format, pixelType, texture->getGraphicData());
             break;
         case GL_TEXTURE_3D:
         case GL_TEXTURE_2D_ARRAY:
-            glTexImage3D(target, 0, internalFormat, width, height, texture->getDepth(), 0, format, pixelType, texture->getData());
+            glTexImage3D(target, 0, internalFormat, width, height, texture->getDepth(), 0, format, pixelType, texture->getGraphicData());
             break;
         case GL_TEXTURE_CUBE_MAP:
             glTexImage2D(glCubeMapFaces[int(CubeMapFace::PositiveX)], 0, internalFormat, width, height, 0, format, pixelType, texture->getCubeMapFaceData(CubeMapFace::PositiveX));
@@ -340,7 +337,7 @@ void OGLGraphicSystemBackEnd::updateTextureData(Texture* texture)
     glGenerateMipmap(target);
     texture->unDirtyData();
 
-    texture->discardDataWhenCommittedToGPU() ? texture->discardData() : texture->setDataSizeInGPUIsDataSizeInCPU();
+    texture->discardData();
 }
 void OGLGraphicSystemBackEnd::updateCompressedTextureData(Texture* texture)
 {
@@ -349,7 +346,7 @@ void OGLGraphicSystemBackEnd::updateCompressedTextureData(Texture* texture)
     GLenum internalFormat = glPixelInternalFormat[pixelFormat];
     GLsizei width = texture->getWidth();
     GLsizei height = texture->getHeight();
-    unsigned char* data = texture->getData();
+    const unsigned char* data = texture->getGraphicData();
     GLsizei offset = 0;
 
     switch(target) 
@@ -367,8 +364,7 @@ void OGLGraphicSystemBackEnd::updateCompressedTextureData(Texture* texture)
     }
 
     texture->unDirtyData();
-
-    texture->discardDataWhenCommittedToGPU() ? texture->discardData() : texture->setDataSizeInGPUIsDataSizeInCPU();
+    texture->discardData();
 }
 
 void OGLGraphicSystemBackEnd::updateShaderProgram(ShaderProgram* program)
@@ -626,9 +622,8 @@ void OGLGraphicSystemBackEnd::setShaderParameterBlock(ShaderParameterBlockDescri
 
 void OGLGraphicSystemBackEnd::updateShaderParameterBlock(ShaderParameterBlock* block)
 {
-    glBufferData(GL_UNIFORM_BUFFER, block->getSizeInBytes(), block->getData(), GL_STREAM_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, block->getSizeInBytes(), block->getGraphicData(), GL_STREAM_DRAW);
     block->unDirty();
-    block->discardDataWhenCommittedToGPU() ? block->discardData() : block->setDataSizeInGPUIsDataSizeInCPU();
 }
 
 void OGLGraphicSystemBackEnd::setTexture(Texture* texture)
