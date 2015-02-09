@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ void SSAODemo::update(float timeSinceLastUpdate)
 void SSAODemo::updateShaderParameters()
 {
     ShaderParameterBlock* block = engine->getRenderer()->getGraphicSystem()->getShaderParameterBlockByName("u_showSSAOParameters");
-    block->clearBuffer();
+    block->clearParameters();
 
     FixedArray<int, 4> data;
     data.fill(0);

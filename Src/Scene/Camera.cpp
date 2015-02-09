@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,6 @@ void Camera::getCameraShaderParameterBlock(ShaderParameterBlock* cameraShaderPar
                                                      Vector4(viewFrustumCorners[5], 1.0f),   //Upper Right
                                                      Vector4(viewFrustumCorners[7], 1.0f)); //Bottom Right
 
-        cameraShaderParameterBlock->clearBuffer();
         cameraShaderParameterBlock->addParameter(getViewMatrix());
         cameraShaderParameterBlock->addParameter(projectionMatrix);
         cameraShaderParameterBlock->addParameter(frustumFarPlaneCorners);

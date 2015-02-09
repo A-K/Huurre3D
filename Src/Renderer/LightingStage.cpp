@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,6 @@ void LightingStage::resizeResources()
 
 void LightingStage::update(const Scene* scene)
 {
-    
     Camera* camera = scene->getMainCamera();
     Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
     cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
@@ -99,7 +98,7 @@ void LightingStage::update(const Scene* scene)
 
     //Update the lights parameter block in Tiled deferred shader pass.
     ShaderParameterBlock* lightParameters = graphicSystem->getShaderParameterBlockByName(sp_lightParameters);
-    lightParameters->clearBuffer();
+    lightParameters->clearParameters();
     lightParameters->setParameterData(&lightParameterBlock, sizeof(lightParameterBlock));
 
     //Update the light info texture in Tiled deferred shader pass.

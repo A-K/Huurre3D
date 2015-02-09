@@ -91,7 +91,7 @@ void ShadowStage::clearStage()
     renderPasses.clear();
     shadowDepthData.clear();
     shadowOcclusionData.clear();
-    shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->clearBuffer();
+    shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->clearParameters();
 }
 
 void ShadowStage::calculateShadowCameraViewProjections(const Vector<Light*>& lights, Camera* camera)

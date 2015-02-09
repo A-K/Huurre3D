@@ -159,7 +159,7 @@ void Renderer::resizeRenderWindow(int width, int height)
 {
     screenViewPort.set(0, 0, width, height);
     Vector4 renderTargetSizeValue = Vector4(float(width), float(height), (1.0f / float(width)), (1.0f / float(height)));
-    renderTargetSizeBlock->clearBuffer();
+    renderTargetSizeBlock->clearParameters();
     renderTargetSizeBlock->addParameter(renderTargetSizeValue);
 
     for(unsigned int i = 0; i < renderStages.size(); ++i)
@@ -169,8 +169,9 @@ void Renderer::resizeRenderWindow(int width, int height)
 void Renderer::renderScene(Scene* scene, Camera* camera)
 {
     scene->update();
+    cameraShaderParameterBlock->clearParameters();
     camera->getCameraShaderParameterBlock(cameraShaderParameterBlock);
-    skinMatrixArray->clearBuffer();
+    skinMatrixArray->clearParameters();
 
     Vector<Joint*> joints;
     scene->getSceneItemsByType<Joint>(joints);
