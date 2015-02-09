@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,24 @@ class MemoryBuffer
 {
 public:
     MemoryBuffer() = default;
-    virtual ~MemoryBuffer() {resetBuffer();}
+    ~MemoryBuffer() {resetBuffer();}
+    //Move-assignment operator
+    MemoryBuffer& operator = (MemoryBuffer&& rhs)
+    {
+        this->resetBuffer();
+        data = rhs.data;
+        capacity = rhs.capacity;
+        sizeInBytes = rhs.sizeInBytes;
+        rhs.capacity = 0;
+        rhs.sizeInBytes = 0;
+        rhs.data = nullptr;
+        return *this;
+    }
+
     unsigned char* getData() const {return data;}
     unsigned int getSizeInBytes() const {return sizeInBytes;}
+    unsigned int getCapacity() const {return capacity;}
+    bool isNull() const {return data == nullptr;}
     void clearBuffer() {sizeInBytes = 0;}
     void resetBuffer()
     {
@@ -43,9 +58,6 @@ public:
         data = nullptr;
     }
 
-protected:
-    unsigned char* allocate(unsigned int size) const {return new unsigned char[size];}
-    template<typename T> void copyData(unsigned char* destination, const T* source, unsigned int size) {memcpy(destination, source, size);}
     template<typename T> void bufferData(const T* data, unsigned int dataSize)
     {
         resize(dataSize);
@@ -57,29 +69,6 @@ protected:
         (sizeInBytes + dataSize) < capacity ? sizeInBytes += dataSize : resize(sizeInBytes + dataSize);
         //Copy the new data into the end of this buffer. 
         copyData(&this->data[sizeInBytes - dataSize], data, dataSize);
-    }
-
-    void reserve(unsigned int newCapacity)
-    {
-        if(newCapacity < sizeInBytes)
-            newCapacity = sizeInBytes;
-        
-        if(newCapacity != capacity)
-        {
-            unsigned char* newData = nullptr;
-            capacity = newCapacity;
-
-            if(capacity)
-            {
-                newData = allocate(capacity);
-                //Move the data into the new buffer
-                copyData(newData, data, sizeInBytes);
-            }
-
-            // Delete the old buffer
-            delete[] data;
-            data = newData;
-        }
     }
 
     void resize(unsigned int newSize)
@@ -105,6 +94,33 @@ protected:
         }
         sizeInBytes = newSize;
     }
+
+    void reserve(unsigned int newCapacity)
+    {
+        if(newCapacity < sizeInBytes)
+            newCapacity = sizeInBytes;
+
+        if(newCapacity != capacity)
+        {
+            unsigned char* newData = nullptr;
+            capacity = newCapacity;
+
+            if(capacity)
+            {
+                newData = allocate(capacity);
+                //Move the data into the new buffer
+                copyData(newData, data, sizeInBytes);
+            }
+
+            // Delete the old buffer
+            delete[] data;
+            data = newData;
+        }
+    }
+
+private:
+    unsigned char* allocate(unsigned int size) const {return new unsigned char[size];}
+    template<typename T> void copyData(unsigned char* destination, const T* source, unsigned int size) {memcpy(destination, source, size);}
 
     unsigned char* data = nullptr;
     unsigned int sizeInBytes = 0;
