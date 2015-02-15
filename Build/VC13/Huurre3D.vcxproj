@@ -99,8 +99,6 @@
     <ClCompile Include="..\..\Src\Graphics\ShaderParameterBlock.cpp" />
     <ClCompile Include="..\..\Src\Graphics\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Src\Graphics\Texture.cpp" />
-    <ClCompile Include="..\..\Src\Graphics\VertexData.cpp" />
-    <ClCompile Include="..\..\Src\Graphics\VertexStream.cpp" />
     <ClCompile Include="..\..\Src\Input\Input.cpp" />
     <ClCompile Include="..\..\Src\Math\BoundingBox.cpp" />
     <ClCompile Include="..\..\Src\Math\Frustum.cpp" />
@@ -145,8 +143,6 @@
     <ClInclude Include="..\..\Src\Animation\AnimationClip.h" />
     <ClInclude Include="..\..\Src\Engine\App.h" />
     <ClInclude Include="..\..\Src\Engine\Engine.h" />
-    <ClInclude Include="..\..\Src\Graphics\AttributeBuffer.h" />
-    <ClInclude Include="..\..\Src\Graphics\GraphicDataContainer.h" />
     <ClInclude Include="..\..\Src\Graphics\GraphicDefs.h" />
     <ClInclude Include="..\..\Src\Graphics\GraphicObject.h" />
     <ClInclude Include="..\..\Src\Graphics\GraphicSystem.h" />
