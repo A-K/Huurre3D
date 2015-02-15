@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,62 +62,62 @@ struct DDSHeader
     unsigned int dwReserved2[3];
 };
 
-const TextureLoadResult TextureLoader::loadFromFile(const std::string& fileName, bool flipVertically)
+bool TextureLoader::loadFromFile(const std::string& fileName, bool flipVertically, TextureLoadResult& result) const
 {
-    TextureLoadResult result;
+    //TextureLoadResult result;
     result.targetMode = TextureTargetMode::Texture2D;
-    result.pixelData.fill(nullptr);
-
-    loadPixelDataFromFile(fileName.c_str(), false, result, flipVertically);
-
-    return result;
+    //result.pixelData.fill(nullptr);
+    Vector<std::string> fileNames;
+    fileNames.pushBack(fileName);
+    return loadPixelDataFromFiles(fileNames, result, flipVertically);
 }
 
-const TextureLoadResult TextureLoader::loadCubeMapFromFile(const FixedArray<std::string, NumCubeMapFaces>& fileNames, const FixedArray<bool, NumCubeMapFaces>& flipVertically)
+bool TextureLoader::loadCubeMapFromFile(const FixedArray<std::string, NumCubeMapFaces>& cubeFileNames, bool flipVertically, TextureLoadResult& result) const
 {
-    TextureLoadResult result;
+    //TextureLoadResult result;
     result.targetMode = TextureTargetMode::TextureCubeMap;
-    result.pixelData.fill(nullptr);
-
-    for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-        loadPixelDataFromFile(fileNames[i].c_str(), i, result, flipVertically[i]);
-
-    return result;
+    //result.pixelData.fill(nullptr);
+    Vector<std::string> fileNames;
+    fileNames.pushBack(cubeFileNames.data(), NumCubeMapFaces);
+    return loadPixelDataFromFiles(fileNames, result, flipVertically);
 }
 
 //TODO: Loading images with unusual width and height, for example (409, 447), leads to memory corruption
 //and this will crash the program due to access violation later on when the data is used in glTexImage2D.
 //Investigate texture sizes that are not divisible by two.
-void TextureLoader::loadPixelDataFromFile(const std::string& fileName, int index, TextureLoadResult& result, bool flipVertically)
+bool TextureLoader::loadPixelDataFromFiles(const Vector<std::string>& fileNames, TextureLoadResult& result, bool flipVertically) const
 {
     bool compressed = false;
+    unsigned int offset = 0;
 
-    std::string fileExtension = "";
-    if(fileName.find_last_of(".") != std::string::npos)
-        fileExtension = fileName.substr(fileName.find_last_of(".") + 1);
-
-    if(fileExtension == "dds" || fileExtension == "DDS")
+    for(unsigned int i = 0; i < fileNames.size(); ++i)
     {
-        std::ifstream is(fileName, std::ifstream::binary);
-        if(!is)
-            std::cout << "Failed to open file " << fileName << std::endl;
+        std::string fileExtension = "";
+        if(fileNames[i].find_last_of(".") != std::string::npos)
+            fileExtension = fileNames[i].substr(fileNames[i].find_last_of(".") + 1);
 
-        //Verify the type of file.
-        char filecode[4];
-        is.read(filecode, 4);
-        if(strncmp(filecode, "DDS ", 4) != 0)
+        if(fileExtension == "dds" || fileExtension == "DDS")
         {
-            is.close();
-            std::cout << "Failed to load image: " << fileName << " because it is not a direct draw surface file: " << std::endl;
-            return;
-        }
+            std::ifstream is(fileNames[i], std::ifstream::binary);
+            if(!is)
+                std::cout << "Failed to open file " << fileNames[i] << std::endl;
 
-        //Read in DDS header
-        DDSHeader ddsHeader;
-        is.read((char*)&ddsHeader, sizeof(DDSHeader));
+            //Verify the type of file.
+            char filecode[4];
+            is.read(filecode, 4);
+            if(strncmp(filecode, "DDS ", 4) != 0)
+            {
+                is.close();
+                std::cout << "Failed to load image: " << fileNames[i] << " because it is not a direct draw surface file: " << std::endl;
+                return false;
+            }
 
-        switch(ddsHeader.ddspf.dwFourCC)
-        {
+            //Read in DDS header
+            DDSHeader ddsHeader;
+            is.read((char*)&ddsHeader, sizeof(DDSHeader));
+
+            switch(ddsHeader.ddspf.dwFourCC)
+            {
             case FOURCC_DXT1:
                 result.format = TexturePixelFormat::DXT1;
                 break;
@@ -135,72 +135,54 @@ void TextureLoader::loadPixelDataFromFile(const std::string& fileName, int index
                 fourcc[2] = ddsHeader.ddspf.dwFourCC >> 16 & 0xFF;
                 fourcc[3] = ddsHeader.ddspf.dwFourCC >> 24 & 0xFF;
                 std::cout << "Unsupported DDS format: " << fourcc << std::endl;
-                return;
-        }
+                return false;
+            }
 
-        result.width = ddsHeader.dwWidth;
-        result.height = ddsHeader.dwHeight;
-        result.numMipMaps = ddsHeader.dwMipMapCount;
-        int size = ddsHeader.dwPitchOrLinearSize * 2;
-        result.pixelDataSize = size;
-        result.pixelData[index] = new unsigned char[size];
-        is.read((char*)result.pixelData[index], size);
-        is.close();
-        compressed = true;
-    }
-    else
-    {
-        int numComponents;
-        unsigned char* pixelData = stbi_load(fileName.c_str(), &result.width, &result.height, &numComponents, 0);
-
-        if(!pixelData)
-        {
-            std::cout << "Failed to load image: " << fileName << " because " << std::string(stbi_failure_reason()) << std::endl;
+            result.width = ddsHeader.dwWidth;
+            result.height = ddsHeader.dwHeight;
+            result.numMipMaps = ddsHeader.dwMipMapCount;
+            int size = ddsHeader.dwPitchOrLinearSize * 2;
+            result.pixelData.resize(size + offset);
+            is.read((char*)&result.pixelData.getData()[offset], size);
+            is.close();
+            compressed = true;
         }
         else
         {
-            switch(numComponents)
+            int numComponents;
+            unsigned char* pixelData = stbi_load(fileNames[i].c_str(), &result.width, &result.height, &numComponents, 0);
+
+            if(!pixelData)
             {
-            case 3:
-                result.format = TexturePixelFormat::Rgb8;
-                break;
-            case 4:
-                result.format = TexturePixelFormat::Rgba8;
-                break;
+                std::cout << "Failed to load image: " << fileNames[i] << " because " << std::string(stbi_failure_reason()) << std::endl;
+                return false;
             }
-
-            result.pixelData[index] = pixelData;
-            result.pixelDataSize = result.width * result.height * pixelFormatSizeInBytes[static_cast<int>(result.format)];
-        }
-    }
-
-    if(result.pixelData[index] && flipVertically)
-        compressed ? flipCompressedVertically(result, index) : this->flipVertically(result, index);
-}
-
-void TextureLoader::releasedata(TextureLoadResult& resultData)
-{
-    if(resultData.targetMode == TextureTargetMode::TextureCubeMap)
-    {
-        for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-        {
-            if(resultData.pixelData[i])
-                stbi_image_free(resultData.pixelData[i]);
-        }
-    }
-    else
-    {
-        if(resultData.pixelData[0])
-        {
-            if(resultData.format == TexturePixelFormat::DXT1 || resultData.format == TexturePixelFormat::DXT3 || resultData.format == TexturePixelFormat::DXT5)
-                delete[] resultData.pixelData[0];
             else
-                stbi_image_free(resultData.pixelData[0]);
+            {
+                switch(numComponents)
+                {
+                case 3:
+                    result.format = TexturePixelFormat::Rgb8;
+                    break;
+                case 4:
+                    result.format = TexturePixelFormat::Rgba8;
+                    break;
+                }
+
+                result.pixelData.append(pixelData, result.width * result.height * pixelFormatSizeInBytes[static_cast<int>(result.format)]);
+                stbi_image_free(pixelData);
+            }
         }
+
+        if(flipVertically)
+            compressed ? flipCompressedVertically(result, offset) : this->flipVertically(result, offset);
+    
+        offset += i * result.width * result.height * pixelFormatSizeInBytes[static_cast<int>(result.format)];
     }
+    return true;
 }
 
-void TextureLoader::flipVertically(TextureLoadResult& result, int index)
+void TextureLoader::flipVertically(TextureLoadResult& result, unsigned int offset) const
 {
     unsigned int widthBytes = result.width * pixelFormatSizeInBytes[static_cast<int>(result.format)];
     unsigned char* top = nullptr;
@@ -210,8 +192,8 @@ void TextureLoader::flipVertically(TextureLoadResult& result, int index)
 
     for(unsigned int row = 0; row < halfHeight; ++row)
     {
-        top = result.pixelData[index] + row * widthBytes;
-        bottom = result.pixelData[index] + (result.height - row - 1) * widthBytes;
+        top = &result.pixelData.getData()[offset] + row * widthBytes;
+        bottom = &result.pixelData.getData()[offset] + (result.height - row - 1) * widthBytes;
         for(unsigned int col = 0; col < widthBytes; ++col)
         {
             temp = *top;
@@ -223,7 +205,7 @@ void TextureLoader::flipVertically(TextureLoadResult& result, int index)
     }
 }
 
-void TextureLoader::flipCompressedVertically(TextureLoadResult& result, int index)
+void TextureLoader::flipCompressedVertically(TextureLoadResult& result, unsigned int offset) const
 {
     unsigned int blockSizeBytes = pixelFormatSizeInBytes[static_cast<int>(result.format)];
     unsigned int width = result.width;
@@ -242,8 +224,8 @@ void TextureLoader::flipCompressedVertically(TextureLoadResult& result, int inde
 
         for(unsigned int row = 0; row < halfHeight; ++row)
         {
-            top = result.pixelData[index] + mipMapOffset + row * rowByteCount;
-            bottom = result.pixelData[index] + mipMapOffset + (numBlocksVertical - row - 1) * rowByteCount;
+            top = &result.pixelData.getData()[offset] + mipMapOffset + row * rowByteCount;
+            bottom = &result.pixelData.getData()[offset] + mipMapOffset + (numBlocksVertical - row - 1) * rowByteCount;
 
             flipCompressedBlocks(top, blockSizeBytes, numBlocksHorizontal, result.format);
             flipCompressedBlocks(bottom, blockSizeBytes, numBlocksHorizontal, result.format);
@@ -260,7 +242,7 @@ void TextureLoader::flipCompressedVertically(TextureLoadResult& result, int inde
     delete[] temp;
 }
 
-void TextureLoader::flipCompressedBlocks(unsigned char* blockData, unsigned int blockSizeBytes, unsigned int numBlocks, TexturePixelFormat format)
+void TextureLoader::flipCompressedBlocks(unsigned char* blockData, unsigned int blockSizeBytes, unsigned int numBlocks, TexturePixelFormat format) const
 {
     switch(format)
     {

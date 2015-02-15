@@ -72,22 +72,12 @@ void Texture::setNumMipMaps(int numMipMaps)
     dataDirty = true;
 }
 
-void Texture::setData(const TextureLoadResult& resultData)
+void Texture::setData(TextureLoadResult& resultData)
 {
     if(resultData.width == width && resultData.height == height && resultData.format == pixelFormat)
     {
         numMipMaps = resultData.numMipMaps;
-
-        if(resultData.targetMode == TextureTargetMode::Texture2D)
-        {
-            setPixelData(resultData.pixelData[0], resultData.pixelDataSize);
-        }
-        else if(resultData.targetMode == TextureTargetMode::TextureCubeMap)
-        {
-            //Copy the data from each cube map face into the buffer.
-            for(unsigned int i = 0; i < NumCubeMapFaces; ++i)
-                graphicData.append(resultData.pixelData[i], resultData.pixelDataSize);
-        }
+        setPixelData(std::move(resultData.pixelData));
     }
     else
         std::cout << "Failed to set data" << std::endl;

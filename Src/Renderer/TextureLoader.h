@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,8 @@ struct TextureLoadResult
     int width;
     int height;
     int numMipMaps = 10;
-    int pixelDataSize;
     TexturePixelFormat format;
-    FixedArray<unsigned char*, NumCubeMapFaces> pixelData;
+    MemoryBuffer pixelData;
 };
 
 class TextureLoader
@@ -46,15 +45,14 @@ public:
     TextureLoader() = default;
     ~TextureLoader() = default;
     
-    const TextureLoadResult loadFromFile(const std::string& fileName, bool flipVertically);
-    const TextureLoadResult loadCubeMapFromFile(const FixedArray<std::string, NumCubeMapFaces>& fileNames, const FixedArray<bool, NumCubeMapFaces>& flipVertically);
-    void releasedata(TextureLoadResult& resultData);
+    bool loadFromFile(const std::string& fileName, bool flipVertically, TextureLoadResult& result) const;
+    bool loadCubeMapFromFile(const FixedArray<std::string, NumCubeMapFaces>& cubeFileNames, bool flipVertically, TextureLoadResult& result) const;
 
 private:
-    void loadPixelDataFromFile(const std::string& fileName, int index, TextureLoadResult& result, bool flipVertically);
-    void flipVertically(TextureLoadResult& result, int index);
-    void flipCompressedVertically(TextureLoadResult& result, int index);
-    void flipCompressedBlocks(unsigned char* blockData, unsigned int blockSizeBytes, unsigned int numBlocks, TexturePixelFormat format);
+    bool loadPixelDataFromFiles(const Vector<std::string>& fileNames, TextureLoadResult& result, bool flipVertically) const;
+    void flipVertically(TextureLoadResult& result, unsigned int offset) const;
+    void flipCompressedVertically(TextureLoadResult& result, unsigned int offset) const;
+    void flipCompressedBlocks(unsigned char* blockData, unsigned int blockSizeBytes, unsigned int numBlocks, TexturePixelFormat format) const;
 };
 
 }

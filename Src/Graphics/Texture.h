@@ -43,7 +43,7 @@ public:
     void setPixelFormat(TexturePixelFormat pixelFormat);
     void setNumMipMaps(int numMipMaps);
     void setSlotIndex(TextureSlotIndex slotIndex) {this->slotIndex = slotIndex;}
-    void setData(const TextureLoadResult& resultData);
+    void setData(TextureLoadResult& resultData);
     TextureTargetMode getTargetMode() const {return targetMode;}
     TextureWrapMode getWrapMode() const {return wrapMode;}
     TextureFilterMode getFilterMode() const {return filterMode;}
@@ -59,16 +59,14 @@ public:
     void unDirtyParams() {paramsDirty = false;}
     void unDirtyData() {dataDirty = false;}
     const unsigned char* getCubeMapFaceData(CubeMapFace face) const {return &graphicData.getData()[static_cast<int>(face) * width * height * pixelFormatSizeInBytes[static_cast<int>(pixelFormat)]]; }
-    template<typename T> void setPixelData(T* pixelData, int dataSize)
+    void setPixelData(MemoryBuffer&& pixelData)
     {
-        if(!pixelData || !dataSize || dataSize == 0)
-            return;
-
-        graphicData.bufferData(pixelData, dataSize);
-        if(graphicData.isNull())
-        {
-            std::cout <<"Failed to set pixelData" <<std::endl;
-        }
+        graphicData = std::move(pixelData);
+        dataDirty = true;
+    }
+    void setPixelData(const MemoryBuffer& pixelData)
+    {
+        graphicData = pixelData;
         dataDirty = true;
     }
 
