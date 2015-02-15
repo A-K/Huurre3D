@@ -277,9 +277,7 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     }
 
     //The material has no program set, try if the shader program exist.
-    Vector<std::string> shaderFileNames;
-    shaderFileNames.pushBack(materialVertexShader);
-    shaderFileNames.pushBack(materialFragmentShader);
+    Vector<std::string> shaderFileNames = {materialVertexShader, materialFragmentShader};
     Vector<std::string> fragmentShaderDefines = material->getShaderDefines(ShaderType::Fragment);
     Vector<std::string> vertexShaderDefines = material->getShaderDefines(ShaderType::Vertex);
     Vector<std::string> combinedDefines = vertexShaderDefines;
@@ -320,46 +318,18 @@ void Renderer::createMaterials(const MaterialDescription& materialDescription, V
 Geometry* Renderer::createGeometry(const GeometryDescription& geometryDescription)
 {
     Geometry* geometry = new Geometry();
-    BoundingBox boundingBox;
     VertexData* vd = graphicSystem->createVertexData(geometryDescription.primitiveType, geometryDescription.numVertices);
 
-    if(geometryDescription.vertices)
-    {
-        boundingBox.mergePoints(geometryDescription.vertices, geometryDescription.numVertices);
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Position, 3, geometryDescription.numVertices * 3, geometryDescription.vertices, false, false);
-    }
-    if(geometryDescription.normals)
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Normal, 3, geometryDescription.numVertices * 3, geometryDescription.normals, false, false);
+    VertexStream* vertexStream = graphicSystem->createVertexStream(geometryDescription.numVertices, geometryDescription.attributeDescriptions);
+    vertexStream->setAttributes(std::move(const_cast<MemoryBuffer&>(geometryDescription.vertexData)));
+    vd->setVertexStream(vertexStream);
 
-    if(geometryDescription.tangents)
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::Tangent, 3, geometryDescription.numVertices * 3, geometryDescription.tangents, false, false);
-
-    if(geometryDescription.bitTangents)
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::BiTanget, 3, geometryDescription.numVertices * 3, geometryDescription.bitTangents, false, false);
-
-    if(geometryDescription.jointIndices)
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::JointIndices, 4, geometryDescription.numVertices * 4, geometryDescription.jointIndices, false, false);
-    
-    if(geometryDescription.jointWeights)
-        graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, AttributeSemantic::JointWeights, 4, geometryDescription.numVertices * 4, geometryDescription.jointWeights, false, false);
-
-    for(int i = 0; i < geometryDescription.numUVChanels; ++i)
-    {
-        if(geometryDescription.texCoords[i])
-        {
-            int numComp = geometryDescription.numComp[i];
-            AttributeSemantic semantic = static_cast<AttributeSemantic>(int(AttributeSemantic::TexCoord0) + i);
-            graphicSystem->setAttributesToVertexData(vd, AttributeType::Float, semantic, numComp, geometryDescription.numVertices * numComp, geometryDescription.texCoords[i], false, false);
-        }
-    }
-
-    if(geometryDescription.indices16)
-        graphicSystem->setIndicesToVertexData(vd, IndexType::Short, geometryDescription.numIndices, geometryDescription.indices16, false);
-    else if(geometryDescription.indices32)
-        graphicSystem->setIndicesToVertexData(vd, IndexType::Int, geometryDescription.numIndices, geometryDescription.indices32, false);
+    IndexBuffer* indexBuffer = graphicSystem->createIndexBuffer(geometryDescription.indexType, geometryDescription.numIndices, false);
+    indexBuffer->setIndices(std::move(const_cast<MemoryBuffer&>(geometryDescription.indices)));
+    vd->setIndexBuffer(indexBuffer);
 
     graphicSystem->setVertexData(vd);
-    geometry->setBoundingBox(boundingBox);
+    geometry->setBoundingBox(geometryDescription.boundingBox);
     geometry->setVertexData(vd);
 
     geometries.pushBack(geometry);
@@ -407,14 +377,12 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
 
     if(index == -1)
     {
-        TextureLoadResult result = textureLoader.loadFromFile(texFileName, true);
-
-        if(result.pixelData[0])
+        TextureLoadResult result;
+        if(textureLoader.loadFromFile(texFileName, true, result))
         {
             texture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::Repeat, TextureFilterMode::Trilinear, result.format, result.width, result.height);
             texture->setData(result);
             texture->setSlotIndex(slotIndex);
-            //texture->setNumMipMaps(10);
             TextureCacheItem cacheItem;
             cacheItem.fileNameHash = fileNameHash;
             cacheItem.texture = texture;
@@ -425,7 +393,6 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
         else
             std::cout << "Failed to load texture: " << texFileName << std::endl;
 
-        textureLoader.releasedata(result);
     }
     else
         texture = materialTextureCache[index].texture;
@@ -435,9 +402,14 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
 
 void Renderer::createFullScreenQuad()
 {
-    float vertices[] = { -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
+    float verticesData[] = { -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
+    MemoryBuffer vertices;
+    vertices.bufferData(verticesData, 12 * attributeSize[static_cast<int>(AttributeType::Float)]);
+
     fullScreenQuad = graphicSystem->createVertexData(PrimitiveType::TriangleStrip, 4);
-    graphicSystem->setAttributesToVertexData(fullScreenQuad, AttributeType::Float, AttributeSemantic::Position, 3, 12, vertices);
+    auto vertexStream = graphicSystem->createVertexStream(4, { { AttributeType::Float, AttributeSemantic::Position, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false } });
+    vertexStream->setAttributes(std::move(vertices));
+    fullScreenQuad->setVertexStream(vertexStream);
 }
 
 }

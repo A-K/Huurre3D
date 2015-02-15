@@ -63,34 +63,25 @@ struct MaterialDescription
 
 struct GeometryDescription
 {
+    BoundingBox boundingBox;
     PrimitiveType primitiveType = PrimitiveType::Triangles;
     int numVertices = 0;
-
-    float* vertices = nullptr;
-    float* normals = nullptr;
-    float* tangents = nullptr;
-    float* bitTangents = nullptr;
-    float* jointIndices = nullptr;
-    float* jointWeights = nullptr;
-    float** texCoords = nullptr;
-    FixedArray<int, 4> numComp;
-    int numUVChanels = 0;
-
+    Vector<AttributeDescription> attributeDescriptions;
+    MemoryBuffer vertexData;
     int numIndices = 0;
-    unsigned short* indices16 = nullptr;
-    unsigned int* indices32 = nullptr;
-
-    void releaseData()
+    IndexType indexType;
+    MemoryBuffer indices;
+    GeometryDescription() = default;
+    GeometryDescription(GeometryDescription&& geometryDescription)
     {
-        delete[] vertices;
-        delete[] normals;
-        delete[] tangents;
-        delete[] bitTangents;
-        for(int i = 0; i < numUVChanels; ++i)
-            delete[] texCoords[i];
-
-        delete[] indices16;
-        delete[] indices32;
+        boundingBox = geometryDescription.boundingBox;
+        primitiveType = geometryDescription.primitiveType;
+        numVertices = geometryDescription.numVertices;
+        attributeDescriptions = geometryDescription.attributeDescriptions;
+        vertexData = std::move(geometryDescription.vertexData);
+        numIndices = geometryDescription.numIndices;
+        indexType = geometryDescription.indexType;
+        indices = std::move(geometryDescription.indices);
     }
 };
 
