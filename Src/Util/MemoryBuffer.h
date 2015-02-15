@@ -31,8 +31,13 @@ class MemoryBuffer
 {
 public:
     MemoryBuffer() = default;
+    MemoryBuffer(MemoryBuffer&& buffer) {*this = std::move(buffer);}
     ~MemoryBuffer() {resetBuffer();}
-    //Move-assignment operator
+    MemoryBuffer& operator = (const MemoryBuffer& rhs) 
+    {
+        bufferData(rhs.getData(), rhs.getSizeInBytes());
+        return *this;
+    }
     MemoryBuffer& operator = (MemoryBuffer&& rhs)
     {
         this->resetBuffer();
@@ -97,10 +102,7 @@ public:
 
     void reserve(unsigned int newCapacity)
     {
-        if(newCapacity < sizeInBytes)
-            newCapacity = sizeInBytes;
-
-        if(newCapacity != capacity)
+        if(newCapacity > capacity)
         {
             unsigned char* newData = nullptr;
             capacity = newCapacity;
