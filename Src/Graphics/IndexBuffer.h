@@ -40,14 +40,9 @@ public:
     IndexType getIndexType() const {return indexType;}
     int getNumIndices() const {return numIndices;}
     bool isDynamic() const {return dynamic;}
-    template<typename T> void setIndices(const T* indices)
+    void setIndices(MemoryBuffer&& indices)
     {
-        int bufferSize = numIndices * indexSize[static_cast<int>(indexType)];
-        graphicData.bufferData(indices, bufferSize);
-
-        if(graphicData.isNull())
-            std::cout <<"Could not set indices" <<std::endl;
-
+        graphicData = std::move(indices);
         dirty = true;
     }
 
