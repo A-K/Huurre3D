@@ -32,7 +32,7 @@ namespace Huurre3D
 {
 
 static const unsigned int MaXNumLights = 1000;
-static const unsigned int TileLightInfoArraySize = MaXNumLights * 2000;
+//static const unsigned int TileLightInfoArraySize = MaXNumLights * 2000;
 class Light;
 class Camera;
 
@@ -72,7 +72,7 @@ public:
 	
     void setGridDimensions(int tileWidth, int tileHeight, int screenWidth, int screenHeight);
     void binLightsToTiles(const Vector<Light*>& lights, Camera* camera);
-    const FixedArray<int, TileLightInfoArraySize>& getTileLightInfo() const { return tileLightInfo; }
+    MemoryBuffer& getTileLightInfo() { return tileLightInfo.getMemoryBuffer(); }
     const LightParameterBlockValues& getLightParameterBlockValues() const {return lightParameterBlockValues;}
     const GridDimensions& getGridDimensions() const {return gridDimensions;}
 
@@ -90,7 +90,8 @@ private:
     //       n 0000...0  <-light indices affecting tile n.
     //
     //tile numbers are counted starting from top left corner.
-    FixedArray<int, TileLightInfoArraySize> tileLightInfo;
+   // FixedArray<int, TileLightInfoArraySize> tileLightInfo;
+    Vector<int> tileLightInfo;
 };
 
 }

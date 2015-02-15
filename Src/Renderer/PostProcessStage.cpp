@@ -40,20 +40,14 @@ void PostProcessStage::update(const Scene* scene)
         SkyBox* skyBox = (SkyBox*)scene->getSceneItem("SkyBox");
         if(currentSkyBox != skyBox)
         {
-            FixedArray<bool, 6> flipImages;
-            flipImages.fill(false);
-            TextureLoader loader = renderer->getTextureLoader();
-            TextureLoadResult result = loader.loadCubeMapFromFile(skyBox->getTextureFiles(), flipImages);
-
-            if(result.pixelData[0] && result.pixelData[1] && result.pixelData[2] && result.pixelData[3] && result.pixelData[4] && result.pixelData[5])
+            TextureLoadResult result;
+            if(renderer->getTextureLoader().loadCubeMapFromFile(skyBox->getTextureFiles(), false, result))
             {
                 skyBoxTexture->setPixelFormat(result.format);
                 skyBoxTexture->setWidth(result.width);
                 skyBoxTexture->setHeight(result.height);
                 skyBoxTexture->setData(result);
             }
-
-            loader.releasedata(result);
             currentSkyBox = skyBox;
         }
     }

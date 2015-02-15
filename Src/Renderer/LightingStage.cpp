@@ -107,7 +107,7 @@ void LightingStage::update(const Scene* scene)
     int size = sizeof(int) * width * height;
     Texture* lightInfoTexture = graphicSystem->getTextureBySlotIndex(TextureSlotIndex::TileLightInfo);
     lightInfoTexture->setSize(width, height);
-    lightInfoTexture->setPixelData(tileGrid.getTileLightInfo().data(), size);
+    lightInfoTexture->setPixelData(tileGrid.getTileLightInfo());
 }
 
 void LightingStage::clearStage()

@@ -47,6 +47,7 @@ void LightTileGrid::setGridDimensions(int tileWidth, int tileHeight, int screenW
         delete[] tiles;
 
     tiles = new Tile[gridDimensions.widthResolution * gridDimensions.heightResolution];
+    tileLightInfo = Vector<int>(MaXNumLights * gridDimensions.widthResolution * gridDimensions.heightResolution);
 
     for(int i = 0 ; i < gridDimensions.heightResolution; ++i)
     {
