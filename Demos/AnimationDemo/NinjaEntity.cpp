@@ -64,7 +64,7 @@ void NinjaEntity::rotate(float delta, Direction direction)
 void NinjaEntity::setAction(Action action)
 {
     if(action == Action::Walk && currentAction != Action::Walk)
-        mesh->getAnimationClip(0)->setRange(0.0f, 0.56f);
+        mesh->getAnimationClip(0)->setRange(0.04f, 0.56f);
     else if(action == Action::Idle && currentAction != Action::Idle)
         mesh->getAnimationClip(0)->setRange(8.24f, 12.0f);
     else if(action == Action::Kick && currentAction != Action::Kick)
