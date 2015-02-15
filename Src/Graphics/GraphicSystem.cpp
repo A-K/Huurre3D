@@ -33,7 +33,6 @@ GraphicSystem::GraphicSystem()
 GraphicSystem::~GraphicSystem()
 {
     clearVertexDatas();
-    clearAttributeBuffers();
     clearVertexStreams();
     clearIndexBuffers();
     clearShaderPrograms();
@@ -46,28 +45,17 @@ GraphicSystem::~GraphicSystem()
 
 VertexData* GraphicSystem::createVertexData(PrimitiveType primitiveType, int numVertices)
 {
-    VertexData* vertexData = new VertexData(primitiveType, numVertices, createVertexStream(numVertices, false), createVertexStream(numVertices, true));
+    VertexData* vertexData = new VertexData(primitiveType, numVertices);
     unsigned int id = graphicSystemBackEnd->createVertexData();
     vertexDataComponents.pushBack(vertexData);
     vertexData->setId(id);
     return vertexData;
 }
 
-AttributeBuffer* GraphicSystem::createAttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic)
+VertexStream* GraphicSystem::createVertexStream(int numVertices, const Vector<AttributeDescription>& descriptions)
 {
-    AttributeBuffer* attributeBuffer = new AttributeBuffer(type, semantic, numComponentsPerVertex, normalized, dynamic);
-    unsigned int id;
-    dynamic ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
-    attributeBuffers.pushBack(attributeBuffer);
-    attributeBuffer->setId(id);
-    return attributeBuffer;
-}
-
-VertexStream* GraphicSystem::createVertexStream(int numVertices, bool interleaved)
-{
-    VertexStream* vertexStream = new VertexStream(numVertices);
-    unsigned int id;
-    interleaved ? id = graphicSystemBackEnd->createAttributeBuffer() : id = -1;
+    VertexStream* vertexStream = new VertexStream(numVertices, descriptions);
+    unsigned int id = graphicSystemBackEnd->createVertexStream();
     vertexStreams.pushBack(vertexStream);
     vertexStream->setId(id);
     return vertexStream;
@@ -478,8 +466,10 @@ void GraphicSystem::removeVertexData(VertexData* vertexData)
 {
     if(vertexData)
     {
-        removeVertexStream(vertexData->getDynamicVertexStream());
-        removeVertexStream(vertexData->getStaticVertexStream());
+        auto vertexStreams = vertexData->getVertexStreams();
+        for(unsigned int i = 0; i < vertexStreams.size(); ++i)
+            removeVertexStream(vertexStreams[i]);
+
         vertexDataComponents.eraseUnordered(vertexData);
         graphicSystemBackEnd->removeVertexData(vertexData->getId());
         delete vertexData;
@@ -487,29 +477,12 @@ void GraphicSystem::removeVertexData(VertexData* vertexData)
     }
 }
 
-void GraphicSystem::removeAttributeBuffer(AttributeBuffer* attributeBuffer)
-{
-    if(attributeBuffer)
-    {
-        unsigned int id = attributeBuffer->getId();
-        attributeBuffers.eraseUnordered(attributeBuffer);
-        if(id != -1)
-            graphicSystemBackEnd->removeBuffer(id);
-
-        delete attributeBuffer;
-        attributeBuffer = nullptr;
-    }
-}
-
 void GraphicSystem::removeVertexStream(VertexStream* vertexStream)
 {
     if(vertexStream)
     {
-        unsigned int id = vertexStream->getId();
         vertexStreams.eraseUnordered(vertexStream);
-        if(id != -1)
-            graphicSystemBackEnd->removeBuffer(id);
-
+        graphicSystemBackEnd->removeBuffer(vertexStream->getId());
         delete vertexStream;
         vertexStream = nullptr;
     }
@@ -589,20 +562,6 @@ void GraphicSystem::clearVertexDatas()
     }
 
     vertexDataComponents.reset();
-}
-
-void GraphicSystem::clearAttributeBuffers()
-{
-    for(unsigned int i = 0; i < attributeBuffers.size(); ++i)
-    {
-        unsigned int id = attributeBuffers[i]->getId();
-        if(id != -1)
-            graphicSystemBackEnd->removeBuffer(id);
-
-        delete attributeBuffers[i];
-    }
-
-    attributeBuffers.reset();
 }
 
 void GraphicSystem::clearVertexStreams()

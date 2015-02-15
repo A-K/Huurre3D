@@ -31,23 +31,27 @@ namespace Huurre3D
 class VertexData : public GraphicObject
 {
 public:
-    VertexData(PrimitiveType primitiveType, int numVertices, VertexStream* dynamicVertexStream, VertexStream* staticVertexStream);
+    VertexData(PrimitiveType primitiveType, int numVertices) :
+    primitiveType(primitiveType),
+    numVertices(numVertices)
+    {}
     ~VertexData() = default;
 	
-    void setIndexBuffer(IndexBuffer* indexBuffer);
-    void setAttributeBuffer(AttributeBuffer* attributeBuffer);
-    AttributeBuffer* getAtrributeBufferBySemantic(const AttributeSemantic semantic);
+    void setIndexBuffer(IndexBuffer* indexBuffer)
+    {
+        this->indexBuffer = indexBuffer;
+        indexed = true;
+    }
+    void setVertexStream(VertexStream* vertexStream) {vertexStreams.pushBack(vertexStream);}
     bool isIndexed() const {return indexed;};
     PrimitiveType getPrimitiveType() const {return primitiveType;}
-    VertexStream* getDynamicVertexStream() const {return dynamicVertexStream;}
-    VertexStream* getStaticVertexStream() const {return staticVertexStream;}
+    const Vector<VertexStream*>& getVertexStreams() const {return vertexStreams;}
     IndexBuffer* getIndexBuffer() const {return indexBuffer;}
     int getNumVertices() const {return numVertices;}
 
 private:
     PrimitiveType primitiveType;
-    VertexStream* dynamicVertexStream = nullptr;
-    VertexStream* staticVertexStream = nullptr;
+    Vector<VertexStream*> vertexStreams;
     IndexBuffer* indexBuffer = nullptr;
     bool indexed = false;
     int numVertices;

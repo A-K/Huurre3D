@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@ namespace Huurre3D
 
 class Shader;
 class IndexBuffer;
-class AttributeBuffer;
 class VertexStream;
 
 class OGLGraphicSystemBackEnd : public GraphicSystemBackEnd
@@ -40,7 +39,7 @@ public:
 
     void setViewPort(const ViewPort& viewPort);
     void clear(unsigned int flags, const Vector4& color);
-    unsigned int createAttributeBuffer();
+    unsigned int createVertexStream();
     unsigned int createIndexBuffer();
     unsigned int createShaderParameterBlock(const std::string& name);
     //Generates a vertex array object, that is used to encapsulate the vertex data state.
@@ -88,7 +87,6 @@ private:
     void updateRenderTarget(RenderTarget* renderTarget);
     void updateShaderParameterBlock(ShaderParameterBlock* block);
     void updateVertexStream(VertexStream* stream);
-    void updateInterleavedVertexStream(VertexStream* stream);
     void updateIndexBuffer(IndexBuffer* buffer);
     //Builds a shader program from vertex and fragment shader sources.
     void loadShaderProgram(Shader* vertexShader, Shader* fragmentShader);
@@ -97,9 +95,7 @@ private:
     void fetchUniformBlocks(ShaderProgram* program);
     //Fetches the needed information of single uniforms, when uniform buffers are not supported.
     void fetchUniforms(ShaderProgram* program);
-    void enableAttributes(VertexStream* vertexStream);
     void enableInterleavedAttributes(VertexStream* vertexStream);
-    void disableAttributes(VertexStream* vertexStream);
     //Sets the texture parameters to texture object.
     void updateTextureParameters(Texture *texture);
     //Loads the the pixel data to texture object.

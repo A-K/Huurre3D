@@ -51,8 +51,7 @@ public:
     ~GraphicSystem();
 
     VertexData* createVertexData(PrimitiveType primitiveType, int numVertices);
-    AttributeBuffer* createAttributeBuffer(AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, bool normalized, bool dynamic);
-    VertexStream* createVertexStream(int numVertices, bool interleaved);
+    VertexStream* createVertexStream(int numVertices, const Vector<AttributeDescription>& descriptions);
     IndexBuffer* createIndexBuffer(IndexType indexType, int numIndices, bool dynamic);
     Shader* createShader(ShaderType shaderType, const std::string& sourceFileName);
     Shader* createShader(ShaderType shaderType, const std::string& sourceFileName, const Vector<std::string>& shaderDefines);
@@ -80,7 +79,6 @@ public:
     void drawIndexed(int numIndices, int indexOffset);
     void drawInstanced(int numIndices, int indexOffset, int instancesCount);
     void removeVertexData(VertexData* vertexData);
-    void removeAttributeBuffer(AttributeBuffer* attributeBuffer);
     void removeVertexStream(VertexStream* vertexStream);
     void removeIndexBuffer(IndexBuffer* indexBuffer);
     void removeShaderProgram(ShaderProgram* program);
@@ -89,7 +87,6 @@ public:
     void removeRenderTarget(RenderTarget* renderTarget);
     void removeShaderParameterBlock(ShaderParameterBlock* shaderParameterBlock);
     void clearVertexDatas();
-    void clearAttributeBuffers();
     void clearVertexStreams();
     void clearIndexBuffers();
     void clearShaderPrograms();
@@ -102,28 +99,12 @@ public:
     Texture* getTextureBySlotIndex(TextureSlotIndex index);
     ShaderParameterBlock* getShaderParameterBlockByName(const std::string& name);
     RenderTarget* getRenderTargetByName(const std::string& name);
-    template<typename T> void setIndicesToVertexData(VertexData* vertexData, IndexType indexType, int numIndices, const T* indices, bool dynamic = false)
-    {
-        IndexBuffer* indexBuffer = createIndexBuffer(indexType, numIndices, dynamic);
-        indexBuffer->setIndices(indices);
-        vertexData->setIndexBuffer(indexBuffer);
-    }
-    //If the attribute buffer is not dynamic it will be interleaved with other non dynamic buffers into a one buffer in gpu.
-    //All dynamic attribute buffers will have a own buffer in gpu.
-    template<typename T> void setAttributesToVertexData(VertexData* vertexData, AttributeType type, AttributeSemantic semantic, int numComponentsPerVertex, int bufferLength, const T* attributeData, bool normalized = false, bool dynamic = true)
-    {
-        AttributeBuffer* attributeBuffer = createAttributeBuffer(type, semantic, numComponentsPerVertex, normalized, dynamic);
-        int bufferSize = bufferLength * attributeSize[static_cast<int>(type)];
-        attributeBuffer->setAttributes(attributeData, bufferSize);
-        vertexData->setAttributeBuffer(attributeBuffer);
-    }
 
 private:
     unsigned int generateShaderCombinationTag(const Vector<Shader*>& shaders);
     unsigned int generateShaderCombinationTag(const Vector<std::string>& shaderFileNames, const Vector<std::string>& shaderDefines);
     
     GraphicSystemBackEnd* graphicSystemBackEnd;
-    Vector<AttributeBuffer*> attributeBuffers;
     Vector<VertexStream*> vertexStreams;
     Vector<IndexBuffer*> indexBuffers;
     Vector<VertexData*> vertexDataComponents;

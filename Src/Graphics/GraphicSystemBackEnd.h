@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ public:
 	
     void setViewPort(const ViewPort& viewPort) {}
     void clear(unsigned int flags, const Vector4& color) {}
-    unsigned int createAttributeBuffer() {return graphicResourceId++;}
+    unsigned int createVertexStream() {return graphicResourceId++;}
     unsigned int createIndexBuffer() {return graphicResourceId++;}
     unsigned int createShaderParameterBlock(const std::string& name)  { return graphicResourceId++; }
     unsigned int createVertexData() {return graphicResourceId++;}

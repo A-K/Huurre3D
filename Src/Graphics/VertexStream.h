@@ -22,30 +22,47 @@
 #ifndef VertexStream_H
 #define VertexStream_H
 
-#include "Graphics/AttributeBuffer.h"
+#include "Graphics/GraphicObject.h"
 #include "Util/Vector.h"
 
 namespace Huurre3D
 {
 
+struct AttributeDescription
+{
+    AttributeType type;
+    AttributeSemantic semantic;
+    int numComponentsPerVertex;
+    int stride;
+    bool normalized;
+};
+
 class VertexStream : public GraphicObject
 {
 public:
-    VertexStream(int numVertices);
+    VertexStream::VertexStream(int numVertices, const Vector<AttributeDescription>& descriptions) :
+    numVertices(numVertices),
+    attributeDescriptions(descriptions)
+    {
+        for(unsigned int i = 0; i < descriptions.size(); ++i)
+            vertexSize += descriptions[i].stride;
+    }
+
     ~VertexStream() = default;
-	
-    void setAttributeBuffer(AttributeBuffer* attributeBuffer);
-    const Vector<AttributeBuffer*>& getAttributeBuffers() const {return attributes;}
+
+    const Vector<AttributeDescription>& getAttributeDescriptions() const {return attributeDescriptions;}
     unsigned int getNumVertices() const {return numVertices;}
     unsigned int getVertexSize() const {return vertexSize;}
-    unsigned int getNumAttributeBuffers() const {return numBuffers;}
-    const unsigned char* getInterleavedAttributeData();
+    void setAttributes(MemoryBuffer&& attributeData)
+    {
+        graphicData = std::move(attributeData);
+        dirty = true;
+    }
 
 private:
     unsigned int numVertices;
     unsigned int vertexSize = 0;
-    unsigned int numBuffers = 0;
-    Vector<AttributeBuffer*> attributes;
+    Vector<AttributeDescription> attributeDescriptions;
 };
 
 }

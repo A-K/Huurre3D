@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ void OGLGraphicSystemBackEnd::clear(unsigned int flags, const Vector4& color)
     glClear(glFlags);
 }
 
-unsigned int OGLGraphicSystemBackEnd::createAttributeBuffer()
+unsigned int OGLGraphicSystemBackEnd::createVertexStream()
 {
     return createBuffer();
 }
@@ -145,41 +145,13 @@ void OGLGraphicSystemBackEnd::removeRenderTarget(unsigned int renderTargetId)
 void OGLGraphicSystemBackEnd::updateVertexStream(VertexStream* stream)
 {
     GLint numVertices = stream->getNumVertices();
-    Vector<AttributeBuffer*> attributeBuffers = stream->getAttributeBuffers();
-
-    for(unsigned int i = 0; i < attributeBuffers.size(); ++i)
-    {
-        AttributeBuffer* attrBuf = attributeBuffers[i];	
-        if(attrBuf->isDirty())
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, attrBuf->getId());
-            glBufferData(GL_ARRAY_BUFFER, attrBuf->getStride() * numVertices, attrBuf->getGraphicData(), GL_DYNAMIC_DRAW);
-            attrBuf->unDirty();
-            attrBuf->discardData();
-        }
-    }
-    enableAttributes(stream);
-    stream->unDirty();
-}
-
-void OGLGraphicSystemBackEnd::updateInterleavedVertexStream(VertexStream* stream)
-{
-    GLint numVertices = stream->getNumVertices();
     GLint vertexSize = stream->getVertexSize();
 
     glBindBuffer(GL_ARRAY_BUFFER, stream->getId());
-    glBufferData(GL_ARRAY_BUFFER, vertexSize * numVertices , stream->getInterleavedAttributeData(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexSize * numVertices , stream->getGraphicData(), GL_STATIC_DRAW);
     enableInterleavedAttributes(stream);
     stream->unDirty();
     stream->discardData();
-
-    Vector<AttributeBuffer*> attributeBuffers = stream->getAttributeBuffers();
-    for(unsigned int i = 0; i < attributeBuffers.size(); ++i)
-    {
-        AttributeBuffer* attrBuf = attributeBuffers[i];
-        attrBuf->unDirty();
-        attrBuf->discardData();
-    }
 }
 
 void OGLGraphicSystemBackEnd::updateIndexBuffer(IndexBuffer* buffer)
@@ -192,44 +164,19 @@ void OGLGraphicSystemBackEnd::updateIndexBuffer(IndexBuffer* buffer)
     buffer->discardData();
 }
 
-void OGLGraphicSystemBackEnd::enableAttributes(VertexStream* vertexStream)
-{
-    Vector<AttributeBuffer*> attributes = vertexStream->getAttributeBuffers();
-    for(unsigned int i = 0;  i < attributes.size(); ++i)
-    {
-        AttributeBuffer* attrBuf = attributes[i];
-        glBindBuffer(GL_ARRAY_BUFFER, attrBuf->getId());
-        GLenum type = glAttributeType[static_cast<int>(attrBuf->getAttributeType())];
-        glEnableVertexAttribArray(static_cast<int>(attrBuf->getAttributeSemantic()));
-        glVertexAttribPointer(static_cast<int>(attrBuf->getAttributeSemantic()), attrBuf->getNumComponents(), type, attrBuf->isNormalized(), attrBuf->getStride(), 0);
-    }
-}
-
 void OGLGraphicSystemBackEnd::enableInterleavedAttributes(VertexStream* vertexStream)
 {
     GLint vertexSize = vertexStream->getVertexSize();
     GLint offset = 0;
-    Vector<AttributeBuffer*> attributes = vertexStream->getAttributeBuffers();
+    auto attributeDescriptions = vertexStream->getAttributeDescriptions();
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexStream->getId());
-    for(unsigned int i = 0;  i < attributes.size(); ++i)
+    for(unsigned int i = 0; i < attributeDescriptions.size(); ++i)
     {
-        AttributeBuffer* attrBuf = attributes[i];
-        GLenum type = glAttributeType[static_cast<int>(attrBuf->getAttributeType())];
-        glEnableVertexAttribArray(static_cast<int>(attrBuf->getAttributeSemantic()));
-        glVertexAttribPointer(static_cast<int>(attrBuf->getAttributeSemantic()), attrBuf->getNumComponents(), type, attrBuf->isNormalized(), vertexSize, (GLvoid*)offset);
-        offset += attrBuf->getStride();
-    }
-}
-
-void OGLGraphicSystemBackEnd::disableAttributes(VertexStream* vertexStream)
-{
-    Vector<AttributeBuffer*> attributes = vertexStream->getAttributeBuffers();
-    for(unsigned int i = 0; i < attributes.size(); ++i)
-    {
-        AttributeBuffer* attrBuf = attributes[i];
-        glBindBuffer(GL_ARRAY_BUFFER, attrBuf->getId());
-        glDisableVertexAttribArray(static_cast<int>(attrBuf->getAttributeSemantic()));
+        GLenum type = glAttributeType[static_cast<int>(attributeDescriptions[i].type)];
+        glEnableVertexAttribArray(static_cast<int>(attributeDescriptions[i].semantic));
+        glVertexAttribPointer(static_cast<int>(attributeDescriptions[i].semantic), attributeDescriptions[i].numComponentsPerVertex, type, attributeDescriptions[i].normalized, vertexSize, (GLvoid*)offset);
+        offset += attributeDescriptions[i].stride;
     }
 }
 
@@ -237,15 +184,10 @@ void OGLGraphicSystemBackEnd::setVertexData(VertexData *vertexData)
 {
     glBindVertexArray(vertexData->getId());
 
-    VertexStream* staticVertexStream = vertexData->getStaticVertexStream();
-    VertexStream* dynamicVertexStream = vertexData->getDynamicVertexStream();
+    auto vertexStreams = vertexData->getVertexStreams();
+    for(unsigned int i = 0; i < vertexStreams.size(); ++i)
+        updateVertexStream(vertexStreams[i]);
 
-    if(staticVertexStream && staticVertexStream->isDirty())
-        updateInterleavedVertexStream(staticVertexStream);
-
-    if(dynamicVertexStream && dynamicVertexStream->isDirty())
-        updateVertexStream(dynamicVertexStream);
-	
     if(vertexData->isIndexed())
     {
         currentIndexType = vertexData->getIndexBuffer()->getIndexType();
