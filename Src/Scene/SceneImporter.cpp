@@ -75,10 +75,10 @@ void SceneImporter::importMultipleMeshes(const std::string& fileName, Vector<Mes
         }
 
         Vector<MaterialDescription> materialDescriptions;
-        Vector<GeometryDescription> geometryDescriptions;
+        Vector<AssimpVertexData> assimpVertexDataVec;
         AssimpSkeletonData assimpSkeletonData;
         const aiNode* rootNode = assimpScene->mRootNode;
-        extractDataFromAssimpScene(rootNode, materialDescriptions, geometryDescriptions, assimpSkeletonData);
+        extractDataFromAssimpNode(rootNode, materialDescriptions, assimpVertexDataVec, assimpSkeletonData);
 
         Vector3 position, scale;
         Quaternion rotation;
@@ -88,11 +88,14 @@ void SceneImporter::importMultipleMeshes(const std::string& fileName, Vector<Mes
         unsigned int numJoints = destMeshes[0]->getScene()->getNumSceneItemsByType("Joint");
         destMeshes[0]->getScene()->createSceneItems<Joint>(skeleton, assimpSkeletonData.boneNodes.size());
         readSkeleton(assimpSkeletonData, skeleton);
-        readJointWeights(assimpSkeletonData, skeleton, geometryDescriptions, numJoints);
+        readJointWeights(assimpSkeletonData, skeleton, assimpVertexDataVec, numJoints);
         Vector<AnimationClip*> animationClips;
         readSkeletalAnimations(animationClips, skeleton);
 
         Vector<Vector<RenderItem>> renderItems;
+        Vector<GeometryDescription> geometryDescriptions;
+        geometryDescriptions.reserve(assimpVertexDataVec.size());
+        createGeometrydescriptions(assimpVertexDataVec, geometryDescriptions);
         renderer->createRenderItems(materialDescriptions, geometryDescriptions, renderItems, destMeshes.size());
 
         for(unsigned int i = 0; i < destMeshes.size(); ++i)
@@ -105,9 +108,6 @@ void SceneImporter::importMultipleMeshes(const std::string& fileName, Vector<Mes
             }
             destMeshes[i]->addRenderItems(renderItems[i]);
         }
-
-        for(unsigned int i = 0; i < geometryDescriptions.size(); ++i)
-            geometryDescriptions[i].releaseData();
     }
     else
     {
@@ -123,8 +123,8 @@ void SceneImporter::importMesh(const std::string& fileName, Mesh* destMesh)
     importMultipleMeshes(fileName, meshes);
 }
 
-void SceneImporter::extractDataFromAssimpScene(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions,
-    AssimpSkeletonData& assimpSkeletonData)
+void SceneImporter::extractDataFromAssimpNode(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<AssimpVertexData>& assimpVertexDataVec,
+    AssimpSkeletonData& assimpSkeletonData) const
 {
     if(assimpNode->mNumMeshes > 0)
     {
@@ -133,10 +133,9 @@ void SceneImporter::extractDataFromAssimpScene(const aiNode* assimpNode, Vector<
             aiMesh* assimpMesh = assimpScene->mMeshes[assimpNode->mMeshes[i]];
             aiMaterial* assimpMaterial = assimpScene->mMaterials[assimpMesh->mMaterialIndex];
 
-            GeometryDescription geometryDescription;
-            geometryDescription.primitiveType = PrimitiveType::Triangles;
-            readIndices(assimpMesh, geometryDescription);
-            readVertexAttributes(assimpMesh, geometryDescription);
+            AssimpVertexData assimpVertexData;
+            readIndices(assimpMesh, assimpVertexData);
+            readVertexAttributes(assimpMesh, assimpVertexData);
 
             MaterialDescription materialDescription = createMaterialDescription(assimpMaterial);
             
@@ -148,7 +147,7 @@ void SceneImporter::extractDataFromAssimpScene(const aiNode* assimpNode, Vector<
             }
 
             materialDescriptions.pushBack(materialDescription);
-            geometryDescriptions.pushBack(geometryDescription);
+            assimpVertexDataVec.pushBack(assimpVertexData);
 
             //Add new bones and bone nodes into the assimpSkeletonData struct.
             for(unsigned int j = 0; j < assimpScene->mMeshes[i]->mNumBones; ++j)
@@ -171,11 +170,11 @@ void SceneImporter::extractDataFromAssimpScene(const aiNode* assimpNode, Vector<
     //TODO: bake the child transforms into the attributes.
     for(unsigned int i = 0; i < assimpNode->mNumChildren; ++i)
     {
-        extractDataFromAssimpScene(assimpNode->mChildren[i], materialDescriptions, geometryDescriptions, assimpSkeletonData);
+        extractDataFromAssimpNode(assimpNode->mChildren[i], materialDescriptions, assimpVertexDataVec, assimpSkeletonData);
     }
 }
 
-MaterialDescription SceneImporter::createMaterialDescription(const aiMaterial* assimpMaterial)
+MaterialDescription SceneImporter::createMaterialDescription(const aiMaterial* assimpMaterial) const
 {
     MaterialDescription description;
 
@@ -250,106 +249,191 @@ MaterialDescription SceneImporter::createMaterialDescription(const aiMaterial* a
 
     return description;
 }
+void SceneImporter::createGeometrydescriptions(Vector<AssimpVertexData>& assimpVertexDataVec, Vector<GeometryDescription>& geometryDescriptions) const
+{
+    for(unsigned int i = 0; i < assimpVertexDataVec.size(); ++i)
+    {
+        GeometryDescription geometryDescription;
+        Vector<float*> attributes;
 
-void SceneImporter::readIndices(const aiMesh* assimpMesh, GeometryDescription& geometryDescription)
+        geometryDescription.numVertices = assimpVertexDataVec[i].numVertices;
+
+        if(assimpVertexDataVec[i].numIndices != 0)
+        {
+            geometryDescription.indexType = assimpVertexDataVec[i].indexType;
+            geometryDescription.numIndices = assimpVertexDataVec[i].numIndices;
+            
+            if(assimpVertexDataVec[i].indexType == IndexType::Short)
+                geometryDescription.indices = std::move(assimpVertexDataVec[i].indices16.getMemoryBuffer());
+            else
+                geometryDescription.indices = std::move(assimpVertexDataVec[i].indices32.getMemoryBuffer());
+        }
+
+        if(!assimpVertexDataVec[i].vertices.empty())
+        {
+            geometryDescription.boundingBox.mergePoints(assimpVertexDataVec[i].vertices.getData(), geometryDescription.numVertices);
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::Position, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].vertices.getData());
+        }
+
+        if(!assimpVertexDataVec[i].normals.empty())
+        {
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::Normal, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].normals.getData());
+        }
+
+        if(!assimpVertexDataVec[i].tangents.empty())
+        {
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::Tangent, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].tangents.getData());
+        }
+
+        if(!assimpVertexDataVec[i].bitTangents.empty())
+        {
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::BiTanget, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].bitTangents.getData());
+        }
+
+        if(!assimpVertexDataVec[i].jointIndices.empty())
+        {
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::JointIndices, 4, 4 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].jointIndices.getData());
+        }
+
+        if(!assimpVertexDataVec[i].jointWeights.empty())
+        {
+            geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, AttributeSemantic::JointWeights, 4, 4 * attributeSize[static_cast<int>(AttributeType::Float)], false });
+            attributes.pushBack(assimpVertexDataVec[i].jointWeights.getData());
+        }
+
+        for(int j = 0; j < assimpVertexDataVec[i].numUVChanels; ++j)
+        {
+            if(!assimpVertexDataVec[i].texCoords[j].empty())
+            {
+                int numComp = assimpVertexDataVec[i].numComp[j];
+                AttributeSemantic semantic = static_cast<AttributeSemantic>(int(AttributeSemantic::TexCoord0) + j);
+                geometryDescription.attributeDescriptions.pushBack({ AttributeType::Float, semantic, numComp, numComp * attributeSize[static_cast<int>(AttributeType::Float)], false });
+                attributes.pushBack(assimpVertexDataVec[i].texCoords[j].getData());
+            }
+        }
+
+        int vertexSize = 0;
+        for(unsigned int j = 0; j < geometryDescription.attributeDescriptions.size(); ++j)
+            vertexSize += geometryDescription.attributeDescriptions[j].stride;
+
+        geometryDescription.vertexData.reserve(vertexSize * assimpVertexDataVec[i].numVertices);
+
+        //Interleave attributes.
+        for(unsigned int k = 0; k < assimpVertexDataVec[i].numVertices; ++k)
+        {
+            for(unsigned int n = 0; n < geometryDescription.attributeDescriptions.size(); ++n)
+                geometryDescription.vertexData.append(std::move(&attributes[n][k * geometryDescription.attributeDescriptions[n].numComponentsPerVertex]), geometryDescription.attributeDescriptions[n].stride);
+
+        }
+
+        geometryDescriptions.pushBack(std::move(geometryDescription));
+    }
+}
+
+void SceneImporter::readIndices(const aiMesh* assimpMesh, AssimpVertexData& assimpVertexData) const
 {
     if(assimpMesh->HasFaces())
     {
-        geometryDescription.numIndices = assimpMesh->mNumFaces * 3;
-
+        assimpVertexData.numIndices = assimpMesh->mNumFaces * 3;
         if(assimpMesh->mNumVertices < 65535)
-            geometryDescription.indices16 = new unsigned short[assimpMesh->mNumFaces * 3];
-        else
-            geometryDescription.indices32 = new unsigned int[assimpMesh->mNumFaces * 3];
-    }
-
-    if(assimpMesh->mNumVertices < 65535)
-    {
-        for(unsigned int i = 0; i < assimpMesh->mNumFaces; ++i)
         {
-            geometryDescription.indices16[i * 3] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[0]);
-            geometryDescription.indices16[i * 3 + 1] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[1]);
-            geometryDescription.indices16[i * 3 + 2] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[2]);
+            assimpVertexData.indexType = IndexType::Short;
+            assimpVertexData.indices16 = Vector<unsigned short>(assimpMesh->mNumFaces * 3);
         }
-    }
-    else
-    {
+        else
+        {
+            assimpVertexData.indexType = IndexType::Int;
+            Vector<unsigned int>(assimpMesh->mNumFaces * 3);
+        }
+
         for(unsigned int i = 0; i < assimpMesh->mNumFaces; ++i)
         {
-            geometryDescription.indices32[i * 3] = assimpMesh->mFaces[i].mIndices[0];
-            geometryDescription.indices32[i * 3 + 1] = assimpMesh->mFaces[i].mIndices[1];
-            geometryDescription.indices32[i * 3 + 2] = assimpMesh->mFaces[i].mIndices[2];
+            if(assimpVertexData.indexType == IndexType::Short)
+            {
+                assimpVertexData.indices16[i * 3] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[0]);
+                assimpVertexData.indices16[i * 3 + 1] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[1]);
+                assimpVertexData.indices16[i * 3 + 2] = static_cast<unsigned short>(assimpMesh->mFaces[i].mIndices[2]);
+            }
+            else
+            {
+                assimpVertexData.indices32[i * 3] = assimpMesh->mFaces[i].mIndices[0];
+                assimpVertexData.indices32[i * 3 + 1] = assimpMesh->mFaces[i].mIndices[1];
+                assimpVertexData.indices32[i * 3 + 2] = assimpMesh->mFaces[i].mIndices[2];
+            }
         }
     }
 }
 
-void SceneImporter::readVertexAttributes(const aiMesh* assimpMesh, GeometryDescription& geometryDescription)
+void SceneImporter::readVertexAttributes(const aiMesh* assimpMesh, AssimpVertexData& assimpVertexData) const
 {
-    geometryDescription.numVertices = assimpMesh->mNumVertices;
+    assimpVertexData.numVertices = assimpMesh->mNumVertices;
 
     if(assimpMesh->HasPositions())
-        geometryDescription.vertices = new float[assimpMesh->mNumVertices * 3];
+        assimpVertexData.vertices = Vector<float>(assimpMesh->mNumVertices * 3);
 
     if(assimpMesh->HasNormals())
-        geometryDescription.normals = new float[assimpMesh->mNumVertices * 3];
+        assimpVertexData.normals = Vector<float>(assimpMesh->mNumVertices * 3);
 
     if(assimpMesh->HasTangentsAndBitangents())
     {
-        geometryDescription.tangents = new float[assimpMesh->mNumVertices * 3];
-        geometryDescription.bitTangents = new float[assimpMesh->mNumVertices * 3];
+        assimpVertexData.tangents = Vector<float>(assimpMesh->mNumVertices * 3);
+        assimpVertexData.bitTangents = Vector<float>(assimpMesh->mNumVertices * 3);
     }
 
-    geometryDescription.numUVChanels = assimpMesh->GetNumUVChannels();
-    geometryDescription.texCoords = new float*[geometryDescription.numUVChanels];
-
-    for(int i = 0; i < geometryDescription.numUVChanels; ++i)
+    assimpVertexData.numUVChanels = assimpMesh->GetNumUVChannels();
+    for(int i = 0; i < assimpVertexData.numUVChanels; ++i)
     {
         if(assimpMesh->mTextureCoords[i])
-            geometryDescription.texCoords[i] = (assimpMesh->mNumUVComponents[i] == 3) ? new float[assimpMesh->mNumVertices * 3] : geometryDescription.texCoords[i] = new float[assimpMesh->mNumVertices * 2];
+            assimpVertexData.texCoords[i] = (assimpMesh->mNumUVComponents[i] == 3) ? Vector<float>(assimpMesh->mNumVertices * 3) : Vector<float>(assimpMesh->mNumVertices * 2);
     }
 
     for(unsigned int i = 0; i < assimpMesh->mNumVertices; ++i)
     {
         if(assimpMesh->mVertices)
         {
-            geometryDescription.vertices[i * 3] = assimpMesh->mVertices[i].x;
-            geometryDescription.vertices[i * 3 + 1] = assimpMesh->mVertices[i].y;
-            geometryDescription.vertices[i * 3 + 2] = assimpMesh->mVertices[i].z;
+            assimpVertexData.vertices[i * 3] = assimpMesh->mVertices[i].x;
+            assimpVertexData.vertices[i * 3 + 1] = assimpMesh->mVertices[i].y;
+            assimpVertexData.vertices[i * 3 + 2] = assimpMesh->mVertices[i].z;
         }
         if(assimpMesh->mNormals)
         {
-            geometryDescription.normals[i * 3] = assimpMesh->mNormals[i].x;
-            geometryDescription.normals[i * 3 + 1] = assimpMesh->mNormals[i].y;
-            geometryDescription.normals[i * 3 + 2] = assimpMesh->mNormals[i].z;
+            assimpVertexData.normals[i * 3] = assimpMesh->mNormals[i].x;
+            assimpVertexData.normals[i * 3 + 1] = assimpMesh->mNormals[i].y;
+            assimpVertexData.normals[i * 3 + 2] = assimpMesh->mNormals[i].z;
         }
         if(assimpMesh->mTangents && assimpMesh->mBitangents)
         {
             //Make sure that the tangents and bit tangents arrays don't have any NaNs. 
-            geometryDescription.tangents[i * 3] = isNaN(assimpMesh->mTangents[i].x) ? 0.0f : assimpMesh->mTangents[i].x;
-            geometryDescription.tangents[i * 3 + 1] = isNaN(assimpMesh->mTangents[i].y) ? 0.0f : assimpMesh->mTangents[i].y;
-            geometryDescription.tangents[i * 3 + 2] = isNaN(assimpMesh->mTangents[i].z) ? 0.0f : assimpMesh->mTangents[i].z;
+            assimpVertexData.tangents[i * 3] = isNaN(assimpMesh->mTangents[i].x) ? 0.0f : assimpMesh->mTangents[i].x;
+            assimpVertexData.tangents[i * 3 + 1] = isNaN(assimpMesh->mTangents[i].y) ? 0.0f : assimpMesh->mTangents[i].y;
+            assimpVertexData.tangents[i * 3 + 2] = isNaN(assimpMesh->mTangents[i].z) ? 0.0f : assimpMesh->mTangents[i].z;
 
-            geometryDescription.bitTangents[i * 3] = isNaN(assimpMesh->mBitangents[i].x) ? 0.0f : assimpMesh->mBitangents[i].x;
-            geometryDescription.bitTangents[i * 3 + 1] = isNaN(assimpMesh->mBitangents[i].y) ? 0.0f : assimpMesh->mBitangents[i].y;
-            geometryDescription.bitTangents[i * 3 + 2] = isNaN(assimpMesh->mBitangents[i].z) ? 0.0f : assimpMesh->mBitangents[i].z;
+            assimpVertexData.bitTangents[i * 3] = isNaN(assimpMesh->mBitangents[i].x) ? 0.0f : assimpMesh->mBitangents[i].x;
+            assimpVertexData.bitTangents[i * 3 + 1] = isNaN(assimpMesh->mBitangents[i].y) ? 0.0f : assimpMesh->mBitangents[i].y;
+            assimpVertexData.bitTangents[i * 3 + 2] = isNaN(assimpMesh->mBitangents[i].z) ? 0.0f : assimpMesh->mBitangents[i].z;
         }
         if(assimpMesh->mTextureCoords)
         {
-            for(int j = 0; j < geometryDescription.numUVChanels; ++j)
+            for(int j = 0; j < assimpVertexData.numUVChanels; ++j)
             {
                 if(assimpMesh->mTextureCoords[j])
                 {
-                    geometryDescription.numComp[j] = assimpMesh->mNumUVComponents[j];
-                    if(geometryDescription.numComp[j] == 3)
+                    assimpVertexData.numComp[j] = assimpMesh->mNumUVComponents[j];
+                    if(assimpVertexData.numComp[j] == 3)
                     {
-                        geometryDescription.texCoords[j][i * 3] = assimpMesh->mTextureCoords[j][i].x;
-                        geometryDescription.texCoords[j][i * 3 + 1] = assimpMesh->mTextureCoords[j][i].y;
-                        geometryDescription.texCoords[j][i * 3 + 2] = assimpMesh->mTextureCoords[j][i].z;
+                        assimpVertexData.texCoords[j][i * 3] = assimpMesh->mTextureCoords[j][i].x;
+                        assimpVertexData.texCoords[j][i * 3 + 1] = assimpMesh->mTextureCoords[j][i].y;
+                        assimpVertexData.texCoords[j][i * 3 + 2] = assimpMesh->mTextureCoords[j][i].z;
                     } 
                     else
                     {
-                        geometryDescription.texCoords[j][i * 2] = assimpMesh->mTextureCoords[j][i].x;
-                        geometryDescription.texCoords[j][i * 2 + 1] = assimpMesh->mTextureCoords[j][i].y;
+                        assimpVertexData.texCoords[j][i * 2] = assimpMesh->mTextureCoords[j][i].x;
+                        assimpVertexData.texCoords[j][i * 2 + 1] = assimpMesh->mTextureCoords[j][i].y;
                     }
                 }
             }
@@ -357,16 +441,19 @@ void SceneImporter::readVertexAttributes(const aiMesh* assimpMesh, GeometryDescr
     }
 }
 
-void SceneImporter::readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<GeometryDescription>& geometryDescriptions, unsigned int jointStartIndex)
+void SceneImporter::readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<AssimpVertexData>& assimpVertexDataVec, unsigned int jointStartIndex) const
 {
     for(unsigned int i = 0; i < assimpSkeletonData.boneMeshes.size(); ++i)
     {
-        geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointIndices = new float[assimpSkeletonData.boneMeshes[i]->mNumVertices * 4]();
-        geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointWeights = new float[assimpSkeletonData.boneMeshes[i]->mNumVertices * 4]();
+        assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointIndices = Vector<float>(assimpSkeletonData.boneMeshes[i]->mNumVertices * 4);
+        assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointWeights = Vector<float>(assimpSkeletonData.boneMeshes[i]->mNumVertices * 4);
+        assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointIndices.fill(0.0f);
+        assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointWeights.fill(0.0f);
 
         std::string boneName;
         //vertexIDTable keeps track that how many jointIndices and weights a vertex in given index has. 
-        int* vertexIDtable = new int[assimpSkeletonData.boneMeshes[i]->mNumVertices]();
+        Vector<int> vertexIDtable(assimpSkeletonData.boneMeshes[i]->mNumVertices);
+        vertexIDtable.fill(0);
         for(unsigned int j = 0; j < assimpSkeletonData.boneMeshes[i]->mNumBones; ++j)
         {
             boneName = assimpSkeletonData.boneMeshes[i]->mBones[j]->mName.C_Str();
@@ -376,16 +463,15 @@ void SceneImporter::readJointWeights(const AssimpSkeletonData& assimpSkeletonDat
             for(unsigned int k = 0; k < assimpSkeletonData.boneMeshes[i]->mBones[j]->mNumWeights; ++k)
             {
                 unsigned int vertexIndex = assimpSkeletonData.boneMeshes[i]->mBones[j]->mWeights[k].mVertexId;
-                geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointIndices[vertexIndex * 4 + vertexIDtable[vertexIndex]] = static_cast<float>(jointIndex);
-                geometryDescriptions[assimpSkeletonData.meshIndices[i]].jointWeights[vertexIndex * 4 + vertexIDtable[vertexIndex]] = assimpSkeletonData.boneMeshes[i]->mBones[j]->mWeights[k].mWeight;
+                assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointIndices[vertexIndex * 4 + vertexIDtable[vertexIndex]] = static_cast<float>(jointIndex);
+                assimpVertexDataVec[assimpSkeletonData.meshIndices[i]].jointWeights[vertexIndex * 4 + vertexIDtable[vertexIndex]] = assimpSkeletonData.boneMeshes[i]->mBones[j]->mWeights[k].mWeight;
                 vertexIDtable[vertexIndex] = vertexIDtable[vertexIndex] + 1;
             }
         }
-        delete[] vertexIDtable;
     }
 }
 
-void SceneImporter::readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton)
+void SceneImporter::readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton) const
 {
     //Find the skeleton root Node. Node that is closest to the scene root node is the skeleton root node.
     aiNode* boneRoot = nullptr;
@@ -411,7 +497,7 @@ void SceneImporter::readSkeleton(const AssimpSkeletonData& assimpSkeletonData, V
     buildSkeleton(boneRoot, assimpSkeletonData.bones, assimpSkeletonData.boneNodes, skeleton, jointId);
 }
 
-void SceneImporter::buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId)
+void SceneImporter::buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId) const
 {
     if(!boneNode)
         return;
@@ -448,7 +534,7 @@ void SceneImporter::buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>&
 }
 
 
-void SceneImporter::readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton)
+void SceneImporter::readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton) const
 {
     for(unsigned int i = 0; i < assimpScene->mNumAnimations; ++i)
     {
@@ -530,7 +616,7 @@ void SceneImporter::readSkeletalAnimations(Vector<AnimationClip*>& animationClip
     }
 }
 
-void SceneImporter::getTransfrom(const aiMatrix4x4& transform, Vector3& pos, Quaternion& rot, Vector3& scale)
+void SceneImporter::getTransfrom(const aiMatrix4x4& transform, Vector3& pos, Quaternion& rot, Vector3& scale) const
 {
     aiVector3D aiPos;
     aiQuaternion aiRot;

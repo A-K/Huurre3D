@@ -37,6 +37,25 @@ class Mesh;
 class Vector3;
 class Quaternion;
 
+struct AssimpVertexData
+{
+    int numVertices = 0;
+    Vector<float> vertices;
+    Vector<float> normals;
+    Vector<float> tangents;
+    Vector<float> bitTangents;
+    Vector<float> jointIndices;
+    Vector<float> jointWeights;
+    FixedArray<Vector<float>, 4> texCoords;
+    FixedArray<int, 4> numComp;
+    int numUVChanels = 0;
+
+    IndexType indexType;
+    int numIndices = 0;
+    Vector<unsigned short> indices16;
+    Vector<unsigned int> indices32;
+};
+
 struct AssimpSkeletonData
 {
     Vector<unsigned int> meshIndices;
@@ -57,16 +76,17 @@ public:
     void importMultipleMeshes(const std::string& fileName, Vector<Mesh*>& destMeshes);
 
 private:
-    void extractDataFromAssimpScene(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<GeometryDescription>& geometryDescriptions,
-        AssimpSkeletonData& assimpSkeletonData);
-    MaterialDescription createMaterialDescription(const aiMaterial* assimpMaterial);
-    void readIndices(const aiMesh* assimpMesh, GeometryDescription& geometryDescription);
-    void readVertexAttributes(const aiMesh* assimpMesh, GeometryDescription& geometryDescription);
-    void readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<GeometryDescription>& geometryDescriptions, unsigned int jointStartIndex);
-    void readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton);
-    void buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId);
-    void readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton);
-    void getTransfrom(const aiMatrix4x4& assimpTransform, Vector3& pos, Quaternion& rot, Vector3& scale);
+    void extractDataFromAssimpNode(const aiNode* assimpNode, Vector<MaterialDescription>& materialDescriptions, Vector<AssimpVertexData>& assimpVertexDataVec,
+        AssimpSkeletonData& assimpSkeletonData) const;
+    MaterialDescription createMaterialDescription(const aiMaterial* assimpMaterial) const;
+    void createGeometrydescriptions(Vector<AssimpVertexData>& assimpVertexDataVec, Vector<GeometryDescription>& geometryDescriptions) const;
+    void readIndices(const aiMesh* assimpMesh, AssimpVertexData& assimpVertexData) const;
+    void readVertexAttributes(const aiMesh* assimpMesh, AssimpVertexData& assimpVertexData) const;
+    void readJointWeights(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton, Vector<AssimpVertexData>& assimpVertexDataVec, unsigned int jointStartIndex) const;
+    void readSkeleton(const AssimpSkeletonData& assimpSkeletonData, Vector<Joint*>& skeleton) const;
+    void buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId) const;
+    void readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton) const;
+    void getTransfrom(const aiMatrix4x4& assimpTransform, Vector3& pos, Quaternion& rot, Vector3& scale) const;
     Renderer* renderer;
     Animation* animation;
     const aiScene* assimpScene;
