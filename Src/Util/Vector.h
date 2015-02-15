@@ -41,7 +41,7 @@ public:
     pod(std::is_pod<T>::value),
     count(numItems)
     {
-        data.reserve(numItems * sizeof(T));
+        data.resize(numItems * sizeof(T));
         if(!pod)
             constructItems(items(), count);
     }
@@ -82,15 +82,30 @@ public:
 
     void pushBack(const T& item) 
     {
-        pod ? data.append(&item, sizeof(T)) : appendAndConstruct(&item, 1);
+        pod ? data.append(&item, sizeof(T)) : appendAndCopyConstruct(&item, 1);
         ++count;
+    }
+
+    void pushBack(T&& item)
+    {
+        pod ? data.append(&item, sizeof(T)) : appendAndMoveConstruct(std::move(item), 1);
+        ++count;
+    }
+
+    void pushBack(const T* items, unsigned int numItems)
+    {
+        if(items)
+        {
+            pod ? data.append(items, sizeof(T) * numItems) : appendAndCopyConstruct(items, numItems);
+            count += numItems;
+        }
     }
 
     void pushBack(const Vector<T>& vector) 
     {
         if(!vector.empty())
         {
-            pod ? data.append(vector.items(), vector.data.getSizeInBytes()) : appendAndConstruct(vector.items(), vector.size());
+            pod ? data.append(vector.items(), vector.getSizeInBytes()) : appendAndCopyConstruct(vector.items(), vector.size());
             count += vector.size();
         }
     }
@@ -246,6 +261,16 @@ public:
         count = 0;
     }
 
+    void fill(const T& value)
+    {
+        T* iter = items();
+        while(iter != end())
+        {
+            *iter = value;
+            ++iter;
+        }
+    }
+
     T& operator [] (unsigned int index) {return items()[index];}
     const T& operator [] (unsigned int index) const {return items()[index];}
     bool containsItem(const T& item) const {return findItem(item) != end();}
@@ -261,6 +286,8 @@ public:
     const T& back() const {return items()[count - 1];}
     T* getData() const {return items();}
     unsigned int getSizeInBytes() const {return data.getSizeInBytes();}
+    void reserve(unsigned int numItems) {data.reserve(numItems * sizeof(T));}
+    MemoryBuffer& getMemoryBuffer() {return data;}
 
 private:
     unsigned int count;
@@ -268,8 +295,19 @@ private:
     MemoryBuffer data;
     T* items() const { return reinterpret_cast<T*>(data.getData()); }
 
-    //Used for not POD types, calls constructors/destructors.
-    void appendAndConstruct(const T* itemData, unsigned int numItems)
+    void appendAndCopyConstruct(const T* itemData, unsigned int numItems)
+    {
+        append(numItems);
+        copyConstructItems(end(), itemData, numItems);
+    }
+
+    void appendAndMoveConstruct(T&& itemData, unsigned int numItems)
+    {
+        append(numItems);
+        new(end())T(std::move(itemData));
+    }
+
+    void append(unsigned int numItems)
     {
         unsigned int dataCapacityInbytes = data.getCapacity();
         unsigned int newDataSizeInBytes = data.getSizeInBytes() + numItems * sizeof(T);
@@ -277,15 +315,13 @@ private:
         if(newDataSizeInBytes > dataCapacityInbytes)
         {
             MemoryBuffer newData;
-            dataCapacityInbytes == 0 ? newData.reserve(newDataSizeInBytes * 2) : newData.reserve(dataCapacityInbytes * 2);
-            //TODO: create a moveConstructItems and use it, but first add a move constuctor to all classes.
-            copyConstructItems(reinterpret_cast<T*>(newData.getData()), items(), count);
+            dataCapacityInbytes == 0 ? newData.reserve(newDataSizeInBytes * 2) : newData.reserve(newDataSizeInBytes);
+            moveConstructItems(reinterpret_cast<T*>(newData.getData()), items(), count);
             destructItems(items(), count);
             data = std::move(newData);
         }
-        //Set current size and construct new items.
+        //Set current size.
         data.resize(newDataSizeInBytes);
-        copyConstructItems(end(), itemData, numItems);
     }
 
     void constructItems(T* items, unsigned int numItems)
@@ -298,6 +334,12 @@ private:
     {
         for(unsigned int i = 0; i < numItems; ++i)
             new(items + i)T(constructData[i]);
+    }
+
+    void moveConstructItems(T* items, const T* constructData, unsigned int numItems)
+    {
+        for(unsigned int i = 0; i < numItems; ++i)
+            new(items + i)T(std::move(constructData[i]));
     }
 
     void destructItems(T* items, unsigned int numItems)
