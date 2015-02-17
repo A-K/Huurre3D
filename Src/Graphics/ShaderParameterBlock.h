@@ -51,18 +51,14 @@ public:
     bool hasBindingIndex() const {return binded;}
     void clearParameters() {graphicData.clearBuffer();}
     unsigned int getSizeInBytes() const {return graphicData.getSizeInBytes();}
-    template<typename T> void setParameterData(T* parameterData, int dataSize)
+    void setParameterData(MemoryBuffer&& parameterData)
     {
-        if(!parameterData || !dataSize || dataSize == 0)
-            return;
-
-        graphicData.bufferData(parameterData, dataSize);
-
-        if(graphicData.isNull())
-        {
-            std::cout << "Failed to set parameter data" << std::endl;
-        }
-
+        graphicData = std::move(parameterData);
+        dirty = true;
+    }
+    void setParameterData(const MemoryBuffer& parameterData)
+    {
+        graphicData = parameterData;
         dirty = true;
     }
 

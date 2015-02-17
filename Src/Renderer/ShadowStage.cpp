@@ -80,7 +80,7 @@ void ShadowStage::update(const Scene* scene)
 
         calculateShadowCameraViewProjections(shadowLights, camera);
         createLightShadowPasses(shadowRenderItems);
-        shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getData(), shadowOcclusionData.getSizeInBytes());
+        shadowOcllusionRenderPass.shaderPasses[0].shaderParameterBlocks[0]->setParameterData(shadowOcclusionData.getMemoryBuffer());
     }
 }
 

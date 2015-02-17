@@ -50,8 +50,10 @@ void LightingStage::init(const JSONValue& lightingStageJSON)
 
     tileGrid.setGridDimensions(lightTileWidthJSON.getInt(), lightTileHeightJSON.getInt(), screenViewPort.width, screenViewPort.height);
     auto gridDimensions = tileGrid.getGridDimensions();
+    MemoryBuffer gridDimensionsData;
+    gridDimensionsData.bufferData(&gridDimensions, sizeof(gridDimensions));
     ShaderParameterBlock* lightGridParametersBlock = graphicSystem->getShaderParameterBlockByName(sp_lightGridParameters);
-    lightGridParametersBlock->setParameterData(&gridDimensions, sizeof(gridDimensions));
+    lightGridParametersBlock->setParameterData(std::move(gridDimensionsData));
 
 }
 
@@ -72,8 +74,10 @@ void LightingStage::resizeResources()
 
     //Resize the light grid dimensions shader parameter block.
     auto newGridDimensions = tileGrid.getGridDimensions();
+    MemoryBuffer newGridDimensionsData;
+    newGridDimensionsData.bufferData(&newGridDimensions, sizeof(newGridDimensions));
     ShaderParameterBlock* lightGridParametersBlock = graphicSystem->getShaderParameterBlockByName(sp_lightGridParameters);
-    lightGridParametersBlock->setParameterData(&newGridDimensions, sizeof(newGridDimensions));
+    lightGridParametersBlock->setParameterData(std::move(newGridDimensionsData));
 }
 
 void LightingStage::update(const Scene* scene)
@@ -90,16 +94,16 @@ void LightingStage::update(const Scene* scene)
     auto lightParameterBlock = tileGrid.getLightParameterBlockValues();
 
     //Set the global ambient light into the parameter
-    lightParameterBlock.numLightsAndGlobalAmbient.y = globalAmbientLight.x;
-    lightParameterBlock.numLightsAndGlobalAmbient.z = globalAmbientLight.y;
-    lightParameterBlock.numLightsAndGlobalAmbient.w = globalAmbientLight.z;
+    lightParameterBlock[0].y = globalAmbientLight.x;
+    lightParameterBlock[0].z = globalAmbientLight.y;
+    lightParameterBlock[0].w = globalAmbientLight.z;
 
     GraphicSystem* graphicSystem = renderer->getGraphicSystem();
 
     //Update the lights parameter block in Tiled deferred shader pass.
     ShaderParameterBlock* lightParameters = graphicSystem->getShaderParameterBlockByName(sp_lightParameters);
     lightParameters->clearParameters();
-    lightParameters->setParameterData(&lightParameterBlock, sizeof(lightParameterBlock));
+    lightParameters->setParameterData(lightParameterBlock.getMemoryBuffer());
 
     //Update the light info texture in Tiled deferred shader pass.
     int width = frustumLights.size();;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,9 @@ namespace Huurre3D
 {
 
 static const unsigned int MaXNumLights = 1000;
-//static const unsigned int TileLightInfoArraySize = MaXNumLights * 2000;
+
 class Light;
 class Camera;
-
-struct LightParameterValue
-{
-    Vector4 position;
-    Vector4 color;
-    Vector4 direction;
-    Vector4 innerOuterAngles;
-};
-
-struct LightParameterBlockValues
-{
-    Vector4 numLightsAndGlobalAmbient;
-    LightParameterValue lightParameterValues[MaXNumLights];
-};
 
 struct GridDimensions
 {
@@ -73,14 +59,17 @@ public:
     void setGridDimensions(int tileWidth, int tileHeight, int screenWidth, int screenHeight);
     void binLightsToTiles(const Vector<Light*>& lights, Camera* camera);
     MemoryBuffer& getTileLightInfo() { return tileLightInfo.getMemoryBuffer(); }
-    const LightParameterBlockValues& getLightParameterBlockValues() const {return lightParameterBlockValues;}
+    const Vector<Vector4>& getLightParameterBlockValues() const {return lightParameterBlockValues;}
     const GridDimensions& getGridDimensions() const {return gridDimensions;}
 
 private:
     GridDimensions gridDimensions;
     int numTiles = 0;
     Tile* tiles = nullptr;
-    LightParameterBlockValues lightParameterBlockValues;
+    //1. Vector4 contains number of lights and global ambient.
+    //2. Vector4 contains position, 3. Vector4 contains color, 4. Vector4 contains direction, 5. Vector4 contains innerOuterAngles
+    // 6. Vector4 contains position, ...
+    Vector<Vector4> lightParameterBlockValues;
     //TileLightInfo data structure holds the information which lights affect on which tiles. Size is num tiles * num lights.
     //         num lights
     //       0 1000...0  <-light indices affecting tile 1.

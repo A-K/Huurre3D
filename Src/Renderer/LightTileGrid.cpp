@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2014 Antti Karhu.
+// Copyright (c) 2013-2015 Antti Karhu.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,9 @@ void LightTileGrid::setGridDimensions(int tileWidth, int tileHeight, int screenW
 
 void LightTileGrid::binLightsToTiles(const Vector<Light*>& lights, Camera* camera)
 {
+    lightParameterBlockValues.clear();
     tileLightInfo.fill(-1);
+
     for(int i = 0; i < numTiles; ++i)
         tiles[i].numLights = 0;
 
@@ -79,7 +81,9 @@ void LightTileGrid::binLightsToTiles(const Vector<Light*>& lights, Camera* camer
     float shadowOcclusionMask = 0.0f;
     Sphere viewSpaceBoundingSphere;
 
-    lightParameterBlockValues.numLightsAndGlobalAmbient.x = static_cast<float>(numLights);
+    lightParameterBlockValues.pushBack(Vector4(static_cast<float>(numLights), 0.0f, 0.0f, 0.0f));
+    FixedArray<Vector4, 4> lightParameterValue;
+
     for(int j = 0; j < numLights; ++j)
     {
         castShadow = lights[j]->getCastShadow() ? 1.0f : 0.0f;
@@ -89,10 +93,10 @@ void LightTileGrid::binLightsToTiles(const Vector<Light*>& lights, Camera* camer
         {
             case LightType::Directional:
                 viewRot = camera->getRotation(FrameOfReference::World).inverse();
-                lightParameterBlockValues.lightParameterValues[j].position = Vector4::ZERO;
-                lightParameterBlockValues.lightParameterValues[j].color = Vector4(lights[j]->getColor(), 0.0f);
-                lightParameterBlockValues.lightParameterValues[j].direction = Vector4(viewRot.rotate(lights[j]->getDirection()), float(LightType::Directional));
-                lightParameterBlockValues.lightParameterValues[j].innerOuterAngles = Vector4(0.0f, 0.0f, castShadow, shadowOcclusionMask);
+                lightParameterValue[0] = Vector4::ZERO;
+                lightParameterValue[1] = Vector4(lights[j]->getColor(), 0.0f);
+                lightParameterValue[2] = Vector4(viewRot.rotate(lights[j]->getDirection()), float(LightType::Directional));
+                lightParameterValue[3] = Vector4(0.0f, 0.0f, castShadow, shadowOcclusionMask);
                 lightScreenSpaceAABB = Rect(-1.0, -1.0, 1.0, 1.0);
                 break;
 
@@ -100,10 +104,10 @@ void LightTileGrid::binLightsToTiles(const Vector<Light*>& lights, Camera* camer
                 viewRot = camera->getRotation(FrameOfReference::World).inverse();
                 lightViewPosition = (viewMat * Vector4(lights[j]->getPosition(FrameOfReference::World), 1.0f)).xyz();
                 lightRadius = lights[j]->getRadius();
-                lightParameterBlockValues.lightParameterValues[j].position = Vector4(lightViewPosition, lightRadius);
-                lightParameterBlockValues.lightParameterValues[j].color = Vector4(lights[j]->getColor(), lights[j]->getFallOffExponent());
-                lightParameterBlockValues.lightParameterValues[j].direction = Vector4(viewRot.rotate(lights[j]->getDirection()), float(LightType::Spot));
-                lightParameterBlockValues.lightParameterValues[j].innerOuterAngles = Vector4(lights[j]->getConeAngleCosines(), Vector2(castShadow, shadowOcclusionMask));
+                lightParameterValue[0] = Vector4(lightViewPosition, lightRadius);
+                lightParameterValue[1] = Vector4(lights[j]->getColor(), lights[j]->getFallOffExponent());
+                lightParameterValue[2] = Vector4(viewRot.rotate(lights[j]->getDirection()), float(LightType::Spot));
+                lightParameterValue[3] = Vector4(lights[j]->getConeAngleCosines(), Vector2(castShadow, shadowOcclusionMask));
                 viewSpaceBoundingSphere = Sphere(lightViewPosition, lightRadius);
                 lightScreenSpaceAABB = BoundingBox(viewSpaceBoundingSphere).project2D(projMat);
                 break;
@@ -111,14 +115,17 @@ void LightTileGrid::binLightsToTiles(const Vector<Light*>& lights, Camera* camer
             case LightType::Point:
                 lightViewPosition = (viewMat * Vector4(lights[j]->getPosition(FrameOfReference::World), 1.0f)).xyz();
                 lightRadius = lights[j]->getRadius();
-                lightParameterBlockValues.lightParameterValues[j].position = Vector4(lightViewPosition, lightRadius);
-                lightParameterBlockValues.lightParameterValues[j].color = Vector4(lights[j]->getColor(), lights[j]->getFallOffExponent());
-                lightParameterBlockValues.lightParameterValues[j].direction = Vector4(0.0f, 0.0f, 0.0f, float(LightType::Point));
-                lightParameterBlockValues.lightParameterValues[j].innerOuterAngles = Vector4(0.0f, 0.0f, castShadow, shadowOcclusionMask);
+                lightParameterValue[0] = Vector4(lightViewPosition, lightRadius);
+                lightParameterValue[1] = Vector4(lights[j]->getColor(), lights[j]->getFallOffExponent());
+                lightParameterValue[2] = Vector4(0.0f, 0.0f, 0.0f, float(LightType::Point));
+                lightParameterValue[3] = Vector4(0.0f, 0.0f, castShadow, shadowOcclusionMask);
                 viewSpaceBoundingSphere = Sphere(lightViewPosition, lightRadius);
                 lightScreenSpaceAABB = BoundingBox(viewSpaceBoundingSphere).project2D(projMat);
                 break;
         }
+
+        lightParameterBlockValues.pushBack(lightParameterValue.data(), lightParameterValue.size());
+
         //Check which tiles this light affects.
         for(int i = 0; i < numTiles; ++i)
         {
