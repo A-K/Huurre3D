@@ -28,13 +28,9 @@ void SSAODemo::init()
     sceneImporter = engine->getSceneImporter();
     input = engine->getInput();
 
-    FixedArray<std::string, 6> skyBoxTextureFileNames;
-    skyBoxTextureFileNames[0] = Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga";
-    skyBoxTextureFileNames[1] = Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga";
-    skyBoxTextureFileNames[2] = Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga";
-    skyBoxTextureFileNames[3] = Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga";
-    skyBoxTextureFileNames[4] = Engine::getAssetPath() + "Textures/Skybox/miramar_rt.tga";
-    skyBoxTextureFileNames[5] = Engine::getAssetPath() + "Textures/Skybox/miramar_lf.tga";
+    FixedArray<std::string, 6> skyBoxTextureFileNames = { Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga",
+                                                          Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga",
+                                                          Engine::getAssetPath() + "Textures/Skybox/miramar_rt.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_lf.tga" };
 
     scene->setGlobalAmbientLight(Vector3(1.0f, 1.0f, 1.0f));
     SkyBox* skyBox = (SkyBox*)scene->createSceneItem("SkyBox");
@@ -98,7 +94,7 @@ void SSAODemo::updateShaderParameters()
     ShaderParameterBlock* block = engine->getRenderer()->getGraphicSystem()->getShaderParameterBlockByName("u_showSSAOParameters");
     block->clearParameters();
 
-    FixedArray<int, 4> data;
+    Vector<int> data(4);
     data.fill(0);
 
     if(showSSAOTex)
@@ -109,5 +105,5 @@ void SSAODemo::updateShaderParameters()
     if(ssaoOn)
         data[0] = 1;
 
-    block->setParameterData(data.data(), sizeof(data));
+    block->setParameterData(std::move(data.getMemoryBuffer()));
 }
