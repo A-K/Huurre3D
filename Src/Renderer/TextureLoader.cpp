@@ -64,9 +64,7 @@ struct DDSHeader
 
 bool TextureLoader::loadFromFile(const std::string& fileName, bool flipVertically, TextureLoadResult& result) const
 {
-    //TextureLoadResult result;
     result.targetMode = TextureTargetMode::Texture2D;
-    //result.pixelData.fill(nullptr);
     Vector<std::string> fileNames;
     fileNames.pushBack(fileName);
     return loadPixelDataFromFiles(fileNames, result, flipVertically);
@@ -74,9 +72,7 @@ bool TextureLoader::loadFromFile(const std::string& fileName, bool flipVerticall
 
 bool TextureLoader::loadCubeMapFromFile(const FixedArray<std::string, NumCubeMapFaces>& cubeFileNames, bool flipVertically, TextureLoadResult& result) const
 {
-    //TextureLoadResult result;
     result.targetMode = TextureTargetMode::TextureCubeMap;
-    //result.pixelData.fill(nullptr);
     Vector<std::string> fileNames;
     fileNames.pushBack(cubeFileNames.data(), NumCubeMapFaces);
     return loadPixelDataFromFiles(fileNames, result, flipVertically);
