@@ -35,7 +35,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
-    removeSceneItems(sceneItems);
+    removeAllSceneItem();
 }
 
 void Scene::update()
@@ -55,7 +55,15 @@ SceneItem* Scene::createSceneItem(const std::string& sceneItemType)
         sceneItem->setId(id);
         sceneItem->setScene(this);
         sceneItem->setSceneItemType(sceneItemType);
-        sceneItems.pushBack(sceneItem);
+        int index = sceneItems.getIndexToItem([sceneItemType](Vector<SceneItem*>& items){return items[0]->getSceneItemType().compare(sceneItemType) == 0; });
+        if(index == -1)
+        {
+            Vector<SceneItem*> itemTypeArray;
+            itemTypeArray.pushBack(sceneItem);
+            sceneItems.pushBack(itemTypeArray);
+        }
+        else
+            sceneItems[index].pushBack(sceneItem);
     }
     return sceneItem;
 }
@@ -66,21 +74,9 @@ void Scene::createSceneItems(const Vector<const std::string>& sceneItemTypes, Ve
         itemsOut.pushBack(createSceneItem(sceneItemTypes[i]));
 }
 
-SceneItem* Scene::getSceneItem(unsigned int id) const
-{
-    SceneItem* result;
-    return sceneItems.findItem([id](SceneItem* item){return item->getId() == id;}, result) ? result : nullptr;
-}
-
-SceneItem* Scene::getSceneItem(const std::string& sceneItemType) const
-{
-    SceneItem* result;
-    return sceneItems.findItem([sceneItemType](SceneItem* item){return item->getSceneItemType() == sceneItemType;}, result) ? result : nullptr;
-}
-
 void Scene::getSceneItemsByType(const std::string& sceneItemType, Vector<SceneItem*>& itemsOut) const
 {
-    sceneItems.findItems([sceneItemType](SceneItem* item){return item->getSceneItemType() == sceneItemType;}, itemsOut);
+    sceneItems.findItem([sceneItemType](Vector<SceneItem*>& items){return items[0]->getSceneItemType() == sceneItemType;}, itemsOut);
 }
 
 void Scene::getAllRenderItems(Vector<RenderItem>& renderItemsOut) const
@@ -94,15 +90,9 @@ void Scene::getAllRenderItems(Vector<RenderItem>& renderItemsOut) const
 
 unsigned int Scene::getNumSceneItemsByType(const std::string& sceneItemType) const
 {
-    unsigned int numItems = 0;
-
-    for(unsigned int i = 0; i < sceneItems.size(); ++i)
-    {
-        if(sceneItems[i]->getSceneItemType().compare(sceneItemType) == 0)
-            numItems++;
-    }
-
-    return numItems;
+    Vector<SceneItem*> itemTypeArray;
+    getSceneItemsByType(sceneItemType, itemTypeArray);
+    return itemTypeArray.size();
 }
 
 void Scene::setGlobalAmbientLight(const Vector3& ambientLight)
@@ -114,8 +104,22 @@ void Scene::removeSceneItem(SceneItem* sceneItem)
 {
     if(sceneItem)
     {
-        sceneItems.eraseUnordered(sceneItem);
+        std::string sceneItemType = sceneItem->getSceneItemType();
+        int index = sceneItems.getIndexToItem([sceneItemType](Vector<SceneItem*>& items){return items[0]->getSceneItemType().compare(sceneItemType) == 0; });
+        sceneItems[index].eraseUnordered(sceneItem);
         delete sceneItem;
+    }
+}
+
+void Scene::removeAllSceneItem()
+{
+    for(unsigned int i = 0; i < sceneItems.size(); ++i)
+    {
+        for(unsigned int j = 0; j < sceneItems[i].size(); ++j)
+        {
+            sceneItems[i].eraseUnordered(sceneItems[i][j]);
+            delete sceneItems[i][j];
+        }
     }
 }
 

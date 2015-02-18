@@ -44,13 +44,12 @@ public:
     SceneItem* createSceneItem(const std::string& sceneItemType);
     void createSceneItems(const Vector<const std::string>& sceneItemTypes, Vector<SceneItem*>& itemsOut);
     void createSceneItems(const std::string& sceneItemType, Vector<SceneItem*>& itemsOut, unsigned int numItems);
-    SceneItem* getSceneItem(unsigned int id) const;
-    SceneItem* getSceneItem(const std::string& sceneItemType) const;
     void getSceneItemsByType(const std::string& sceneItemType, Vector<SceneItem*>& itemsOut) const;
     void getAllRenderItems(Vector<RenderItem>& renderItemsOut) const;
     void setGlobalAmbientLight(const Vector3& ambientLight);
     unsigned int getNumSceneItemsByType(const std::string& sceneItemType) const;
     void removeSceneItem(SceneItem* sceneItem);
+    void removeAllSceneItem();
     void setSceneItemForUpdate(SceneItem* sceneItem) {dirtySceneItems.pushBack(sceneItem);}
     Camera* getMainCamera() const {return mainCamera;}
     const Vector3& getGlobalAmbientLight() const {return globalAmbientLight;}
@@ -70,15 +69,16 @@ public:
             itemsOut.pushBack(static_cast<T*>(items[i]));
     }
 
-    template<class T> void removeSceneItems(Vector<T*>& sceneItems)
+    template<class T> void removeSceneItems(Vector<T*>& sceneItemsToBeRemoved)
     {
-        for(unsigned int i = 0; i < sceneItems.size(); ++i)
+        for(unsigned int i = 0; i < sceneItemsToBeRemoved.size(); ++i)
         {
-            if(sceneItems[i])
+            if(sceneItemsToBeRemoved[i])
             {
-                sceneItems.eraseUnordered(sceneItems[i]);
-                delete sceneItems[i];
-                sceneItems[i] = nullptr;
+                std::string sceneItemType = sceneItemsToBeRemoved[i]->getSceneItemType();
+                int index = sceneItems.getIndexToItem([sceneItemType](Vector<SceneItem*>& items){return items[0]->getSceneItemType().compare(sceneItemType) == 0; });
+                sceneItems[index].eraseUnordered(sceneItemsToBeRemoved[i]);
+                delete sceneItemsToBeRemoved[i];
             }
         }
     }
@@ -86,7 +86,7 @@ public:
 private:
     unsigned int getUniqueId() {return uniqueId++;}
     unsigned int uniqueId = 0;
-    Vector<SceneItem*> sceneItems;
+    Vector<Vector<SceneItem*>> sceneItems;
     Vector<SceneItem*> dirtySceneItems;
     Camera* mainCamera = nullptr;
     Vector3 globalAmbientLight = Vector3::ONE;
