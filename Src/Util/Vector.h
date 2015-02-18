@@ -80,6 +80,15 @@ public:
         return *this;
     }
 
+    Vector<T>& operator = (Vector<T>&& rhs)
+    {
+        pod = rhs.pod;
+        clear();
+        count = rhs.count;
+        data = std::move(rhs.data);
+        return *this;
+    }
+
     void pushBack(const T& item) 
     {
         pod ? data.append(&item, sizeof(T)) : appendAndCopyConstruct(&item, 1);
@@ -315,7 +324,18 @@ private:
         if(newDataSizeInBytes > dataCapacityInbytes)
         {
             MemoryBuffer newData;
-            dataCapacityInbytes == 0 ? newData.reserve(newDataSizeInBytes * 2) : newData.reserve(newDataSizeInBytes);
+            dataCapacityInbytes = dataCapacityInbytes == 0 ? newDataSizeInBytes : dataCapacityInbytes;
+            //Start growing aggressively and then slow down to avoid excessive memory consumption.
+            float growFactor = 3.0f;
+            if(dataCapacityInbytes > 64000)
+                growFactor = 2.0f;
+            else if(dataCapacityInbytes > 500000)
+                growFactor = 1.5f;
+            else if(dataCapacityInbytes > 5000000)
+                growFactor = 1.2f;
+
+            unsigned int newSize = static_cast<unsigned int>(float(dataCapacityInbytes) * growFactor);
+            newData.reserve(newSize);
             moveConstructItems(reinterpret_cast<T*>(newData.getData()), items(), count);
             destructItems(items(), count);
             data = std::move(newData);
