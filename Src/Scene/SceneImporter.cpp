@@ -34,7 +34,7 @@
 namespace Huurre3D
 {
 
-SceneImporter::SceneImporter(Renderer* renderer, Animation* animation) :
+SceneImporter::SceneImporter(Renderer& renderer, Animation& animation) :
 renderer(renderer),
 animation(animation)
 {
@@ -96,7 +96,7 @@ void SceneImporter::importMultipleMeshes(const std::string& fileName, Vector<Mes
         Vector<GeometryDescription> geometryDescriptions;
         geometryDescriptions.reserve(assimpVertexDataVec.size());
         createGeometrydescriptions(assimpVertexDataVec, geometryDescriptions);
-        renderer->createRenderItems(materialDescriptions, geometryDescriptions, renderItems, destMeshes.size());
+        renderer.createRenderItems(materialDescriptions, geometryDescriptions, renderItems, destMeshes.size());
 
         for(unsigned int i = 0; i < destMeshes.size(); ++i)
         {
@@ -611,7 +611,7 @@ void SceneImporter::readSkeletalAnimations(Vector<AnimationClip*>& animationClip
             }
         }
 
-        AnimationClip* animationClip = animation->createAnimationClip(name, animationLenght, true, tracks);
+        AnimationClip* animationClip = animation.createAnimationClip(name, animationLenght, true, tracks);
         animationClips.pushBack(animationClip);
     }
 }

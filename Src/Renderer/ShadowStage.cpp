@@ -31,7 +31,7 @@
 namespace Huurre3D
 {
 
-ShadowStage::ShadowStage(Renderer* renderer):
+ShadowStage::ShadowStage(Renderer& renderer):
 RenderStage(renderer)
 {
 }
@@ -56,15 +56,15 @@ void ShadowStage::init(const JSONValue& shadowStageJSON)
 
 void ShadowStage::resizeResources()
 {
-    ViewPort screenViewPort = renderer->getScreenViewPort();
+    ViewPort screenViewPort = renderer.getScreenViewPort();
     shadowOcllusionRenderPass.viewPort = screenViewPort;
     shadowOcllusionRenderPass.renderTarget->setSize(screenViewPort.width, screenViewPort.height);
 }
 
-void ShadowStage::update(const Scene* scene)
+void ShadowStage::update(const Scene& scene)
 {
-    scene->getAllRenderItems(shadowRenderItems);
-    Camera* camera = scene->getMainCamera();
+    scene.getAllRenderItems(shadowRenderItems);
+    Camera* camera = scene.getMainCamera();
     Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
     Vector<Light*> lights;
     cullLights(scene, lights, worldSpaceCameraViewFrustum);

@@ -26,7 +26,7 @@
 namespace Huurre3D
 {
 
-RenderStage::RenderStage(Renderer* renderer):
+RenderStage::RenderStage(Renderer& renderer):
 renderer(renderer)
 {
 }
@@ -44,8 +44,7 @@ void RenderStage::init(const JSONValue& renderStageJSON)
 
 void RenderStage::resizeResources()
 {
-    ViewPort screenViewPort = renderer->getScreenViewPort();
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
+    ViewPort screenViewPort = renderer.getScreenViewPort();
 
     for(unsigned int i = 0; i < renderPasses.size(); ++i)
     {
@@ -57,7 +56,7 @@ void RenderStage::resizeResources()
 
 void RenderStage::drawRenderPasses(const Vector<RenderPass>& renderPasses) const
 {
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
+    GraphicSystem& graphicSystem = renderer.getGraphicSystem();
 
     for(unsigned int i = 0; i < renderPasses.size(); ++i)
     {
@@ -66,45 +65,45 @@ void RenderStage::drawRenderPasses(const Vector<RenderPass>& renderPasses) const
         if(pass.renderTarget)
         {
             pass.renderTarget->setRenderLayer(pass.renderTargetLayer); 
-            graphicSystem->setOffLineRenderTarget(pass.renderTarget);
+            graphicSystem.setOffLineRenderTarget(pass.renderTarget);
         }
         else
         {
-            graphicSystem->setMainRenderTarget();
+            graphicSystem.setMainRenderTarget();
         }
 
-        graphicSystem->setViewPort(pass.viewPort);
-        graphicSystem->setDepthWrite(pass.depthWrite);
-        graphicSystem->setColorWrite(pass.colorWrite);
+        graphicSystem.setViewPort(pass.viewPort);
+        graphicSystem.setDepthWrite(pass.depthWrite);
+        graphicSystem.setColorWrite(pass.colorWrite);
 
         if(pass.flags != 0)
-            graphicSystem->clear(pass.flags, pass.clearColor);
+            graphicSystem.clear(pass.flags, pass.clearColor);
 
         for(unsigned int j = 0; j < renderPasses[i].shaderPasses.size(); ++j)
         {
             ShaderPass shaderPass = renderPasses[i].shaderPasses[j];
-            graphicSystem->setVertexData(shaderPass.vertexData);
-            graphicSystem->setRasterState(shaderPass.rasterState);
-            graphicSystem->setShaderProgram(shaderPass.program);
+            graphicSystem.setVertexData(shaderPass.vertexData);
+            graphicSystem.setRasterState(shaderPass.rasterState);
+            graphicSystem.setShaderProgram(shaderPass.program);
 
             for(unsigned int k = 0; k < shaderPass.textures.size(); ++k)
-                graphicSystem->setTexture(shaderPass.textures[k]);
+                graphicSystem.setTexture(shaderPass.textures[k]);
 
             for(unsigned int n = 0; n < shaderPass.shaderParameterBlocks.size(); ++n)
-                graphicSystem->setShaderParameterBlock(shaderPass.shaderParameterBlocks[n]);
+                graphicSystem.setShaderParameterBlock(shaderPass.shaderParameterBlocks[n]);
 
             for(unsigned int m = 0; m < shaderPass.shaderParameters.size(); ++m)
-                graphicSystem->setShaderParameter(shaderPass.shaderParameters[m]);
+                graphicSystem.setShaderParameter(shaderPass.shaderParameters[m]);
 
-            shaderPass.vertexData->isIndexed() ? graphicSystem->drawIndexed(shaderPass.vertexData->getIndexBuffer()->getNumIndices(), 0) :
-                graphicSystem->draw(shaderPass.vertexData->getNumVertices(), 0);
+            shaderPass.vertexData->isIndexed() ? graphicSystem.drawIndexed(shaderPass.vertexData->getIndexBuffer()->getNumIndices(), 0) :
+                graphicSystem.draw(shaderPass.vertexData->getNumVertices(), 0);
         }
     }
 }
 
 RenderPass RenderStage::createRenderPassFromJson(const JSONValue& renderPassJSON)
 {
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
+    GraphicSystem& graphicSystem = renderer.getGraphicSystem();
 
     RenderPass renderPass;
     auto clearColorJSON = renderPassJSON.getJSONValue("clearColor");
@@ -141,10 +140,10 @@ RenderPass RenderStage::createRenderPassFromJson(const JSONValue& renderPassJSON
         renderPass.viewPort.set(viewPort[0], viewPort[1], viewPort[2], viewPort[3]);
     }
     else
-        renderPass.viewPort = renderer->getScreenViewPort();
+        renderPass.viewPort = renderer.getScreenViewPort();
 
     auto renderTargetJSON = renderPassJSON.getJSONValue("renderTarget");
-    renderPass.renderTarget = graphicSystem->createRenderTarget(renderTargetJSON);
+    renderPass.renderTarget = graphicSystem.createRenderTarget(renderTargetJSON);
 
     auto shaderPasses = renderPassJSON.getJSONValue("shaderPasses");
 
@@ -163,7 +162,7 @@ RenderPass RenderStage::createRenderPassFromJson(const JSONValue& renderPassJSON
             if(!vertexDataJSON.isNull())
             {
                 if(vertexDataJSON.getString().compare("fullScreenQuad") == 0)
-                    shaderPass.vertexData = renderer->getFullScreenQuad();
+                    shaderPass.vertexData = renderer.getFullScreenQuad();
             }
             if(!rasterStateJSON.isNull())
             {
@@ -180,7 +179,7 @@ RenderPass RenderStage::createRenderPassFromJson(const JSONValue& renderPassJSON
             {
                 for(unsigned int j = 0; j < shaderParameterBlocksJSON.getSize(); ++j)
                 {
-                    ShaderParameterBlock* block = graphicSystem->createShaderParameterBlock(shaderParameterBlocksJSON.getJSONArrayItem(j));
+                    ShaderParameterBlock* block = graphicSystem.createShaderParameterBlock(shaderParameterBlocksJSON.getJSONArrayItem(j));
                     if(block)
                         shaderPass.shaderParameterBlocks.pushBack(block);
                 }
@@ -189,14 +188,14 @@ RenderPass RenderStage::createRenderPassFromJson(const JSONValue& renderPassJSON
             {
                 for(unsigned int j = 0; j < texturesJSON.getSize(); ++j)
                 {
-                    Texture* texture = graphicSystem->createTexture(texturesJSON.getJSONArrayItem(j));
+                    Texture* texture = graphicSystem.createTexture(texturesJSON.getJSONArrayItem(j));
                     if(texture)
                         shaderPass.textures.pushBack(texture);
                 }
             }
 
             if(!programJSON.isNull())
-                shaderPass.program = graphicSystem->createShaderProgram(programJSON);
+                shaderPass.program = graphicSystem.createShaderProgram(programJSON);
 
             renderPass.shaderPasses.pushBack(shaderPass);
         }

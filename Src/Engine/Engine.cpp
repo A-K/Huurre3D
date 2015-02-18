@@ -33,14 +33,15 @@ namespace Huurre3D
 
 std::string Engine::assetPath;
 
+Engine::Engine() :
+input(renderer.getGraphicWindow()),
+sceneImporter(renderer, animation)
+{}
+
 Engine::~Engine()
 {
     for(unsigned int i = 0; i < scenes.size(); ++i)
         delete scenes[i];
-
-    delete sceneImporter;
-    delete input;
-    delete renderer;
 }
 
 void Engine::run()
@@ -48,11 +49,11 @@ void Engine::run()
     int windowWidth;
     int windowHeight;
 
-    while(!input->isKeyPressed(KEY_ESCAPE) && !input->windowClosed())
+    while(!input.isKeyPressed(KEY_ESCAPE) && !input.windowClosed())
     {
-        if(input->windowResized(windowWidth, windowHeight))
+        if(input.windowResized(windowWidth, windowHeight))
         {
-            renderer->resizeRenderWindow(windowWidth, windowHeight);
+            renderer.resizeRenderWindow(windowWidth, windowHeight);
 
             for(unsigned int i = 0; i < scenes.size(); ++i)
                 scenes[i]->getMainCamera()->setAspectRatio((float)windowWidth / (float)windowHeight);
@@ -66,18 +67,21 @@ void Engine::run()
 
 void Engine::update()
 {
-    input->update();
+    input.update();
 
     float currentFrame = timer.getElapsedTime();
     float timeSinceLastUpdate = max(0.0f, (currentFrame - lastFrame));
     lastFrame = currentFrame;
-    animation->update(timeSinceLastUpdate);
+    animation.update(timeSinceLastUpdate);
 
     for(unsigned int i = 0; i < apps.size(); ++i)
         apps[i]->update(timeSinceLastUpdate);
 
     for(unsigned int i = 0; i < scenes.size(); ++i)
-        renderer->renderScene(scenes[i], scenes[i]->getMainCamera());
+    {
+        scenes[i]->update();
+        renderer.renderScene(scenes[i]);
+    }
 }
 
 void Engine::setApp(App* app)
@@ -120,14 +124,9 @@ bool Engine::init(const std::string& engineConfigFile)
         return false;
     }
 
-   
-    renderer = new Renderer();
-    if(!renderer->init(rendererJSON))
+    if(!renderer.init(rendererJSON))
         return false;
 
-    animation = new Animation();
-    sceneImporter = new SceneImporter(renderer, animation);
-    input = new Input(renderer->getGraphicWindow());
     timer.start();
 
     return true;

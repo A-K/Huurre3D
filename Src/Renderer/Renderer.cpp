@@ -19,7 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "Engine/Engine.h"
+//#include "Engine/Engine.h"
+#include "Renderer/RenderStage.h"
 #include "Renderer/DeferredStage.h"
 #include "Renderer/LightingStage.h"
 #include "Renderer/ShadowStage.h"
@@ -46,8 +47,8 @@ RENDERSTAGE_TYPE_IMPL(PostProcessStage);
 
 Renderer::Renderer()
 {
-    graphicWindow = new GraphicWindow();
-    graphicSystem = new GraphicSystem();
+    //graphicWindow = new GraphicWindow();
+    //graphicSystem = new GraphicSystem();
 }
 
 Renderer::~Renderer()
@@ -57,8 +58,8 @@ Renderer::~Renderer()
 
     materials.reset();
     geometries.reset();
-    delete graphicSystem;
-    delete graphicWindow;
+    //delete graphicSystem;
+    //delete graphicWindow;
 }
 bool Renderer::init(const JSONValue& rendererJSON)
 {
@@ -73,12 +74,12 @@ bool Renderer::init(const JSONValue& rendererJSON)
     bool success = createRenderWindow(renderWindowJSON);
     if(success)
     {
-        int width = graphicWindow->getWidth();
-        int height = graphicWindow->getHeight();
-        cameraShaderParameterBlock = graphicSystem->createShaderParameterBlock(sp_cameraParameters);
-        materialParameterBlock = graphicSystem->createShaderParameterBlock(sp_materialProperties);
-        renderTargetSizeBlock = graphicSystem->createShaderParameterBlock(sp_renderTargetSize);
-        skinMatrixArray = graphicSystem->createShaderParameterBlock(sp_skinMatrixArray);
+        int width = graphicWindow.getWidth();
+        int height = graphicWindow.getHeight();
+        cameraShaderParameterBlock = graphicSystem.createShaderParameterBlock(sp_cameraParameters);
+        materialParameterBlock = graphicSystem.createShaderParameterBlock(sp_materialProperties);
+        renderTargetSizeBlock = graphicSystem.createShaderParameterBlock(sp_renderTargetSize);
+        skinMatrixArray = graphicSystem.createShaderParameterBlock(sp_skinMatrixArray);
         Vector4 renderTargetSizeValue = Vector4(float(width), float(height), (1.0f / float(width)), (1.0f / float(height)));
         renderTargetSizeBlock->addParameter(renderTargetSizeValue);
 
@@ -113,7 +114,7 @@ bool Renderer::init(const JSONValue& rendererJSON)
                 }
                 else
                 {
-                    RenderStage* renderStage = RenderStageFactory::createRenderStage(this, renderStageNameJSON.getString());
+                    RenderStage* renderStage = RenderStageFactory::createRenderStage(*this, renderStageNameJSON.getString());
                     if(renderStage)
                     {
                         renderStage->init(renderTargetImplementationJSON);
@@ -152,7 +153,7 @@ bool Renderer::createRenderWindow(const JSONValue& renderWindowJSON)
 
 bool Renderer::createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen, bool vsync)
 {
-    return graphicWindow->create(width, height, windowTitle, fullscreen, vsync);
+    return graphicWindow.create(width, height, windowTitle, fullscreen, vsync);
 }
 
 void Renderer::resizeRenderWindow(int width, int height)
@@ -166,11 +167,10 @@ void Renderer::resizeRenderWindow(int width, int height)
         renderStages[i]->resizeResources();
 }
 
-void Renderer::renderScene(Scene* scene, Camera* camera)
+void Renderer::renderScene(Scene* scene)
 {
-    scene->update();
     cameraShaderParameterBlock->clearParameters();
-    camera->getCameraShaderParameterBlock(cameraShaderParameterBlock);
+    scene->getMainCamera()->getCameraShaderParameterBlock(cameraShaderParameterBlock);
     skinMatrixArray->clearParameters();
 
     Vector<Joint*> joints;
@@ -188,7 +188,7 @@ void Renderer::renderScene(Scene* scene, Camera* camera)
     for(unsigned int i = 0; i < renderStages.size(); ++i)
     {
         RenderStage* renderStage = renderStages[i];
-        stageupdateResults[i] = workQueue.submitTask([renderStage, scene](){renderStage->update(scene); });
+        stageupdateResults[i] = workQueue.submitTask([renderStage, scene](){renderStage->update(*scene); });
     }
    
     for(unsigned int i = 0; i < renderStages.size(); ++i)
@@ -197,7 +197,7 @@ void Renderer::renderScene(Scene* scene, Camera* camera)
         renderStages[i]->execute();
     }
 
-    graphicWindow->swapBuffers();
+    graphicWindow.swapBuffers();
 }
 
 void Renderer::createRenderItems(const Vector<MaterialDescription>& materialDescriptions, const Vector<GeometryDescription>& geometryDescriptions, Vector<RenderItem>& renderItemsOut)
@@ -270,7 +270,7 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     //Check if the material parameters are already in the buffer, if not, add the parameters to the buffer.
     if(materialBufferIndex == -1)
     {
-        ShaderParameterBlock* materialParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_materialProperties);
+        ShaderParameterBlock* materialParameterBlock = graphicSystem.getShaderParameterBlockByName(sp_materialProperties);
         materialParameterBlock->addParameter(material->getParameters());
         materialBufferIndicies.pushBack(materialParameterId);
         materialBufferIndex = materialBufferIndicies.size() - 1;
@@ -283,17 +283,17 @@ Material* Renderer::createMaterial(const MaterialDescription& materialDescriptio
     Vector<std::string> combinedDefines = vertexShaderDefines;
     combinedDefines.pushBack(fragmentShaderDefines);
 
-    ShaderProgram* program = graphicSystem->getShaderCombination(shaderFileNames, combinedDefines);
+    ShaderProgram* program = graphicSystem.getShaderCombination(shaderFileNames, combinedDefines);
 
     //If the program dont exist, create one.
     if(!program)
     {
-        Shader* vShader = graphicSystem->createShader(ShaderType::Vertex, materialVertexShader);
-        Shader* fShader = graphicSystem->createShader(ShaderType::Fragment, materialFragmentShader);
+        Shader* vShader = graphicSystem.createShader(ShaderType::Vertex, materialVertexShader);
+        Shader* fShader = graphicSystem.createShader(ShaderType::Fragment, materialFragmentShader);
         vShader->setDefines(vertexShaderDefines);
         fShader->setDefines(fragmentShaderDefines);
-        program = graphicSystem->createShaderProgram(vShader, fShader);
-        graphicSystem->setShaderProgram(program);
+        program = graphicSystem.createShaderProgram(vShader, fShader);
+        graphicSystem.setShaderProgram(program);
     }
 
     material->setCurrentShaderCombinationTag(program->getShaderCombinationTag());
@@ -318,17 +318,17 @@ void Renderer::createMaterials(const MaterialDescription& materialDescription, V
 Geometry* Renderer::createGeometry(const GeometryDescription& geometryDescription)
 {
     Geometry* geometry = new Geometry();
-    VertexData* vd = graphicSystem->createVertexData(geometryDescription.primitiveType, geometryDescription.numVertices);
+    VertexData* vd = graphicSystem.createVertexData(geometryDescription.primitiveType, geometryDescription.numVertices);
 
-    VertexStream* vertexStream = graphicSystem->createVertexStream(geometryDescription.numVertices, geometryDescription.attributeDescriptions);
+    VertexStream* vertexStream = graphicSystem.createVertexStream(geometryDescription.numVertices, geometryDescription.attributeDescriptions);
     vertexStream->setAttributes(std::move(const_cast<MemoryBuffer&>(geometryDescription.vertexData)));
     vd->setVertexStream(vertexStream);
 
-    IndexBuffer* indexBuffer = graphicSystem->createIndexBuffer(geometryDescription.indexType, geometryDescription.numIndices, false);
+    IndexBuffer* indexBuffer = graphicSystem.createIndexBuffer(geometryDescription.indexType, geometryDescription.numIndices, false);
     indexBuffer->setIndices(std::move(const_cast<MemoryBuffer&>(geometryDescription.indices)));
     vd->setIndexBuffer(indexBuffer);
 
-    graphicSystem->setVertexData(vd);
+    graphicSystem.setVertexData(vd);
     geometry->setBoundingBox(geometryDescription.boundingBox);
     geometry->setVertexData(vd);
 
@@ -380,14 +380,14 @@ Texture* Renderer::createMaterialTexture(const std::string& texFileName, Texture
         TextureLoadResult result;
         if(textureLoader.loadFromFile(texFileName, true, result))
         {
-            texture = graphicSystem->createTexture(TextureTargetMode::Texture2D, TextureWrapMode::Repeat, TextureFilterMode::Trilinear, result.format, result.width, result.height);
+            texture = graphicSystem.createTexture(TextureTargetMode::Texture2D, TextureWrapMode::Repeat, TextureFilterMode::Trilinear, result.format, result.width, result.height);
             texture->setData(result);
             texture->setSlotIndex(slotIndex);
             TextureCacheItem cacheItem;
             cacheItem.fileNameHash = fileNameHash;
             cacheItem.texture = texture;
             materialTextureCache.pushBack(cacheItem);
-            graphicSystem->setTexture(texture);
+            graphicSystem.setTexture(texture);
             std::cout << "Loaded Texture: " << texFileName << std::endl;
         }
         else
@@ -406,8 +406,8 @@ void Renderer::createFullScreenQuad()
     MemoryBuffer vertices;
     vertices.bufferData(verticesData, 12 * attributeSize[static_cast<int>(AttributeType::Float)]);
 
-    fullScreenQuad = graphicSystem->createVertexData(PrimitiveType::TriangleStrip, 4);
-    auto vertexStream = graphicSystem->createVertexStream(4, { { AttributeType::Float, AttributeSemantic::Position, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false } });
+    fullScreenQuad = graphicSystem.createVertexData(PrimitiveType::TriangleStrip, 4);
+    auto vertexStream = graphicSystem.createVertexStream(4, { { AttributeType::Float, AttributeSemantic::Position, 3, 3 * attributeSize[static_cast<int>(AttributeType::Float)], false } });
     vertexStream->setAttributes(std::move(vertices));
     fullScreenQuad->setVertexStream(vertexStream);
 }

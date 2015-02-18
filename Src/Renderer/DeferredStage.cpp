@@ -28,7 +28,7 @@
 namespace Huurre3D
 {
 
-DeferredStage::DeferredStage(Renderer* renderer):
+DeferredStage::DeferredStage(Renderer& renderer):
 RenderStage(renderer)
 {
 }
@@ -46,15 +46,15 @@ void DeferredStage::clearStage()
     renderPasses[0].shaderPasses.clear();
 }
 
-void DeferredStage::update(const Scene* scene)
+void DeferredStage::update(const Scene& scene)
 {
-    Frustum worldSpaceCameraViewFrustum = scene->getMainCamera()->getViewFrustumInWorldSpace();
+    Frustum worldSpaceCameraViewFrustum = scene.getMainCamera()->getViewFrustumInWorldSpace();
     cullRenderItems(scene, deferredRenderItems, worldSpaceCameraViewFrustum);
 
-    Vector<unsigned int> materialBufferIndicies = renderer->getMaterialBufferIndicies();
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    ShaderParameterBlock* cameraShaderParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_cameraParameters);
-    ShaderParameterBlock* skinMatrixShaderParameterBlock = graphicSystem->getShaderParameterBlockByName(sp_skinMatrixArray);
+    Vector<unsigned int> materialBufferIndicies = renderer.getMaterialBufferIndicies();
+    GraphicSystem& graphicSystem = renderer.getGraphicSystem();
+    ShaderParameterBlock* cameraShaderParameterBlock = graphicSystem.getShaderParameterBlockByName(sp_cameraParameters);
+    ShaderParameterBlock* skinMatrixShaderParameterBlock = graphicSystem.getShaderParameterBlockByName(sp_skinMatrixArray);
 
     //Create a shader pass for each material.
     for(unsigned int i = 0; i < deferredRenderItems.size(); ++i)
@@ -71,7 +71,7 @@ void DeferredStage::update(const Scene* scene)
         materialPass.shaderParameterBlocks.pushBack(cameraShaderParameterBlock);
         materialPass.shaderParameterBlocks.pushBack(skinMatrixShaderParameterBlock);
 
-        materialPass.program = graphicSystem->getShaderCombination(deferredRenderItems[i].material->getCurrentShaderCombinationTag());
+        materialPass.program = graphicSystem.getShaderCombination(deferredRenderItems[i].material->getCurrentShaderCombinationTag());
         renderPasses[0].shaderPasses.pushBack(materialPass);
     }
 }

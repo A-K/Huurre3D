@@ -38,7 +38,7 @@ class RenderStageCreator
 public:
     RenderStageCreator(const std::string& renderStageType);
     virtual ~RenderStageCreator() = default;
-    virtual RenderStage* createRenderStage(Renderer* renderer) = 0;
+    virtual RenderStage* createRenderStage(Renderer& renderer) = 0;
 
     std::string renderStageType;
 };
@@ -53,14 +53,14 @@ public:
     }
 
     ~RenderStageCreatorImpl<T>() = default;
-    RenderStage* createRenderStage(Renderer* renderer) override { return new T(renderer); }
+    RenderStage* createRenderStage(Renderer& renderer) override { return new T(renderer); }
 };
 
 //The actual factory class.
 class RenderStageFactory
 {
 public:
-    static RenderStage* createRenderStage(Renderer* renderer, const std::string& renderStageType);
+    static RenderStage* createRenderStage(Renderer& renderer, const std::string& renderStageType);
     static void registerCreator(RenderStageCreator* creator);
 private:
     static Vector<RenderStageCreator*>& getCreatorContainer();

@@ -26,11 +26,6 @@
 namespace Huurre3D
 {
 
-LightTileGrid::~LightTileGrid()
-{
-    delete[] tiles;
-}
-
 void LightTileGrid::setGridDimensions(int tileWidth, int tileHeight, int screenWidth, int screenHeight)
 {
     numTiles = 0;
@@ -43,10 +38,7 @@ void LightTileGrid::setGridDimensions(int tileWidth, int tileHeight, int screenW
     float left = 0.0f;
     float bottom = 0.0f;
 
-    if(tiles)
-        delete[] tiles;
-
-    tiles = new Tile[gridDimensions.widthResolution * gridDimensions.heightResolution];
+    tiles = Vector<Tile>(gridDimensions.widthResolution * gridDimensions.heightResolution);
     tileLightInfo = Vector<int>(MaXNumLights * gridDimensions.widthResolution * gridDimensions.heightResolution);
 
     for(int i = 0 ; i < gridDimensions.heightResolution; ++i)

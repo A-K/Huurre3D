@@ -24,7 +24,7 @@
 namespace Huurre3D
 {
 
-Input::Input(GraphicWindow* graphicWindow):
+Input::Input(const GraphicWindow& graphicWindow) :
 graphicWindow(graphicWindow)
 {
 }
@@ -37,7 +37,7 @@ void Input::update()
     mouseCursorDelta = Vector2::ZERO;
     mouseScrollDelta = Vector2::ZERO;
 
-    InputEventsContainer inputEvents = graphicWindow->getEvents();
+    InputEventsContainer inputEvents = graphicWindow.getEvents();
     processKeyEvent(inputEvents.keyEvents);
     processMouseButtonEvent(inputEvents.mouseButtonEvents);
     processMouseCursorEvent(inputEvents.mouseCursorEvents);

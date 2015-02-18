@@ -24,7 +24,6 @@
 
 #include "Graphics/GraphicWindow.h"
 #include "Graphics/GraphicSystem.h"
-#include "Renderer/RenderStage.h"
 #include "Renderer/Material.h"
 #include "Renderer/TextureLoader.h"
 #include "Util/WorkQueue.h"
@@ -35,6 +34,7 @@ namespace Huurre3D
 
 static const unsigned int WorkQueueSize = 4; //static_cast<int>(std::thread::hardware_concurrency());
 
+class RenderStage;
 class Scene;
 class Light;
 class Camera;
@@ -102,7 +102,7 @@ public:
     bool createRenderWindow(int width, int height, const std::string& windowTitle, bool fullscreen = false, bool vsync = true);
     //Resizes all the needed graphics resources allocated by the renderstages.
     void resizeRenderWindow(int width, int height);
-    void renderScene(Scene* scene, Camera* camera);
+    void renderScene(Scene* scene);
     //Creates as many render items as the number of descriptions.
     void createRenderItems(const Vector<MaterialDescription>& materialDescriptions, const Vector<GeometryDescription>& geometryDescriptions, Vector<RenderItem>& renderItemsOut);
     //Creates multiple render items from one material and geometry description.
@@ -115,8 +115,8 @@ public:
     void removeGeometry(Geometry* geometry);
     VertexData* getFullScreenQuad() const {return fullScreenQuad;}
     const ViewPort& getScreenViewPort() const {return screenViewPort;}
-    GraphicSystem* getGraphicSystem() const {return graphicSystem;}
-    GraphicWindow* getGraphicWindow() const {return graphicWindow;}
+    GraphicSystem& getGraphicSystem() {return graphicSystem;}
+    const GraphicWindow& getGraphicWindow() const {return graphicWindow;}
     const Vector<unsigned int>& getMaterialBufferIndicies() const {return materialBufferIndicies;}
     const TextureLoader& getTextureLoader() const {return textureLoader;}
    
@@ -138,8 +138,8 @@ private:
     Vector<unsigned int> materialBufferIndicies;
     Vector<TextureCacheItem> materialTextureCache;
 
-    GraphicSystem* graphicSystem;
-    GraphicWindow* graphicWindow;
+    GraphicSystem graphicSystem;
+    GraphicWindow graphicWindow;
     WorkQueue<WorkQueueSize> workQueue;
     TextureLoader textureLoader;
     std::string materialVertexShader;

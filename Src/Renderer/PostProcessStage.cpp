@@ -26,29 +26,31 @@
 namespace Huurre3D
 {
 
-PostProcessStage::PostProcessStage(Renderer* renderer):
+PostProcessStage::PostProcessStage(Renderer& renderer):
 RenderStage(renderer)
 {
 }
 
-void PostProcessStage::update(const Scene* scene)
+void PostProcessStage::update(const Scene& scene)
 {
-    Texture* skyBoxTexture = renderer->getGraphicSystem()->getTextureBySlotIndex(TextureSlotIndex::SkyBoxTex);
+    Texture* skyBoxTexture = renderer.getGraphicSystem().getTextureBySlotIndex(TextureSlotIndex::SkyBoxTex);
 
     if(skyBoxTexture)
     {
-        SkyBox* skyBox = (SkyBox*)scene->getSceneItem("SkyBox");
-        if(currentSkyBox != skyBox)
+        Vector<SkyBox*> skyBoxes;
+        scene.getSceneItemsByType<SkyBox>(skyBoxes);
+
+        if(currentSkyBox != skyBoxes[0])
         {
             TextureLoadResult result;
-            if(renderer->getTextureLoader().loadCubeMapFromFile(skyBox->getTextureFiles(), false, result))
+            if(renderer.getTextureLoader().loadCubeMapFromFile(skyBoxes[0]->getTextureFiles(), false, result))
             {
                 skyBoxTexture->setPixelFormat(result.format);
                 skyBoxTexture->setWidth(result.width);
                 skyBoxTexture->setHeight(result.height);
                 skyBoxTexture->setData(result);
             }
-            currentSkyBox = skyBox;
+            currentSkyBox = skyBoxes[0];
         }
     }
 }

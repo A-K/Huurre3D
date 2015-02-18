@@ -68,7 +68,7 @@ struct AssimpSkeletonData
 class SceneImporter
 {
 public:
-    SceneImporter(Renderer* renderer, Animation* animation);
+    SceneImporter(Renderer& renderer, Animation& animation);
     ~SceneImporter() = default;
 	
     void importMesh(const std::string& fileName, Mesh* destMesh);
@@ -87,8 +87,8 @@ private:
     void buildSkeleton(const aiNode* boneNode, const Vector<aiBone*>& bones, const std::set<aiNode*>& boneNodes, Vector<Joint*>& skeleton, unsigned int &jointId) const;
     void readSkeletalAnimations(Vector<AnimationClip*>& animationClips, const Vector<Joint*>& skeleton) const;
     void getTransfrom(const aiMatrix4x4& assimpTransform, Vector3& pos, Quaternion& rot, Vector3& scale) const;
-    Renderer* renderer;
-    Animation* animation;
+    Renderer& renderer;
+    Animation& animation;
     const aiScene* assimpScene;
 };
 

@@ -39,10 +39,10 @@ template<class BoundingVolume> void cullRenderItems(const Vector<RenderItem>& it
     }
 }
 
-template<class BoundingVolume> void cullRenderItems(const Scene* scene, Vector<RenderItem>& result, const BoundingVolume& volume)
+template<class BoundingVolume> void cullRenderItems(const Scene& scene, Vector<RenderItem>& result, const BoundingVolume& volume)
 {
     Vector<Mesh*> meshes;
-    scene->getSceneItemsByType<Mesh>(meshes);
+    scene.getSceneItemsByType<Mesh>(meshes);
 
     Matrix4x4 worldTransform;
     for(unsigned int i = 0; i < meshes.size(); ++i)
@@ -67,10 +67,10 @@ template<class BoundingVolume> void cullRenderItems(const Scene* scene, Vector<R
     }
 }
 
-template<class BoundingVolume> void cullLights(const Scene* scene, Vector<Light*>& result, const BoundingVolume& volume)
+template<class BoundingVolume> void cullLights(const Scene& scene, Vector<Light*>& result, const BoundingVolume& volume)
 {
     Vector<Light*> lights;
-    scene->getSceneItemsByType<Light>(lights);
+    scene.getSceneItemsByType<Light>(lights);
     //Cull light bounding volumes against the given bounding volume.
     for(unsigned int i = 0; i < lights.size(); ++i)
     {

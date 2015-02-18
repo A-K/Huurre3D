@@ -54,7 +54,7 @@ class LightTileGrid
 {
 public:
     LightTileGrid() = default;
-    ~LightTileGrid();
+    ~LightTileGrid() = default;
 	
     void setGridDimensions(int tileWidth, int tileHeight, int screenWidth, int screenHeight);
     void binLightsToTiles(const Vector<Light*>& lights, Camera* camera);
@@ -65,7 +65,7 @@ public:
 private:
     GridDimensions gridDimensions;
     int numTiles = 0;
-    Tile* tiles = nullptr;
+    Vector<Tile> tiles;
     //1. Vector4 contains number of lights and global ambient.
     //2. Vector4 contains position, 3. Vector4 contains color, 4. Vector4 contains direction, 5. Vector4 contains innerOuterAngles
     // 6. Vector4 contains position, ...

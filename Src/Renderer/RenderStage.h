@@ -23,6 +23,7 @@
 #define RenderStage_H
 
 #include "Scene/Camera.h"
+#include "Renderer/Renderer.h"
 #include "Renderer/RenderItem.h"
 #include "Renderer/RenderPasses.h"
 #include "Renderer/RenderStageFactory.h"
@@ -40,18 +41,18 @@ class Renderer;
 class RenderStage
 {
 public:
-    RenderStage(Renderer* renderer);
+    RenderStage(Renderer& renderer);
     virtual ~RenderStage() = default;
     virtual void init(const JSONValue& renderStageJSON);
     virtual void resizeResources();
     virtual void clearStage() {}
-    virtual void update(const Scene* scene) {}
+    virtual void update(const Scene& scene) {}
     virtual void execute() const { drawRenderPasses(renderPasses); }
 
 protected:
     RenderPass createRenderPassFromJson(const JSONValue& renderPassJSON);
     void drawRenderPasses(const Vector<RenderPass>& renderPasses) const;
-    Renderer* renderer;
+    Renderer& renderer;
     Vector<RenderPass> renderPasses;
 };
 

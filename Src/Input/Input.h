@@ -33,7 +33,7 @@ namespace Huurre3D
 class Input
 {
 public:
-    Input(GraphicWindow* graphicWindow);
+    Input(const GraphicWindow& graphicWindow);
     ~Input() = default;
 
     void update();
@@ -59,7 +59,7 @@ private:
     void processMouseScrollEvent(const Vector<MouseScrollEvent>& mouseScrollEvents);
     void processWindowEvents(const Vector<WindowEvent>& windowEvents);
 
-    GraphicWindow* graphicWindow;
+    const GraphicWindow& graphicWindow;
     Vector<int> keysDown;
     Vector<int> keysPressed;
     int mouseButtonsDownFlag;

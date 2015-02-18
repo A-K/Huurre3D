@@ -33,10 +33,10 @@ class PostProcessStage : public RenderStage
     RENDERSTAGE_TYPE(PostProcessStage)
 
 public:
-    PostProcessStage(Renderer* renderer);
+    PostProcessStage(Renderer& renderer);
     ~PostProcessStage() = default;
 
-    void update(const Scene* scene) override;
+    void update(const Scene& scene) override;
 
 private:
     SkyBox* currentSkyBox = nullptr;

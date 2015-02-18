@@ -28,7 +28,7 @@
 namespace Huurre3D
 {
 
-LightingStage::LightingStage(Renderer* renderer):
+LightingStage::LightingStage(Renderer& renderer):
 RenderStage(renderer)
 {
 }
@@ -45,22 +45,21 @@ void LightingStage::init(const JSONValue& lightingStageJSON)
                 renderPasses.pushBack(createRenderPassFromJson(lightingStageRenderPassesJSON.getJSONArrayItem(i)));
     }
     
-    ViewPort screenViewPort = renderer->getScreenViewPort();
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
+    ViewPort screenViewPort = renderer.getScreenViewPort();
+    GraphicSystem& graphicSystem = renderer.getGraphicSystem();
 
     tileGrid.setGridDimensions(lightTileWidthJSON.getInt(), lightTileHeightJSON.getInt(), screenViewPort.width, screenViewPort.height);
     auto gridDimensions = tileGrid.getGridDimensions();
     MemoryBuffer gridDimensionsData;
     gridDimensionsData.bufferData(&gridDimensions, sizeof(gridDimensions));
-    ShaderParameterBlock* lightGridParametersBlock = graphicSystem->getShaderParameterBlockByName(sp_lightGridParameters);
+    ShaderParameterBlock* lightGridParametersBlock = graphicSystem.getShaderParameterBlockByName(sp_lightGridParameters);
     lightGridParametersBlock->setParameterData(std::move(gridDimensionsData));
 
 }
 
 void LightingStage::resizeResources()
 {
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
-    ViewPort screenViewPort = renderer->getScreenViewPort();
+    ViewPort screenViewPort = renderer.getScreenViewPort();
 
     for(unsigned int i = 0; i < renderPasses.size(); ++i)
     {
@@ -76,16 +75,16 @@ void LightingStage::resizeResources()
     auto newGridDimensions = tileGrid.getGridDimensions();
     MemoryBuffer newGridDimensionsData;
     newGridDimensionsData.bufferData(&newGridDimensions, sizeof(newGridDimensions));
-    ShaderParameterBlock* lightGridParametersBlock = graphicSystem->getShaderParameterBlockByName(sp_lightGridParameters);
+    ShaderParameterBlock* lightGridParametersBlock = renderer.getGraphicSystem().getShaderParameterBlockByName(sp_lightGridParameters);
     lightGridParametersBlock->setParameterData(std::move(newGridDimensionsData));
 }
 
-void LightingStage::update(const Scene* scene)
+void LightingStage::update(const Scene& scene)
 {
-    Camera* camera = scene->getMainCamera();
+    Camera* camera = scene.getMainCamera();
     Frustum worldSpaceCameraViewFrustum = camera->getViewFrustumInWorldSpace();
     cullLights(scene, frustumLights, worldSpaceCameraViewFrustum);
-    Vector3 globalAmbientLight = scene->getGlobalAmbientLight();
+    Vector3 globalAmbientLight = scene.getGlobalAmbientLight();
 
     //Bin lights to tiles.
     tileGrid.binLightsToTiles(frustumLights, camera);
@@ -98,10 +97,10 @@ void LightingStage::update(const Scene* scene)
     lightParameterBlock[0].z = globalAmbientLight.y;
     lightParameterBlock[0].w = globalAmbientLight.z;
 
-    GraphicSystem* graphicSystem = renderer->getGraphicSystem();
+    GraphicSystem& graphicSystem = renderer.getGraphicSystem();
 
     //Update the lights parameter block in Tiled deferred shader pass.
-    ShaderParameterBlock* lightParameters = graphicSystem->getShaderParameterBlockByName(sp_lightParameters);
+    ShaderParameterBlock* lightParameters = graphicSystem.getShaderParameterBlockByName(sp_lightParameters);
     lightParameters->clearParameters();
     lightParameters->setParameterData(lightParameterBlock.getMemoryBuffer());
 
@@ -109,7 +108,7 @@ void LightingStage::update(const Scene* scene)
     int width = frustumLights.size();;
     int height = gridDimensions.widthResolution * gridDimensions.heightResolution;
     int size = sizeof(int) * width * height;
-    Texture* lightInfoTexture = graphicSystem->getTextureBySlotIndex(TextureSlotIndex::TileLightInfo);
+    Texture* lightInfoTexture = graphicSystem.getTextureBySlotIndex(TextureSlotIndex::TileLightInfo);
     lightInfoTexture->setSize(width, height);
     lightInfoTexture->setPixelData(tileGrid.getTileLightInfo());
 }

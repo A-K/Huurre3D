@@ -22,17 +22,17 @@
 #ifndef Engine_H
 #define Engine_H
 
+#include "Animation/Animation.h"
+#include "Renderer/Renderer.h"
+#include "Input/Input.h"
+#include "Scene/SceneImporter.h"
 #include "Util/Vector.h"
 #include "Util/Timer.h"
 
 namespace Huurre3D
 {
 
-class Animation;
 class Scene;
-class Renderer;
-class SceneImporter;
-class Input;
 class App;
 
 const std::string defaultConfigFile = "../DefaultHuurre3DConfig.json";
@@ -40,7 +40,7 @@ const std::string defaultConfigFile = "../DefaultHuurre3DConfig.json";
 class Engine
 {
 public:
-    Engine() = default;
+    Engine();
     ~Engine();
 	
     bool init(const std::string& engineConfigFile = defaultConfigFile);
@@ -49,21 +49,21 @@ public:
     void removeApp(App* app);
     Scene* createScene();
     Scene* getScene(unsigned int id = 0) const {return scenes[id];}
-    SceneImporter* getSceneImporter() const {return sceneImporter;}
-    Renderer* getRenderer() const {return renderer;}
-    Animation* getAnimation() const {return animation;}
-    Input* getInput() const {return input;}
+    SceneImporter& getSceneImporter() {return sceneImporter;}
+    Renderer& getRenderer() {return renderer;}
+    Animation& getAnimation() {return animation;}
+    const Input& getInput() const {return input;}
     static std::string& getAssetPath() {return assetPath;}
 
 private:
     void deInit();
     void update();
-    Animation* animation = nullptr;
-    Renderer* renderer = nullptr;
+    Animation animation;
+    Renderer renderer;
     Vector<Scene*> scenes;
     Vector<App*> apps;
-    SceneImporter* sceneImporter = nullptr;
-    Input* input = nullptr;
+    SceneImporter sceneImporter;
+    Input input;
     Timer timer;
     float lastFrame = 0.0f;
     static std::string assetPath;

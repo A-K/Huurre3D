@@ -58,7 +58,7 @@ public:
     void setShaderParameterBlock(ShaderParameterBlock* shaderParameterBlock);
     Matrix4x4 getViewProjectionMatrix();
     Frustum getViewFrustumInWorldSpace();
-    void getCameraShaderParameterBlock(ShaderParameterBlock* cameraShaderParameterBlock);
+    void getCameraShaderParameterBlock(ShaderParameterBlock* cameraShaderParameterBlock) const;
     void updateItem() override;
     const Frustum& getViewFrustum() const {return viewFrustum;}
     const Matrix4x4& getViewMatrix() const {return getInverseWorldTransform4x4();}

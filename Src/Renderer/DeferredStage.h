@@ -32,12 +32,12 @@ class DeferredStage : public RenderStage
     RENDERSTAGE_TYPE(DeferredStage);
 
 public:
-    DeferredStage(Renderer* renderer);
+    DeferredStage(Renderer& renderer);
     ~DeferredStage() = default;
     
     void init(const JSONValue& deferredgStageJSON) override;
     void clearStage() override;
-    void update(const Scene* scene) override;
+    void update(const Scene& scene) override;
 
 private:
     Vector<RenderItem> deferredRenderItems;

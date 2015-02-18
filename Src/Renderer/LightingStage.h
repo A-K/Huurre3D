@@ -36,13 +36,13 @@ class LightingStage : public RenderStage
     RENDERSTAGE_TYPE(LightingStage)
 
 public:
-    LightingStage(Renderer* renderer);
+    LightingStage(Renderer& renderer);
     ~LightingStage() = default;
     
     void init(const JSONValue& lightingStageJSON) override;
     void resizeResources() override;
     void clearStage() override;
-    void update(const Scene* scene) override;
+    void update(const Scene& scene) override;
 
 private:
     LightTileGrid tileGrid;

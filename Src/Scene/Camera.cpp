@@ -78,7 +78,7 @@ Frustum Camera::getViewFrustumInWorldSpace()
     return Frustum(getViewProjectionMatrix().transpose());
 }
 
-void Camera::getCameraShaderParameterBlock(ShaderParameterBlock* cameraShaderParameterBlock)
+void Camera::getCameraShaderParameterBlock(ShaderParameterBlock* cameraShaderParameterBlock) const
 {
     if(cameraShaderParameterBlock)
     {

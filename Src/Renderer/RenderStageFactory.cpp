@@ -30,7 +30,7 @@ renderStageType(renderStageType)
      RenderStageFactory::registerCreator(this);
 }
 
-RenderStage* RenderStageFactory::createRenderStage(Renderer* renderer, const std::string& renderStageType)
+RenderStage* RenderStageFactory::createRenderStage(Renderer& renderer, const std::string& renderStageType)
 {
     int index = getCreatorContainer().getIndexToItem([renderStageType](const RenderStageCreator* creator){return creator->renderStageType.compare(renderStageType) == 0; });
     return index != -1 ? getCreatorContainer()[index]->createRenderStage(renderer) : nullptr;

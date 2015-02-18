@@ -37,12 +37,12 @@ class ShadowStage : public RenderStage
     RENDERSTAGE_TYPE(ShadowStage)
 
 public:
-    ShadowStage(Renderer* renderer);
+    ShadowStage(Renderer& renderer);
     ~ShadowStage() = default;
     void clearStage() override;
     void init(const JSONValue& shadowStageJSON) override;
     void resizeResources() override;
-    void update(const Scene* scene) override;
+    void update(const Scene& scene) override;
 
 private:
     void calculateShadowCameraViewProjections(const Vector<Light*>& lights, Camera* camera);
