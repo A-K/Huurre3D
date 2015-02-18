@@ -21,31 +21,26 @@
 
 #include "LightDemoApp.h"
 #include "Scene/Skybox.h"
+#include "Scene/Camera.h"
 
 void LightDemoApp::init()
 {
     scene = engine->createScene();
-    sceneImporter = engine->getSceneImporter();
-    input = engine->getInput();
 
-    FixedArray<std::string, 6> skyBoxTextureFileNames;
-    skyBoxTextureFileNames[0] = Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga";
-    skyBoxTextureFileNames[1] = Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga";
-    skyBoxTextureFileNames[2] = Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga";
-    skyBoxTextureFileNames[3] = Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga";
-    skyBoxTextureFileNames[4] = Engine::getAssetPath() + "Textures/Skybox/miramar_rt.tga";
-    skyBoxTextureFileNames[5] = Engine::getAssetPath() + "Textures/Skybox/miramar_lf.tga";
+    FixedArray<std::string, 6> skyBoxTextureFileNames = { Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga",
+                                                          Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga",
+                                                          Engine::getAssetPath() + "Textures/Skybox/miramar_rt.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_lf.tga" };
 
     scene->setGlobalAmbientLight(Vector3(0.05f, 0.05f, 0.05f));
     SkyBox* skyBox = (SkyBox*)scene->createSceneItem("SkyBox");
     skyBox->setTextureFiles(skyBoxTextureFileNames);
 
     Mesh* sponza = scene->createSceneItem<Mesh>();
-    sceneImporter->importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
+    engine->getSceneImporter().importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
     sponza->scale(0.25f);
 
-    float width = static_cast<float>(engine->getRenderer()->getScreenViewPort().width);
-    float height = static_cast<float>(engine->getRenderer()->getScreenViewPort().height);
+    float width = static_cast<float>(engine->getRenderer().getScreenViewPort().width);
+    float height = static_cast<float>(engine->getRenderer().getScreenViewPort().height);
     scene->getMainCamera()->setAspectRatio(width / height);
     camera = scene->getMainCamera();
     camera->translate(Vector3(-250.0f, 350.0f, -10.0f), FrameOfReference::World);
@@ -63,7 +58,6 @@ void LightDemoApp::init()
 
 void LightDemoApp::update(float timeSinceLastUpdate)
 {
-
     moveCamera(timeSinceLastUpdate);
     moveLights(timeSinceLastUpdate);
 }
@@ -72,29 +66,30 @@ void LightDemoApp::moveCamera(float timeSinceLastUpdate)
 {
     float moveDistance = timeSinceLastUpdate * 50.0f;
     float moveRotation = timeSinceLastUpdate * 50.0f;
+    auto input = engine->getInput();
 
-    if(input->isKeyDown(KEY_LEFT))
+    if(input.isKeyDown(KEY_LEFT))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
 
-    if(input->isKeyDown(KEY_RIGHT))
+    if(input.isKeyDown(KEY_RIGHT))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
 
-    if(input->isKeyDown(KEY_UP))
+    if(input.isKeyDown(KEY_UP))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
  
-    if(input->isKeyDown(KEY_DOWN))
+    if(input.isKeyDown(KEY_DOWN))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_W))
+    if(input.isKeyDown(KEY_W))
         camera->translate((Vector3(0.0f, 0.0f, -moveDistance)), FrameOfReference::Local);
     
-    if(input->isKeyDown(KEY_S))
+    if(input.isKeyDown(KEY_S))
         camera->translate(Vector3(0.0f, 0.0f, moveDistance), FrameOfReference::Local);
  
-    if(input->isKeyDown(KEY_A))
+    if(input.isKeyDown(KEY_A))
         camera->translate(Vector3(-moveDistance, 0.0f, 0.0f), FrameOfReference::Local);
    
-    if(input->isKeyDown(KEY_D))
+    if(input.isKeyDown(KEY_D))
         camera->translate(Vector3(moveDistance, 0.0f, 0.0f), FrameOfReference::Local);
 }
 
@@ -138,11 +133,7 @@ void LightDemoApp::moveLights(float timeSinceLastUpdate)
 
 void LightDemoApp::createDirectionalLight()
 {
-    FixedArray<float, 4> splits;
-    splits[0] = 50.0f;
-    splits[1] = 150.0f;
-    splits[2] = 500.0f;
-    splits[3] = 1000.0f;
+    FixedArray<float, 4> splits = {50.0f, 150.0f, 500.0f, 1000.0f};
     Light* lightDirectional = (Light*)scene->createSceneItem("Light");
     lightDirectional->setLightType(LightType::Directional);
     lightDirectional->setDirection(Vector3(0.6f, -1.0f, 0.0f));
@@ -168,7 +159,7 @@ void LightDemoApp::createPointLights()
 {
     Vector<Mesh*> lightSpheres;
     scene->createSceneItems<Mesh>(lightSpheres, 601);
-    sceneImporter->importMultipleMeshes(Engine::getAssetPath() + "Models/Sphere/Sphere.obj", lightSpheres);
+    engine->getSceneImporter().importMultipleMeshes(Engine::getAssetPath() + "Models/Sphere/Sphere.obj", lightSpheres);
 
     for(int i = 0; i < 30; ++i)
     {
@@ -203,7 +194,7 @@ void LightDemoApp::createPointLight(Mesh* sphere, float lightScale, float radius
     description.diffuseColor = color;
     description.specularColor = color;
     description.emissiveColor = color;
-    Material* lightMaterial = engine->getRenderer()->createMaterial(description);
+    Material* lightMaterial = engine->getRenderer().createMaterial(description);
     sphere->setMaterial(lightMaterial);
     light->addChild((SpatialSceneItem*)sphere);
 

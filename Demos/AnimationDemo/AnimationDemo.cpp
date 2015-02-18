@@ -21,18 +21,17 @@
 
 #include "AnimationDemo.h"
 #include "Scene/Skybox.h"
+#include "Scene/Camera.h"
 
 void AnimationDemo::init()
 {
     scene = engine->createScene();
-    sceneImporter = engine->getSceneImporter();
-    input = engine->getInput();
 
     createScene();
     createNinjas();
 
     Mesh* ninja = scene->createSceneItem<Mesh>();
-    sceneImporter->importMesh(Engine::getAssetPath() + "Models/Ninja/Ninja.dae", ninja);
+    engine->getSceneImporter().importMesh(Engine::getAssetPath() + "Models/Ninja/Ninja.dae", ninja);
     mainNinja = NinjaEntity(Vector3(45.0f, 0.0f, 0.0f), ninjaScale, ninja);
 
     ninjaMovements->play();
@@ -43,34 +42,35 @@ void AnimationDemo::update(float timeSinceLastUpdate)
 {
     float moveDistance = timeSinceLastUpdate * 10.0f;
     float moveRotation = timeSinceLastUpdate * 80.0f;
+    auto input = engine->getInput();
 
-    if(input->isKeyDown(KEY_LEFT))
+    if(input.isKeyDown(KEY_LEFT))
         mainNinja.rotate(moveRotation, Direction::Left);
 
-    if(input->isKeyDown(KEY_RIGHT))
+    if(input.isKeyDown(KEY_RIGHT))
         mainNinja.rotate(moveRotation, Direction::Right);
 
-    if(input->isKeyDown(KEY_UP))
+    if(input.isKeyDown(KEY_UP))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_DOWN))
+    if(input.isKeyDown(KEY_DOWN))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_W))
+    if(input.isKeyDown(KEY_W))
     {
         mainNinja.setAction(Action::Walk);
         mainNinja.move(moveDistance, Direction::Forward);
     }
-    else if(input->isKeyDown(KEY_S))
+    else if(input.isKeyDown(KEY_S))
     {
         mainNinja.setAction(Action::Walk);
         mainNinja.move(moveDistance, Direction::Backward);
     }
-    else if(input->isKeyDown(KEY_Q))
+    else if(input.isKeyDown(KEY_Q))
         mainNinja.setAction(Action::BackFlip);
-    else if(input->isKeyDown(KEY_E))
+    else if(input.isKeyDown(KEY_E))
         mainNinja.setAction(Action::Kick);
-    else if(input->isKeyDown(KEY_D))
+    else if(input.isKeyDown(KEY_D))
         mainNinja.setAction(Action::SwordSwipe);
     else
         mainNinja.setAction(Action::Idle);
@@ -89,7 +89,7 @@ void AnimationDemo::createScene()
 
     Vector<Mesh*> cityTiles;
     scene->createSceneItems<Mesh>(cityTiles, 9);
-    sceneImporter->importMultipleMeshes(Engine::getAssetPath() + "Models/TownCityTile/Street_environment_V01.obj", cityTiles);
+    engine->getSceneImporter().importMultipleMeshes(Engine::getAssetPath() + "Models/TownCityTile/Street_environment_V01.obj", cityTiles);
 
     float startX = -150.0f;
     float startZ = -150.0f;
@@ -99,8 +99,8 @@ void AnimationDemo::createScene()
             cityTiles[j + i * 3]->translate(Vector3(startX + 96.0f * float(i), 0.0f, startZ + 94.0f * float(j)), FrameOfReference::World);
     }
 
-    float width = static_cast<float>(engine->getRenderer()->getScreenViewPort().width);
-    float height = static_cast<float>(engine->getRenderer()->getScreenViewPort().height);
+    float width = static_cast<float>(engine->getRenderer().getScreenViewPort().width);
+    float height = static_cast<float>(engine->getRenderer().getScreenViewPort().height);
     scene->getMainCamera()->setAspectRatio(width / height);
     camera = scene->getMainCamera();
     camera->setFarClipDistance(300.0f);
@@ -120,8 +120,7 @@ void AnimationDemo::createNinjas()
 {
     Vector<Mesh*> ninjaMeshes;
     scene->createSceneItems<Mesh>(ninjaMeshes, numNinjas);
-    sceneImporter->importMultipleMeshes(Engine::getAssetPath() + "Models/Ninja/Ninja.dae", ninjaMeshes);
-    Animation* animation = engine->getAnimation();
+    engine->getSceneImporter().importMultipleMeshes(Engine::getAssetPath() + "Models/Ninja/Ninja.dae", ninjaMeshes);
     Vector<Track> ninjaMovementAnimationTracks;
 
     for(unsigned int i = 0; i < numNinjas; ++i)
@@ -171,5 +170,5 @@ void AnimationDemo::createNinjas()
         ninjaMovementAnimationTracks.pushBack(movement);
     }
 
-    ninjaMovements = animation->createAnimationClip("NinjaMovement", ninjaMovementStartToEndPosTime * 2, true, ninjaMovementAnimationTracks);
+    ninjaMovements = engine->getAnimation().createAnimationClip("NinjaMovement", ninjaMovementStartToEndPosTime * 2, true, ninjaMovementAnimationTracks);
 }

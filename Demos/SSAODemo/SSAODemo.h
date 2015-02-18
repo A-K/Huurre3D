@@ -40,8 +40,6 @@ private:
     void updateShaderParameters();
     Camera* camera;
     Scene* scene;
-    Input* input;
-    SceneImporter* sceneImporter;
     bool ssaoOn = true;
     bool showSSAOTex = false;
 };

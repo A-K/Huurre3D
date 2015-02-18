@@ -43,8 +43,6 @@ private:
     void createNinjas();
     Camera* camera;
     Scene* scene;
-    Input* input;
-    SceneImporter* sceneImporter;
     NinjaEntity mainNinja;
     Vector<NinjaEntity> ninjas;
     const unsigned int numNinjas = 100;

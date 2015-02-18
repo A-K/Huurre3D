@@ -48,8 +48,6 @@ private:
 
     Camera* camera;
     Scene* scene;
-    Input* input;
-    SceneImporter* sceneImporter;
     Vector<Light*> pointLights;
     Vector<Light*> shadowCastingPointLights;
     float lightsMinHeight = 10.0f;

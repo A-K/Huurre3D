@@ -21,12 +21,11 @@
 
 #include "SSAODemo.h"
 #include "Scene/Skybox.h"
+#include "Scene/Camera.h"
 
 void SSAODemo::init()
 {
     scene = engine->createScene();
-    sceneImporter = engine->getSceneImporter();
-    input = engine->getInput();
 
     FixedArray<std::string, 6> skyBoxTextureFileNames = { Engine::getAssetPath() + "Textures/Skybox/miramar_ft.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_bk.tga",
                                                           Engine::getAssetPath() + "Textures/Skybox/miramar_up.tga", Engine::getAssetPath() + "Textures/Skybox/miramar_dn.tga",
@@ -37,11 +36,11 @@ void SSAODemo::init()
     skyBox->setTextureFiles(skyBoxTextureFileNames);
 
     Mesh* sponza = scene->createSceneItem<Mesh>();
-    sceneImporter->importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
+    engine->getSceneImporter().importMesh(Engine::getAssetPath() + "Models/Sponza/sponza.obj", sponza);
     sponza->scale(0.05f);
 
-    float width = static_cast<float>(engine->getRenderer()->getScreenViewPort().width);
-    float height = static_cast<float>(engine->getRenderer()->getScreenViewPort().height);
+    float width = static_cast<float>(engine->getRenderer().getScreenViewPort().width);
+    float height = static_cast<float>(engine->getRenderer().getScreenViewPort().height);
     scene->getMainCamera()->setAspectRatio((float)width / (float)height);
     camera = scene->getMainCamera();
     camera->translate(Vector3(20.0f, 5.0f, 0.0f), FrameOfReference::World);
@@ -50,12 +49,14 @@ void SSAODemo::init()
 
 void SSAODemo::update(float timeSinceLastUpdate)
 {
-    if(input->isKeyPressed(KEY_R))
+    auto input = engine->getInput();
+
+    if(input.isKeyPressed(KEY_R))
     {
         ssaoOn = !ssaoOn;
         updateShaderParameters();
     }
-    else if(input->isKeyPressed(KEY_T))
+    else if(input.isKeyPressed(KEY_T))
     {
         showSSAOTex = !showSSAOTex;
         updateShaderParameters();
@@ -64,34 +65,34 @@ void SSAODemo::update(float timeSinceLastUpdate)
     float moveDistance = timeSinceLastUpdate * 20.0f;
     float moveRotation = timeSinceLastUpdate * 60.0f;
 
-    if(input->isKeyDown(KEY_LEFT))
+    if(input.isKeyDown(KEY_LEFT))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
 
-    if(input->isKeyDown(KEY_RIGHT))
+    if(input.isKeyDown(KEY_RIGHT))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_Y), FrameOfReference::World);
 
-    if(input->isKeyDown(KEY_UP))
+    if(input.isKeyDown(KEY_UP))
         camera->rotate(Quaternion(moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_DOWN))
+    if(input.isKeyDown(KEY_DOWN))
         camera->rotate(Quaternion(-moveRotation, Vector3::UNIT_X), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_W))
+    if(input.isKeyDown(KEY_W))
         camera->translate((Vector3(0.0f, 0.0f, -moveDistance)), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_S))
+    if(input.isKeyDown(KEY_S))
         camera->translate(Vector3(0.0f, 0.0f, moveDistance), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_A))
+    if(input.isKeyDown(KEY_A))
         camera->translate(Vector3(-moveDistance, 0.0f, 0.0f), FrameOfReference::Local);
 
-    if(input->isKeyDown(KEY_D))
+    if(input.isKeyDown(KEY_D))
         camera->translate(Vector3(moveDistance, 0.0f, 0.0f), FrameOfReference::Local);
 }
 
 void SSAODemo::updateShaderParameters()
 {
-    ShaderParameterBlock* block = engine->getRenderer()->getGraphicSystem()->getShaderParameterBlockByName("u_showSSAOParameters");
+    ShaderParameterBlock* block = engine->getRenderer().getGraphicSystem().getShaderParameterBlockByName("u_showSSAOParameters");
     block->clearParameters();
 
     Vector<int> data(4);
